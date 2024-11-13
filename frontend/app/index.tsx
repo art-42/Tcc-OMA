@@ -1,34 +1,90 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Octicons } from "@expo/vector-icons";
+import { Text, View, StyleSheet } from "react-native";
 
-export default function Page() {
+import {Picker} from '@react-native-picker/picker';
+
+import Header from "@/components/Header"
+import InputText from "@/components/InputText";
+import Button from "@/components/Button";
+import AnotationCard from "@/components/AnotatonCard";
+
+export default function Index() {
+
+  const rightIcons = [
+    {
+      iconName: "user-circle"
+    }
+  ];
+
   return (
-    <View style={styles.container}>
-      <View style={styles.main}>
-        <Text style={styles.title}>Hello World</Text>
-        <Text style={styles.subtitle}>This is the first page of your app.</Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+      }}
+    >
+      <Header rightIcons = {rightIcons}/>
+
+      <InputText placeholder="Pesquisar" ></InputText>
+      
+      <View style={styles.picker}> 
+        <Picker style={styles.picker}>
+          <Picker.Item label="Data" value="js" />
+          <Picker.Item label="Categoria" value="java" />
+        </Picker>
+      </View>
+
+      <View style={styles.textHeadContainer}> 
+        <Text style={styles.text}> Junho </Text>
+      </View>
+      <View style={styles.textSubContainer}> 
+        <Text style={styles.text}> 19 </Text>
+      </View>
+
+      <View style={styles.AnotationContainer}>
+        <AnotationCard
+          title="Titulo"
+          category="Categoria"
+          time="13:00"
+        />
+      </View>
+      <View style= {styles.buttonGroup}>
+        <Button label="+ Grupo" border={true}></Button>
+        <Button label="+ Categoria" border={true}></Button>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    padding: 24,
+  picker:{
+    width: "60%",
+    margin: 4,
+    alignSelf: "flex-end"
   },
-  main: {
-    flex: 1,
-    justifyContent: "center",
-    maxWidth: 960,
-    marginHorizontal: "auto",
+  textHeadContainer:{
+    width: "40%",
+    alignSelf: "flex-start",
+    borderBottomWidth: 2,
+    margin: 15,
+
   },
-  title: {
-    fontSize: 64,
-    fontWeight: "bold",
+  textSubContainer:{
+    width: "20%",
+    alignSelf: "flex-start",
+    marginLeft: 25,
   },
-  subtitle: {
-    fontSize: 36,
-    color: "#38434D",
+  AnotationContainer:{
+    width: "80%",
+    marginTop: 10,
   },
+  buttonGroup:{
+    width: "100%",
+    position: 'absolute',
+    bottom: 20,
+    gap: 5
+  },
+  text:{
+    fontSize: 25
+  }
 });
