@@ -1,0 +1,72 @@
+# Geral
+.DS_Store
+Thumbs.db
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+#.env
+.env.*.local
+.env.local
+*.local
+*.swp
+*.swo
+*.tmp
+*.pid
+*.seed
+*.pid.lock
+.nyc_output
+.pnpm-debug.log*
+.vscode/
+node_modules/
+
+# Backend
+dist/
+build/
+*.sqlite
+*.sqlite3
+db/
+
+# Ignorar diretórios e arquivos do MongoDB
+database/mongo-data/
+
+
+# Frontend
+.cache/
+web-build/
+.expo/
+.expo-shared/
+android/
+ios/
+build/
+Pods/
+*.xcworkspace
+*.xcodeproj
+*.keystore
+*.plist
+
+# Docker
+docker-compose.override.yml
+#docker-compose*.yml
+#Dockerfile
+#.dockerignore
+tmp/
+
+# MongoDB
+dump/
+*.dump
+*.bak
+*.backup
+*.pem
+*.key
+db_credentials/
+
+# Ferramentas de desenvolvimento
+.vscode/
+*.code-workspace
+.idea/
+*.iml
+out/
+
