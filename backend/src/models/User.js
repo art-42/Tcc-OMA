@@ -1,9 +1,23 @@
 const mongoose = require('mongoose');
 
-const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+// Schema do Usuário
+const UserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+}, {
+  timestamps: true, // Para criar automaticamente os campos createdAt e updatedAt
 });
 
-module.exports = mongoose.model('User', userSchema);
+// Exportando o modelo
+module.exports = mongoose.model('User', UserSchema);
