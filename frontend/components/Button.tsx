@@ -22,7 +22,7 @@ export default function Button({label, iconName, border} : ButtonProps) {
   ) : (
     <Pressable
       onPress={() => alert("Pressionou um botão")}
-      style={[styles.container, border ? styles.containerBorder : {}]}
+      style={[styles.container, styles.containerBorder]}
     >
       
       <Text
