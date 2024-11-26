@@ -1,8 +1,15 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
+import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 
 export default function SigninScreen() {
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
   return (
     <View
       style={{
@@ -17,13 +24,13 @@ export default function SigninScreen() {
       </View>
      
       <View style={styles.inputInfoContainer}>
-        <InputText placeholder="nome"></InputText>
+        <InputText placeholder="nome" onChangeText={setName}></InputText>
 
-        <InputText placeholder="email"></InputText>
+        <InputText placeholder="email" onChangeText={setEmail}></InputText>
 
-        <InputText placeholder="senha"></InputText>
+        <InputText placeholder="senha" onChangeText={setPassword}></InputText>
 
-        <InputText placeholder="senha"></InputText>
+        <InputText placeholder="Confirmar senha" onChangeText={setConfirmPassword}></InputText>
 
       </View>
 

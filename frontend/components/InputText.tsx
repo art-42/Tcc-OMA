@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Text, StyleSheet, TextInput } from "react-native";
 
 type InputTextProps = {
@@ -5,9 +6,19 @@ type InputTextProps = {
     placeholder?: string;
     size?: string;
     position?: string;
+    onChangeText: any;
 }
 
-export default function InputText({label, placeholder} : InputTextProps) {
+export default function InputText({label, placeholder, onChangeText} : InputTextProps) {
+  const [text, setText] = React.useState('');  
+  
+  const handleTextChange = (text: React.SetStateAction<string>) => {
+    setText(text);
+    if (onChangeText) {
+      onChangeText(text);
+    }
+  };
+
   return(
     <View style={styles.container}>
       {
@@ -21,6 +32,8 @@ export default function InputText({label, placeholder} : InputTextProps) {
         style={styles.inputBox}
         placeholder={placeholder}
         textAlign={'center'}
+        onChangeText={handleTextChange}
+        value={text}
       />
     </View>
   )

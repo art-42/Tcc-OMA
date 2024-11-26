@@ -1,8 +1,13 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
+import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 
 export default function LoginScreen() {
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
     <View
       style={{
@@ -17,14 +22,14 @@ export default function LoginScreen() {
       </View>
      
       <View style={styles.inputInfoContainer}>
-        <InputText placeholder="email"></InputText>
+        <InputText placeholder="email" onChangeText={setEmail}></InputText>
 
-        <InputText placeholder="senha"></InputText>
+        <InputText placeholder="senha" onChangeText={setPassword}></InputText>
 
-        <Button label="entrar"></Button>
+        <Button label="entrar" onClick={() => alert(`${email} ${password}`)}></Button>
       </View>
 
-      <Button label="Criar Nova Conta"></Button>
+      <Button label="Criar Nova Conta" href={'/signinScreen'}></Button>
 
     </View>
   );
