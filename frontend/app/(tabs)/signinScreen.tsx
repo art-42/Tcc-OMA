@@ -1,8 +1,32 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
+import { userService } from "@/services/userService";
+import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 
 export default function SigninScreen() {
+
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+
+  const save = () => {
+    if(name === '' || email === '' || password === '' || confirmPassword === '' ){
+      alert('Preencha todos os campos')
+    } else if(password !== confirmPassword){
+      alert('As senhas precisão ser iguais')
+    } else {
+      alert(`Cadastro concluído: \n nome:${name} \n email:${email} \n password:${password}`)
+
+      userService.createUser({
+        email,
+        name,
+        password
+      }).then
+    }
+  }
+
   return (
     <View
       style={{
@@ -17,18 +41,18 @@ export default function SigninScreen() {
       </View>
      
       <View style={styles.inputInfoContainer}>
-        <InputText placeholder="nome"></InputText>
+        <InputText placeholder="nome" onChangeText={setName}></InputText>
 
-        <InputText placeholder="email"></InputText>
+        <InputText placeholder="email" onChangeText={setEmail}></InputText>
 
-        <InputText placeholder="senha"></InputText>
+        <InputText placeholder="senha" onChangeText={setPassword}></InputText>
 
-        <InputText placeholder="senha"></InputText>
+        <InputText placeholder="Confirmar senha" onChangeText={setConfirmPassword}></InputText>
 
       </View>
 
       <View style={styles.bottonButton}>
-      <Button label="Cadastrar"></Button>
+      <Button label="Cadastrar" onClick={save}></Button>
       </View>
 
 

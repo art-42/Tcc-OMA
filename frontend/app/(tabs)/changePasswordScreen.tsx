@@ -2,12 +2,17 @@ import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import Header from "@/components/Header"
 import { Text, View, StyleSheet } from "react-native";
+import React from "react";
 
 export default function ChangePasswordScreen() {
 
+  const [password, setPassword] = React.useState('');
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+
   var leftIcons = [    
     {
-      iconName: "arrow-left"
+      iconName: "arrow-left",
+      href: "/infoScreen"
     }
   ]
 
@@ -24,13 +29,13 @@ export default function ChangePasswordScreen() {
         <Header leftIcons={leftIcons} text="Alterar senha"></Header>
       </View>
       <View style={styles.inputInfoContainer}>
-        <InputText label="Senha"></InputText>
+        <InputText label="Senha" onChangeText={setPassword}></InputText>
 
-        <InputText label="Confimar senha"></InputText>
+        <InputText label="Confimar senha" onChangeText={setConfirmPassword}></InputText>
 
       </View>
 
-      <Button label="Salvar"></Button>
+      <Button label="Salvar" onClick={() => alert(`${password} ${confirmPassword}`)}></Button>
 
     </View>
   );

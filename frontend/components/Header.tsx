@@ -14,7 +14,7 @@ export default function HeaderProps({leftIcons, rightIcons, text} : HeaderProps)
       <View style={[styles.icons, styles.leftIcons]}>
         {
           leftIcons?.map(i => 
-            <Button label={i.label} iconName={i.iconName}/>
+            <Button label={i.label} iconName={i.iconName} href={i.href}/>
           )
         }
       </View>
@@ -22,12 +22,11 @@ export default function HeaderProps({leftIcons, rightIcons, text} : HeaderProps)
       <View style={[styles.icons, styles.rightIcons]}>
         {
           rightIcons?.map(i => 
-            <Button label={i.label} iconName={i.iconName}/>
+            <Button label={i.label} iconName={i.iconName} href={i.href}/>
           )
         }
       </View>
     </View>
-
   )
 }
 
