@@ -6,12 +6,14 @@ export interface User {
 }
 
 export interface UserResponse {
-  message: string,
+  message: string;
+  token: string;
   user: {
-    name: string,
-    email: string,
-    password: string,
-  },
+    id: string;
+    name: string;
+    email: string;
+  };
 }
+
     
   

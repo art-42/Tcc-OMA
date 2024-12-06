@@ -1,14 +1,13 @@
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 
-export default function TabLayout() {
+export default function StackLayout() {
   return (
-    <Tabs>
-       <Tabs.Screen name="index" options={{ headerShown: false }} />
-       <Tabs.Screen name="loginScreen" options={{ headerShown: false }} />
-       <Tabs.Screen name="signinScreen" options={{ headerShown: false }} />
-       <Tabs.Screen name="infoScreen" options={{ headerShown: false }} />
-       <Tabs.Screen name="changePasswordScreen" options={{ headerShown: false }} />
-    </Tabs>
+    <Stack initialRouteName="index">
+      <Stack.Screen name="index" options={{ headerShown: false }} />
+      <Stack.Screen name="homeScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="signinScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="infoScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="changePasswordScreen" options={{ headerShown: false }} />
+    </Stack>
   );
 }
-
