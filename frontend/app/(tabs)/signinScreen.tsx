@@ -17,13 +17,17 @@ export default function SigninScreen() {
     } else if(password !== confirmPassword){
       alert('As senhas precisão ser iguais')
     } else {
-      alert(`Cadastro concluído: \n nome:${name} \n email:${email} \n password:${password}`)
 
       userService.createUser({
         email,
         name,
         password
-      }).then
+      }).then(resp => {
+        var user = resp.user;
+        alert(`Cadastro concluído: \n nome:${user.name} \n email:${user.email} \n`)
+      }).catch(()=> {
+        alert(`Erro no cadastro de pessoa`)
+      })
     }
   }
 
@@ -41,18 +45,18 @@ export default function SigninScreen() {
       </View>
      
       <View style={styles.inputInfoContainer}>
-        <InputText placeholder="nome" onChangeText={setName}></InputText>
+        <InputText placeholder="nome" textValue={name} onChangeText={setName}></InputText>
 
-        <InputText placeholder="email" onChangeText={setEmail}></InputText>
+        <InputText placeholder="email" textValue={email} onChangeText={setEmail}></InputText>
 
-        <InputText placeholder="senha" onChangeText={setPassword}></InputText>
+        <InputText placeholder="senha" textValue={password} onChangeText={setPassword}></InputText>
 
-        <InputText placeholder="Confirmar senha" onChangeText={setConfirmPassword}></InputText>
+        <InputText placeholder="Confirmar senha" textValue={confirmPassword} onChangeText={setConfirmPassword}></InputText>
 
       </View>
 
       <View style={styles.bottonButton}>
-      <Button label="Cadastrar" onClick={save}></Button>
+        <Button label="Cadastrar" onClick={save}></Button>
       </View>
 
 

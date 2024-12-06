@@ -7,13 +7,12 @@ type InputTextProps = {
     size?: string;
     position?: string;
     onChangeText: any;
+    textValue: string
 }
 
-export default function InputText({label, placeholder, onChangeText} : InputTextProps) {
-  const [text, setText] = React.useState('');  
+export default function InputText({label, placeholder, onChangeText, textValue} : InputTextProps) {
   
-  const handleTextChange = (text: React.SetStateAction<string>) => {
-    setText(text);
+  const handleTextChange = (text: string) => {
     if (onChangeText) {
       onChangeText(text);
     }
@@ -33,7 +32,7 @@ export default function InputText({label, placeholder, onChangeText} : InputText
         placeholder={placeholder}
         textAlign={'center'}
         onChangeText={handleTextChange}
-        value={text}
+        value={textValue}
       />
     </View>
   )

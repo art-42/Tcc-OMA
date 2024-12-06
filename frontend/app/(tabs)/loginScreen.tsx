@@ -1,5 +1,6 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
+import { userService } from "@/services/userService";
 import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 
@@ -7,6 +8,22 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const login = () => {
+    if(email === '' || password === ''){
+      alert('Preencha todos os campos')
+    } else {
+      userService.loginUser({
+        email,
+        password
+      }).then(resp => {
+        var user = resp.user;
+        alert(`login concluído: \n nome:${user.name} \n email:${user.email} \n`)
+      }).catch(()=> {
+        alert(`Erro ao fazer login`)
+      })
+    }
+  }
 
   return (
     <View
@@ -22,11 +39,11 @@ export default function LoginScreen() {
       </View>
      
       <View style={styles.inputInfoContainer}>
-        <InputText placeholder="email" onChangeText={setEmail}></InputText>
+        <InputText placeholder="email" textValue={email} onChangeText={setEmail}></InputText>
 
-        <InputText placeholder="senha" onChangeText={setPassword}></InputText>
+        <InputText placeholder="senha" textValue={password} onChangeText={setPassword}></InputText>
 
-        <Button label="entrar" onClick={() => alert(`${email} ${password}`)}></Button>
+        <Button label="entrar" onClick={login}></Button>
       </View>
 
       <Button label="Criar Nova Conta" href={'/signinScreen'}></Button>
