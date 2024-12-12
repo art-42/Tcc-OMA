@@ -1,5 +1,5 @@
 import { Octicons } from "@expo/vector-icons";
-import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,7 +8,7 @@ import React from 'react';
 import Header from "@/components/Header"
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
-import AnotationCard from "@/components/AnotatonCard";
+import AnotationCard from "@/components/GroupCard";
 
 export default function HomeScreen() {
 
@@ -30,6 +30,39 @@ export default function HomeScreen() {
     }
   ];
 
+  const months = [
+    {
+      name: "Julho",
+      days: [{
+        name: "19",
+        anotations: [{
+          title: "Trigonometria",
+          time: "13:00"
+        },{
+          title: "Trigonometria",
+          time: "13:00"
+        }]
+      }]
+    },
+    {
+      name: "Agosto",
+      days: [{
+        name: "20",
+        anotations: [{
+          title: "Equações diferenciais",
+          time: "13:00"
+        },{
+          title: "Equações diferenciais",
+          time: "13:00"
+        },{
+          title: "Equações diferenciais",
+          time: "13:00"
+        }]
+
+      }]
+    },
+  ]
+
   const navigateToInfoScreen = () => {
     router.push('/infoScreen');
   };
@@ -41,33 +74,37 @@ export default function HomeScreen() {
         alignItems: "center",
       }}
     >
-           <TouchableOpacity onPress={navigateToInfoScreen}>
+      <TouchableOpacity style = {{flex: 1}} onPress={navigateToInfoScreen}>
         <Header rightIcons={rightIcons} text="Página Inicial" />
       </TouchableOpacity>
 
-      <InputText placeholder="Pesquisar" ></InputText>
-      
-      <View style={styles.picker}> 
-        <Picker style={styles.picker}>
-          <Picker.Item label="Data" value="js" />
-          <Picker.Item label="Categoria" value="java" />
-        </Picker>
+      <View style={styles.scrollView}>
+      < ScrollView>
+          {months.map(month => 
+            <View style={styles.list}>
+              <View style={styles.textHeadContainer}> 
+                <Text style={styles.text}> {month.name} </Text>
+              </View>
+              {month.days.map(day => 
+              <View style={styles.list}>
+                <View style={styles.textSubContainer}> 
+                  <Text style={styles.text}> {day.name} </Text>
+                </View>
+                {day.anotations.map(anotation => 
+                  <View style={styles.AnotationContainer}>
+                    <AnotationCard
+                      title={anotation.title}
+                      time={anotation.time}
+                    />
+                </View>
+                )}
+              </View>
+              )}
+            </View>
+          )}
+        </ScrollView>
       </View>
 
-      <View style={styles.textHeadContainer}> 
-        <Text style={styles.text}> Junho </Text>
-      </View>
-      <View style={styles.textSubContainer}> 
-        <Text style={styles.text}> 19 </Text>
-      </View>
-
-      <View style={styles.AnotationContainer}>
-        <AnotationCard
-          title="Titulo"
-          category="Categoria"
-          time="13:00"
-        />
-      </View>
       <View style= {styles.buttonGroup}>
         <Button label="+ Grupo" border={true}></Button>
         <Button label="+ Categoria" border={true}></Button>
@@ -77,6 +114,13 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  scrollView:{
+    flex: 10,
+  },
+  list:{
+    width: "100%",
+    marginBottom: "2%"
+  },
   picker:{
     width: "60%",
     margin: 4,
@@ -86,7 +130,7 @@ const styles = StyleSheet.create({
     width: "40%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
-    margin: 15,
+    margin: 10,
 
   },
   textSubContainer:{
@@ -97,12 +141,13 @@ const styles = StyleSheet.create({
   AnotationContainer:{
     width: "80%",
     marginTop: 10,
+    marginLeft: "10%"
   },
   buttonGroup:{
+    flex: 2,
+    paddingTop: 15,
     width: "100%",
-    position: 'absolute',
-    bottom: 20,
-    gap: 5
+    gap: 5,
   },
   text:{
     fontSize: 25

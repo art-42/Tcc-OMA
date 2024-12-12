@@ -8,6 +8,7 @@ export default function StackLayout() {
       <Stack.Screen name="signinScreen" options={{ headerShown: false }} />
       <Stack.Screen name="infoScreen" options={{ headerShown: false }} />
       <Stack.Screen name="changePasswordScreen" options={{ headerShown: false }} />
+      <Stack.Screen name="groupPage" options={{ headerShown: false }} />
     </Stack>
   );
 }

@@ -37,7 +37,7 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
 
 const styles = StyleSheet.create({
   container: {
-    margin: 15,
+    marginTop: 5,
     width: "98%",
     flexDirection: "row",
     justifyContent: "space-between",
