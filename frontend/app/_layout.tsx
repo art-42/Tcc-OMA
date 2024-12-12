@@ -14,7 +14,7 @@ export default function RootLayout() {
         router.replace("/(tabs)");
       } else {
         // Redireciona para a tela principal (ou outra que você prefira)
-        router.replace("/(tabs)/home");
+        router.replace("/(tabs)");
       }
     };
     checkAuth();

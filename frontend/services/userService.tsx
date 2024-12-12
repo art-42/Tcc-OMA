@@ -1,6 +1,5 @@
 import { User, UserResponse } from "@/interfaces/User";
 
-// The base URL of your API
 const API_URL = 'http://10.0.0.16:5001';
 
 export const userService = {
