@@ -1,34 +1,49 @@
 import { FontAwesome } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import React from "react";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 export type ButtonProps = {
     label?: string;
     iconName?: any;
     border?: boolean;
+    onClick?: any;
+    href?: any;
 }
 
-export default function Button({label, iconName, border} : ButtonProps) {
-  return iconName ? 
-(
+export default function Button({label, iconName, border, onClick, href} : ButtonProps) {
+  const content = (
     <Pressable
-      onPress={() => alert("Pressionou um botão")}
+      onPress={ onClick ? () => onClick() : null}
     >
-      
-      <FontAwesome
-        size={30}
-        name={iconName}
-      />
-    </Pressable>
-  ) : (
-    <Pressable
-      onPress={() => alert("Pressionou um botão")}
-      style={[styles.container, border ? styles.containerBorder : {}]}
-    >
-      
-      <Text
-        style={styles.label}
-      >{label}</Text>
-    </Pressable>
+      {iconName && 
+        <FontAwesome
+          size={30}
+          name={iconName}
+        />
+      }
+      {href ?
+          <Link href={href} asChild>
+              <Text style={styles.label}>{label}</Text>
+          </Link>
+          :
+          <Text style={styles.label}>{label}</Text> 
+      }
+        
+      </Pressable>  
+  )
+
+  return (
+    <View style={!iconName ? [styles.container, styles.containerBorder] : []}>
+      {href ?
+        <Link href={href} asChild>
+            {content}
+        </Link>
+        :
+        content      
+      }
+    </View>
+    
   )
 }
 

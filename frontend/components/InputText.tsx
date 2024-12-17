@@ -1,39 +1,50 @@
+import React from "react";
 import { View, Text, StyleSheet, TextInput } from "react-native";
 
-type InputTextProps = {
+// Definindo o tipo de InputTextProps
+export type InputTextProps = {
     label?: string;
     placeholder?: string;
     size?: string;
     position?: string;
+    onChangeText: (text: string) => void;  // Melhorando o tipo da função onChangeText
+    textValue: string;
 }
 
-export default function InputText({label, placeholder} : InputTextProps) {
+// Componente InputText
+const InputText: React.FC<InputTextProps> = ({ label, placeholder, onChangeText, textValue }) => {
+
+  const handleTextChange = (text: string) => {
+    if (onChangeText) {
+      onChangeText(text);
+    }
+  };
+
   return(
     <View style={styles.container}>
-      {
-        label &&
-        <Text>
-          {label}
-        </Text>
-      }
+      {label && <Text>{label}</Text>}
       
       <TextInput
         style={styles.inputBox}
         placeholder={placeholder}
         textAlign={'center'}
+        onChangeText={handleTextChange}
+        value={textValue}
       />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  container:{
+  container: {
     justifyContent: "center",
     alignItems: "center",
   },
-  inputBox:{
+  inputBox: {
     borderWidth: 1,
     borderRadius: 15,
-    width:200
-  }
+    width: 200,
+  },
 });
+
+export default InputText;  // Exportando o componente
