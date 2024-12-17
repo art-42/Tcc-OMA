@@ -3,14 +3,14 @@ import InputText from "@/components/InputText";
 import { userService } from "@/services/userService";
 import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
-import { useRouter } from "expo-router"; // Para navegação
+import { useRouter } from "expo-router";
 
 export default function SigninScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const router = useRouter(); // Navegação após cadastro
+  const router = useRouter();
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,7 +47,7 @@ export default function SigninScreen() {
           const user = resp.user;
           alert(`Cadastro concluído: \n nome: ${user.name} \n email: ${user.email}`);
           
-          router.push('/(tabs)'); 
+          router.push('/'); 
 
         })
         .catch((error) => {
@@ -58,6 +58,7 @@ export default function SigninScreen() {
     }
 
   };
+  
 
   return (
     <View style={{ flex: 1, alignItems: "center", padding: '3%' }}>

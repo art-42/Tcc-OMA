@@ -1,28 +1,32 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuth, AuthProvider } from "../context/AuthContext";
 
 export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootLayoutContent />
+    </AuthProvider>
+  );
+}
+
+function RootLayoutContent() {
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        // Redireciona para a tela de login se não houver token de autenticação
-        router.replace("/(tabs)");
-      } else {
-        // Redireciona para a tela principal (ou outra que você prefira)
-        router.replace("/(tabs)");
-      }
-    };
-    checkAuth();
-  }, []);
+    if (!isAuthenticated) {
+      router.replace("/");
+    } else {
+      router.replace("/(tabs)/home");
+    }
+  }, [isAuthenticated]);
 
   return (
     <Stack>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
 }
