@@ -17,6 +17,7 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
             label={i.label} 
             iconName={i.iconName} 
             href={i.href} 
+            onClick={i.onClick}
           />
         ))}
       </View>
@@ -27,7 +28,8 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
             key={`right-${index}`}
             label={i.label} 
             iconName={i.iconName} 
-            href={i.href} 
+            href={i.href}
+            onClick={i.onClick}
           />
         ))}
       </View>

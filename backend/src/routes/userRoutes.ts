@@ -32,8 +32,8 @@ router.get('/', getAllUsers);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
 router.delete('/:id', deleteUser);
-router.get("/groups/date", getGroupsByDate);
-router.get("/groups/:categoryId", getGroupsByCategory);
+router.get("/groups/date/:categoryId/:userId", getGroupsByDate);
+router.get("/groups/:categoryId/:userId", getGroupsByCategory);
 router.post("/groups", createGroup);
 router.get("/groups/:id",  getGroupById); // Buscar grupo por ID
 router.put("/groups/:id",  updateGroup); // Atualizar grupo

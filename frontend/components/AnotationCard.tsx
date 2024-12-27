@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 export type CardProps = {
@@ -8,7 +9,7 @@ export type CardProps = {
 export default function AnotationCard(prop : CardProps) {
   return (
     <View>
-      <Pressable style={styles.container}>
+      <Pressable style={styles.container} onPress={() => router.push("/(tabs)/anotationPage")}>
         <View style={styles.titleDateRow}>
           <Text style={styles.text}>
             Título: {prop.title}

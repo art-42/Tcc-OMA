@@ -1,22 +1,39 @@
 import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
+import { router, useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Picker} from '@react-native-picker/picker';
 import React from 'react';
 import Header from "@/components/Header"
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
 import GroupCard from "@/components/GroupCard";
 import AnotationCard from "@/components/AnotationCard";
+import { groupService } from "@/services/groupService";
 
 export default function GroupPage() {
 
   const router = useRouter();
 
-  const [title, setTitle] = useState('');
+  const [name, setName] = useState('');
   const [date, setDate] = useState('');
+
+  const save = () => {
+    groupService.createGroup({name, categoryId: "676dd3208ef78e9739363744"})
+      .then(resp => {
+        const group = resp.group;
+        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
+        
+        router.push('/(tabs)'); 
+
+      })
+      .catch((error) => {
+
+        alert(`Erro no cadastro`);
+      }); 
+  }
+
+  const groupInfo = useLocalSearchParams<{ id: string }>();
 
   const rightIcons = [
     {
@@ -30,31 +47,7 @@ export default function GroupPage() {
     },
   ];
 
-  const anotations = [{
-    title: "Anotação 1",
-    type: "texto"
-  },
-  {
-    title: "Anotação 2",
-    type: "texto"
-  },
-  {
-    title: "Anotação 3",
-    type: "texto"
-  },
-  {
-    title: "Anotação 1",
-    type: "texto"
-  },
-  {
-    title: "Anotação 2",
-    type: "texto"
-  },
-  {
-    title: "Anotação 3",
-    type: "texto"
-  }]
-
+  const anotations: {id: string, name: string, type: string}[] = []
 
   return (
     <View
@@ -63,28 +56,51 @@ export default function GroupPage() {
         alignItems: "center",
       }}
     >
-      <TouchableOpacity style = {{flex: 2}}>
-        <Header rightIcons={rightIcons} />
-      </TouchableOpacity>
+      {groupInfo.id ? 
+        (
+          <View>
+            <TouchableOpacity style = {{flex: 2}}>
+              <Header rightIcons={rightIcons} />
+            </TouchableOpacity>
 
-      <View style={styles.inputInfoContainer}>
-        <InputText placeholder="Título" textValue={title} onChangeText={setTitle} />
-        <InputText placeholder="Data" textValue={date} onChangeText={setDate} />
-      </View>
-
-      <View style={styles.scrollView}>
-        <ScrollView>
-          {anotations.map(anotation => 
-            <View style={styles.card}>
-              <AnotationCard  title={anotation.title} type={anotation.type}/>
+            <View style={styles.inputInfoContainer}>
+              <InputText placeholder="Título" textValue={name} onChangeText={setName} />
+              {/* <InputText placeholder="Data" textValue={date} onChangeText={setDate} /> */}
             </View>
-          )}
-        </ScrollView>
-      </View>
 
-      <View style= {styles.buttonGroup}>
-        <Button iconName="plus-circle"></Button>
-      </View>
+            <View style={styles.scrollView}>
+              <ScrollView>
+                {anotations.map(anotation => 
+                  <View style={styles.card}>
+                    <AnotationCard  title={groupInfo.id} type={anotation.type}/>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+
+            <View style= {styles.buttonGroup}>
+              <Button iconName="plus-circle"></Button>
+            </View>
+          </View>
+        )
+      :
+        (
+          <View style= {styles.inputCreateInfoContainer}>
+              <Text style = {styles.headerCreateText} >
+                Criar Novo Grupo
+              </Text>
+
+            <View style= {styles.inputInfoContainer}>
+              <InputText placeholder="Título" textValue={name} onChangeText={setName} />
+              {/* <InputText placeholder="Data" textValue={date} onChangeText={setDate} /> */}
+            </View>
+
+            <View style= {styles.buttonGroup}>
+              <Button label="Salvar" onClick={save}></Button>
+            </View>
+          </View>
+        )
+      }      
     </View>
   );
 }
@@ -102,7 +118,16 @@ const styles = StyleSheet.create({
     paddingTop: 15,
   },
   inputInfoContainer: {
-    flex: 4,
+    justifyContent: "center",
+    flex: 8,
     gap: '5%',
+  },
+  headerCreateText: {
+    flex: 2,
+    paddingTop: 15,
+    fontSize: 20
+  },
+  inputCreateInfoContainer: {
+    alignItems:"center",
   },
 });

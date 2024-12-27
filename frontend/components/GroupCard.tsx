@@ -13,7 +13,7 @@ export default function GroupCard(prop : CardProps) {
   const router = useRouter();
 
   const onPress = () => {
-    router.push("/(tabs)/groupPage")
+    router.push({pathname: "/(tabs)/groupPage", params: {id: "1"}})
   }
 
   return (

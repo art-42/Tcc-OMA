@@ -7,7 +7,7 @@ export type ButtonProps = {
     label?: string;
     iconName?: any;
     border?: boolean;
-    onClick?: any;
+    onClick?: () => void;
     href?: any;
 }
 

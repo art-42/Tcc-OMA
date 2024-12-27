@@ -23,6 +23,7 @@ export default function Index() {
 
       // Armazenando o token no AsyncStorage
       await AsyncStorage.setItem('token', token);
+      await AsyncStorage.setItem('idUser', user.id);
 
       // Exibe os dados do usuário
       alert(`Login concluído: \n nome: ${user.name} \n email: ${user.email}`);
