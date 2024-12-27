@@ -23,6 +23,14 @@ import {
   getNotesByGroup
 } from '../controllers/noteController';
 
+import {
+  createNote,
+  getNoteById,
+  updateNote,
+  deleteNote,
+  getAllNotes,
+} from '../controllers/noteController';
+
 const router = express.Router();
 
 // Rotas do CRUD
@@ -46,6 +54,12 @@ router.get("/notes/:groupId", getNotesByGroup);
 router.post("/category", createCategory);
 router.get("/categories", getCategories);
 router.delete("/category/:id", deleteCategory);
+
+router.post("/notes", createNote); 
+router.get("/notes", getAllNotes);
+router.get("/notes/:id", getNoteById);
+router.put("/notes/:id", updateNote); 
+router.delete("/notes/:id", deleteNote);
 
 
 export default router;
