@@ -9,7 +9,7 @@ export interface GroupDocument extends Document {
 const GroupSchema = new Schema<GroupDocument>(
   {
     name: { type: String, required: true },
-    categoryId: { type: String, required: true },
+    categoryId: { type: String, required: false },
     userId: { type: String, required: true },
   },
   { timestamps: true }

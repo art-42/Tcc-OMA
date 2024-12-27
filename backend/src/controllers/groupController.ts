@@ -12,12 +12,15 @@ export const createGroup = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Usuário não encontrado." });
     }
 
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      return res.status(400).json({ error: "Categoria não encontrada." });
+    let category = null;
+    if (categoryId) {
+      category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(400).json({ error: "Categoria não encontrada." });
+      }
     }
 
-    const newGroup = new Group({ name, categoryId, userId });
+    const newGroup = new Group({ name, categoryId: categoryId || null, userId });
 
     await newGroup.save();
 
@@ -126,14 +129,17 @@ export const updateGroup = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Usuário não encontrado." });
     }
 
-    const category = await Category.findById(categoryId);
-    if (!category) {
-      return res.status(400).json({ error: "Categoria não encontrada." });
+    let category = null;
+    if (categoryId) {
+      category = await Category.findById(categoryId);
+      if (!category) {
+        return res.status(400).json({ error: "Categoria não encontrada." });
+      }
     }
 
     const updatedGroup = await Group.findOneAndUpdate(
       { _id: groupId, userId },
-      { name, categoryId },
+      { name, categoryId: categoryId || null },
       { new: true }
     );
 
