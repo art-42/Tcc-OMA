@@ -6,10 +6,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Picker} from '@react-native-picker/picker';
 import React from 'react';
 import Header from "@/components/Header"
-import InputText from "@/components/InputText";
 import Button from "@/components/Button";
-import AnotationCard from "@/components/GroupCard";
 import { groupService } from "@/services/groupService";
+import GroupCard from "@/components/GroupCard";
 
 export default function HomeScreen() {
 
@@ -17,10 +16,8 @@ export default function HomeScreen() {
 
   const [groups, setGroups] = useState<any[]>([]);
 
-  const months = groups.map(g => getMonthName(new Date(g.createdAt).getMonth() + 1))
-
   useEffect(() => {
-    groupService.getGroupsByCategory().then(resp => {
+    groupService.getGroups().then(resp => {
       setGroups(resp.groups);
       console.log(groups)
 
@@ -43,7 +40,7 @@ export default function HomeScreen() {
   }
 
   function groupByMonthAndDay(data: any[]): any[] {
-    const grouped: { [key: string]: { [key: string]: { name: string, time: string }[] } } = {};
+    const grouped: { [key: string]: { [key: string]: { id: string, name: string, time: string }[] } } = {};
   
     data.forEach(item => {
       const date = new Date(item.createdAt);
@@ -58,7 +55,7 @@ export default function HomeScreen() {
         grouped[monthName][dayName] = [];
       }
   
-      grouped[monthName][dayName].push({ name: item.name, time: item.createdAt });
+      grouped[monthName][dayName].push({ id: item._id, name: item.name, time: item.createdAt });
     });
   
     return Object.keys(grouped).map(month => ({
@@ -150,24 +147,25 @@ export default function HomeScreen() {
         <ScrollView>
           {groupedArray.map(month => 
             <View style={styles.list}>
-              // <View style={styles.textHeadContainer}> 
+               <View style={styles.textHeadContainer}> 
                 <Text style={styles.text}> {month.monthName} </Text>
-              // </View>
-            //   {month.days.map((day: { name: string, data: any[]; }) => 
-              <View style={styles.list}>
-                <View style={styles.textSubContainer}> 
-                  <Text style={styles.text}> {day.name} </Text>
-                </View>
-                {day.data.map(anotation => 
-                  <View style={styles.AnotationContainer}>
-                    <AnotationCard
-                      title={anotation.name}
-                      time={formatToHHMM(anotation.time)}
-                    />
-                </View>
+               </View>
+                {month.days.map((day: { daysName: string, data: any[]; }) => 
+                  <View style={styles.list}>
+                    <View style={styles.textSubContainer}> 
+                      <Text style={styles.text}> {day.daysName} </Text>
+                    </View>
+                    {day.data.map(anotation => 
+                      <View style={styles.AnotationContainer}>
+                        <GroupCard
+                          id={anotation.id}
+                          title={anotation.name}
+                          time={formatToHHMM(anotation.time)}
+                        />
+                    </View>
+                    )}
+                  </View>
                 )}
-              </View>
-              )}
             </View>
           )}
         </ScrollView>
@@ -204,6 +202,7 @@ const styles = StyleSheet.create({
   textSubContainer:{
     width: "20%",
     alignSelf: "flex-start",
+    borderBottomWidth: 2,
     marginLeft: 25,
   },
   AnotationContainer:{

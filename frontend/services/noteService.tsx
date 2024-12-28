@@ -1,58 +1,34 @@
-import { Group, GroupResponse, GroupsResponse } from "@/interfaces/Group";
+import { Note, NoteResponse } from "@/interfaces/Note";
 import { User, UserResponse } from "@/interfaces/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = 'http://192.168.0.14:5001';
 
-export const groupService = {
+export const noteService = {
 
-  // Create a new user (POST)
-  createGroup: async (group: Group): Promise<GroupResponse> => {
+  createNote: async (note: Note): Promise<any> => {
     try {
-      const id = await AsyncStorage.getItem('idUser');
-      if(id){
-        group.userId = id;
-      }
-      const response = await fetch(`${API_URL}/groups`, {
+      const response = await fetch(`${API_URL}/notes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(group),
+        body: JSON.stringify(note),
       });
       if (!response.ok) {
         throw new Error('Failed to create group');
       }
       return await response.json();
     } catch (error) {
+      console.log(error)
       throw error;
     }
   },
 
-  deleteGroup: async (groupId: string): Promise<GroupResponse> => {
+  getNoteById: async (noteId: string): Promise<NoteResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-
-      const response = await fetch(`${API_URL}/groups/${groupId}/${userId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete group');
-      }
-      return await response.json();
-    } catch (error) {
-      throw error;
-    }
-  },
-
-  // Create a new user (POST)
-  getGroups: async (): Promise<GroupsResponse> => {
-    try {
-      const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/groups/date/${userId}`);
+      const response = await fetch(`${API_URL}/notes/${userId}/${noteId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }
@@ -61,5 +37,19 @@ export const groupService = {
       throw error;
     }
   },
+
+  getNotesByGroup: async (groupId: string): Promise<NoteResponse[]> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/notes/group/${userId}/${groupId}`);
+      if (!response.ok) {
+        throw new Error('Failed to get user');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
 
 };

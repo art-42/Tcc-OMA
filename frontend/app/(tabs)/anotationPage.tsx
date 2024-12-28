@@ -1,15 +1,23 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from "react-native";
-import { useState } from "react";
-import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
 import Header from "@/components/Header"
 import Button from "@/components/Button";
+import InputText from "@/components/InputText";
+import { noteService } from "@/services/noteService";
 
 export default function AnotationPage() {
 
   const router = useRouter();
 
-  const [edit, setEdit] = useState(false);
+  var groupInfo = useLocalSearchParams<{ noteId: string, groupId: string }>();
+
+  console.log(groupInfo)
+
+  const [id, setId] = useState(groupInfo.noteId);
+  
+  const [edit, setEdit] = useState(!id);
 
   const rightIcons = [
     {
@@ -29,31 +37,69 @@ export default function AnotationPage() {
     },
   ];
 
+  const [anotationTitle, setAnotationTitle] = useState('');
   const [anotationText, setAnotationText] = useState('');
 
-  const anotation = {
-    title: "Anotação 1",
-    text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed in massa viverra ligula lobortis hendrerit. Phasellus sagittis magna quis mauris dictum consectetur. Sed et commodo nunc. Aenean pharetra eu nunc eu efficitur"
+  const [anotation, setAnotation] = useState<any>();
+
+  const saveNote = () => {
+    noteService.createNote({title: anotationTitle, content: anotationText, groupId: groupInfo.groupId })
+      .then(resp => {
+        alert(`Cadastro concluído: \n title: ${resp.title} \n`);
+        
+        setAnotation(resp);
+        setEdit(false);
+      })
+      .catch((error) => {
+        alert(`Erro no cadastro`);
+      }); 
   }
+
+  useEffect(() => {
+    if(id){
+      noteService.getNoteById(id).then(resp => {
+        setAnotation(resp);
+        console.log(resp)
+  
+      }).catch(()=> {
+          alert(`Erro ao buscar anotação`)
+      })
+    }
+
+    if(anotation){
+      setAnotationTitle(anotation.title);
+      setAnotationText(anotation.content)
+    }
+  }, []);
+    
 
   return (
     <View
       style={{
         flex: 1,
-        alignItems: "center",
       }}
     >
-      <Header rightIcons={rightIcons} text={anotation.title} leftIcons={leftIcons} />
 
       {!edit ? 
-        <View style={styles.scrollView}>
-          <ScrollView>
-            <Text style={styles.text}>{anotation.text}</Text>
-          </ScrollView>
+        <View style={{
+          flex: 1,
+          alignItems: "center",
+        }}>
+          <Header rightIcons={rightIcons} text={anotation?.title} />
+          <View style={styles.scrollView}>
+            <ScrollView>
+              <Text style={styles.text}>{anotation?.content}</Text>
+            </ScrollView>
+          </View>
         </View>
+
         :
 
         <View style={styles.containerTextInput}>
+          <View style={styles.containerTitle}>
+            <InputText placeholder="Título" textValue={anotationTitle} onChangeText={setAnotationTitle} />
+          </View>
+
           <TextInput
             editable
             multiline
@@ -64,12 +110,11 @@ export default function AnotationPage() {
           />
 
           <View style= {styles.buttonGroup}>
-            <Button label="Salvar" border={true}></Button>
+            <Button label="Salvar" onClick={saveNote}></Button>
           </View>
         </View>
 
       }
-      
 
     </View>
   );
@@ -102,5 +147,8 @@ const styles = StyleSheet.create({
     marginTop: "10%",
     flex: 4,
     width: "100%",
+  },
+  containerTitle:{
+    marginVertical: "5%",
   },
 });

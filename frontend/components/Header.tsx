@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginLeft: "auto",
     marginRight: "auto",
+    width: "60%",
   },
   icons: {
     width: "20%",

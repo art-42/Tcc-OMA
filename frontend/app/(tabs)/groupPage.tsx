@@ -1,7 +1,7 @@
 import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
-import { router, useLocalSearchParams, useRouter } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import Header from "@/components/Header"
@@ -10,22 +10,47 @@ import Button from "@/components/Button";
 import GroupCard from "@/components/GroupCard";
 import AnotationCard from "@/components/AnotationCard";
 import { groupService } from "@/services/groupService";
+import { noteService } from "@/services/noteService";
 
 export default function GroupPage() {
 
   const router = useRouter();
 
-  const [name, setName] = useState('');
+
+  var groupInfo = useLocalSearchParams<{ id: string, name: string }>();
+
+  const [id, setId] = useState(groupInfo.id);
+  const [name, setName] = useState(groupInfo.name);
   const [date, setDate] = useState('');
 
-  const save = () => {
-    groupService.createGroup({name, categoryId: "676dd3208ef78e9739363744"})
+  const [anotations, setAnotation] = useState<any[]>([]);
+
+  useEffect(() => {
+    if(id){
+      noteService.getNotesByGroup(id).then(resp => {
+        setAnotation(resp);
+        console.log(anotations)
+  
+      }).catch(()=> {
+        alert(`Erro ao encontrar anotações do grupo`)
+      })
+    }
+  }, [id]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      console.log('Page is focused. Refreshing data...');
+    }, [])
+  );
+  
+
+  const saveGroup = () => {
+    groupService.createGroup({name})
       .then(resp => {
         const group = resp.group;
         alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         
-        router.push('/(tabs)'); 
-
+        setId(group._id);
       })
       .catch((error) => {
 
@@ -33,21 +58,33 @@ export default function GroupPage() {
       }); 
   }
 
-  const groupInfo = useLocalSearchParams<{ id: string }>();
+  const deleteGroup = () => {
+    groupService.deleteGroup(id)
+      .then(resp => {
+        const group = resp.group;
+        alert(`deletado com sucesso`);
+        router.push('/(tabs)/home');
+        
+      })
+      .catch((error) => {
+        alert(`Erro na deleção`);
+      }); 
+  }
+
+  const addAnotation = () => {
+    router.push({pathname: "/(tabs)/anotationPage", params: {groupId: id}})
+  }
+
 
   const rightIcons = [
     {
       iconName: "edit"
     },
     {
-      iconName: "share-alt"
-    },
-    {
-      iconName: "trash"
+      iconName: "trash",
+      onClick: deleteGroup
     },
   ];
-
-  const anotations: {id: string, name: string, type: string}[] = []
 
   return (
     <View
@@ -56,7 +93,7 @@ export default function GroupPage() {
         alignItems: "center",
       }}
     >
-      {groupInfo.id ? 
+      {id ? 
         (
           <View>
             <TouchableOpacity style = {{flex: 2}}>
@@ -72,14 +109,14 @@ export default function GroupPage() {
               <ScrollView>
                 {anotations.map(anotation => 
                   <View style={styles.card}>
-                    <AnotationCard  title={groupInfo.id} type={anotation.type}/>
+                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
                   </View>
                 )}
               </ScrollView>
             </View>
 
             <View style= {styles.buttonGroup}>
-              <Button iconName="plus-circle"></Button>
+              <Button iconName="plus-circle" onClick={addAnotation}></Button>
             </View>
           </View>
         )
@@ -96,7 +133,7 @@ export default function GroupPage() {
             </View>
 
             <View style= {styles.buttonGroup}>
-              <Button label="Salvar" onClick={save}></Button>
+              <Button label="Salvar" onClick={saveGroup}></Button>
             </View>
           </View>
         )
@@ -107,7 +144,6 @@ export default function GroupPage() {
 
 const styles = StyleSheet.create({
   scrollView:{
-    width: "100%",
     flex: 15,
   },
   card:{
@@ -116,10 +152,11 @@ const styles = StyleSheet.create({
   buttonGroup:{
     flex: 2,
     paddingTop: 15,
+    alignItems: "center"
   },
   inputInfoContainer: {
     justifyContent: "center",
-    flex: 8,
+    flex: 5,
     gap: '5%',
   },
   headerCreateText: {

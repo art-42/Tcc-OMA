@@ -7,7 +7,7 @@ export interface Group {
 export interface GroupResponse {
   message: string;
   group: {
-    id: string;
+    _id: string;
     name: string;
   };
 }

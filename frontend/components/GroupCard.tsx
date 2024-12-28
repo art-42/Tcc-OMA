@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 export type CardProps = {
+    id?: string;
     title?: string;
     category?: string;
     date?: string;
@@ -13,7 +14,7 @@ export default function GroupCard(prop : CardProps) {
   const router = useRouter();
 
   const onPress = () => {
-    router.push({pathname: "/(tabs)/groupPage", params: {id: "1"}})
+    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title}})
   }
 
   return (

@@ -2,6 +2,8 @@ import { router } from "expo-router";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 export type CardProps = {
+    id?: string;
+    groupId?: string;
     title?: string;
     type?: string;
 }
@@ -9,13 +11,10 @@ export type CardProps = {
 export default function AnotationCard(prop : CardProps) {
   return (
     <View>
-      <Pressable style={styles.container} onPress={() => router.push("/(tabs)/anotationPage")}>
+      <Pressable style={styles.container} onPress={() => router.push({pathname: "/(tabs)/anotationPage", params: {noteId: prop.id, groupId: prop.groupId}})}>
         <View style={styles.titleDateRow}>
           <Text style={styles.text}>
             Título: {prop.title}
-          </Text>
-          <Text style={styles.text}>
-            Tipo: {prop.type}
           </Text>
         </View>
       </Pressable>
