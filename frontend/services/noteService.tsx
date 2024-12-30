@@ -25,6 +25,25 @@ export const noteService = {
     }
   },
 
+  updateNote: async (id : string, note: Note): Promise<any> => {
+    try {
+      const response = await fetch(`${API_URL}/notes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(note),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create group');
+      }
+      return await response.json();
+    } catch (error) {
+      console.log(error)
+      throw error;
+    }
+  },
+
   getNoteById: async (noteId: string): Promise<NoteResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');

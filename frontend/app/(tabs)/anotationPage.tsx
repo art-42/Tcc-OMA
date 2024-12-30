@@ -23,17 +23,11 @@ export default function AnotationPage() {
     {
       iconName: "edit",
       onClick: () => {
-        setEdit(true);
+        enterEditMode();
       }
     },
     {
       iconName: "trash"
-    },
-  ];
-
-  const leftIcons = [
-    {
-      iconName: "arrow-left",
     },
   ];
 
@@ -43,7 +37,8 @@ export default function AnotationPage() {
   const [anotation, setAnotation] = useState<any>();
 
   const saveNote = () => {
-    noteService.createNote({title: anotationTitle, content: anotationText, groupId: groupInfo.groupId })
+    (!id? noteService.createNote({title: anotationTitle, content: anotationText, groupId: groupInfo.groupId })
+      : noteService.updateNote(id ,{title: anotationTitle, content: anotationText, groupId: groupInfo.groupId }))
       .then(resp => {
         alert(`Cadastro concluído: \n title: ${resp.title} \n`);
         
@@ -55,6 +50,12 @@ export default function AnotationPage() {
       }); 
   }
 
+  const enterEditMode = () => {
+    setAnotationTitle(anotation.title)
+    setAnotationText(anotation.content)
+    setEdit(true);
+  }
+
   useEffect(() => {
     if(id){
       noteService.getNoteById(id).then(resp => {
@@ -64,11 +65,6 @@ export default function AnotationPage() {
       }).catch(()=> {
           alert(`Erro ao buscar anotação`)
       })
-    }
-
-    if(anotation){
-      setAnotationTitle(anotation.title);
-      setAnotationText(anotation.content)
     }
   }, []);
     

@@ -58,8 +58,8 @@ router.delete("/category/:id", deleteCategory);
 
 // router.post("/notes", createNote); 
 router.get("/notes", getAllNotes);
-router.get("/notes/:userId/:noteId", getNoteById);
-router.put("/notes/:id", updateNote); 
+router.get("/notes/:noteId", getNoteById);
+router.put("/notes/:noteid", updateNote); 
 router.delete("/notes/:id", deleteNote);
 
 
