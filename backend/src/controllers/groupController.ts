@@ -121,7 +121,7 @@ export const getGroupById = async (req: Request, res: Response) => {
 
 export const updateGroup = async (req: Request, res: Response) => {
   try {
-    const { groupId, userId } = req.params;
+    const { groupId,userId } = req.params;
     const { name, categoryId } = req.body;
 
     const user = await User.findById(userId);

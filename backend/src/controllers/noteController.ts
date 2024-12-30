@@ -5,32 +5,29 @@ import Group from "../models/Group";
 interface AuthenticatedRequest extends Request {
     user?: { id: string };
   }
-
-export const addNoteToGroup = async (req: Request, res: Response) => {
-  try {
-    console.log(req.body);
-    const { groupId, title, content } = req.body;
-    const note = new Note({ groupId, title, content });
-    await note.save();
-    res.status(201).json(note);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao adicionar anotação ao grupo." });
-  }
-};
-
-
-export const createNote = async (req: AuthenticatedRequest, res: Response) => {
+  
+  export const addNoteToGroup = async (req: Request, res: Response) => {
     try {
       const { groupId, title, content } = req.body;
-      const userId = req.user?.id;
+      const note = new Note({ groupId, title, content });
+      await note.save();
+      res.status(201).json(note);
+    } catch (err) {
+      res.status(500).json({ error: "Erro ao adicionar anotação ao grupo." });
+    }
+  };
+  
+  export const createNote = async (req: Request, res: Response) => {
+    try {
+      const { groupId, title, content } = req.body;
   
       if (!title) return res.status(400).json({ error: "O título é obrigatório." });
   
-      // Verificar se o grupo pertence ao usuário
-      const group = await Group.findOne({ _id: groupId, userId });
-      if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+      // Verificar se o grupo existe
+      const group = await Group.findOne({ _id: groupId });
+      if (!group) return res.status(404).json({ error: "Grupo não encontrado." });
   
-      const note = new Note({ groupId, title, content, userId });
+      const note = new Note({ groupId, title, content });
       await note.save();
   
       res.status(201).json(note);
@@ -39,8 +36,7 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
     }
   };
   
-  // 2. Buscar nota por ID
-  export const getNoteById = async (req: AuthenticatedRequest, res: Response) => {
+  export const getNoteById = async (req: Request, res: Response) => {
     try {
       const { noteId } = req.params;
   
@@ -53,16 +49,15 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
     }
   };
   
-  // 3. Atualizar anotação
-  export const updateNote = async (req: AuthenticatedRequest, res: Response) => {
+  export const updateNote = async (req: Request, res: Response) => {
     try {
       const { noteId } = req.params;
       const { title, content, groupId } = req.body;
   
-      // Verificar se o grupo pertence ao usuário (se foi alterado)
+      // Verificar se o grupo existe (se foi alterado)
       if (groupId) {
         const group = await Group.findOne({ _id: groupId });
-        if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+        if (!group) return res.status(404).json({ error: "Grupo não encontrado." });
       }
   
       const note = await Note.findOneAndUpdate(
@@ -78,8 +73,7 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
     }
   };
   
-  // 4. Deletar anotação
-  export const deleteNote = async (req: AuthenticatedRequest, res: Response) => {
+  export const deleteNote = async (req: Request, res: Response) => {
     try {
       const { noteId } = req.params;
   
@@ -92,15 +86,12 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
     }
   };
   
-  // 5. Buscar anotações por grupo
-  export const getNotesByGroup = async (req: AuthenticatedRequest, res: Response) => {
+  export const getNotesByGroup = async (req: Request, res: Response) => {
     try {
-      const { groupId, userId } = req.params;
-
-      console.log(req.params)
+      const { groupId } = req.params;
   
-      const group = await Group.findOne({ _id: groupId, userId });
-      if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+      const group = await Group.findOne({ _id: groupId });
+      if (!group) return res.status(404).json({ error: "Grupo não encontrado." });
   
       const notes = await Note.find({ groupId });
       res.status(200).json(notes);
@@ -109,14 +100,12 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
     }
   };
   
-  // 6. Listar todas as anotações do usuário
-  export const getAllNotes = async (req: AuthenticatedRequest, res: Response) => {
+  export const getAllNotes = async (req: Request, res: Response) => {
     try {
-      const userId = req.user?.id;
-  
-      const notes = await Note.find({ userId }).populate("groupId", "name");
+      const notes = await Note.find().populate("groupId", "name");
       res.status(200).json(notes);
     } catch (err) {
       res.status(500).json({ error: "Erro ao listar anotações." });
     }
   };
+  

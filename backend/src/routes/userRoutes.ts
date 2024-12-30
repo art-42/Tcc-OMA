@@ -7,7 +7,7 @@ import {
   updateUser,
   deleteUser,
 } from '../controllers/userController';
-import { createCategory, getCategories, deleteCategory } from "../controllers/categoryController";
+import { createCategory, getCategories, deleteCategory, updateCategory } from "../controllers/categoryController";
 
 import {
   getGroupsByDate,
@@ -45,21 +45,22 @@ router.get("/groups/date/:userId", getGroupsByDate);
 router.get("/groups/:categoryId/:userId", getGroupsByCategory);
 router.post("/groups", createGroup);
 router.get("/groups/:id",  getGroupById); // Buscar grupo por ID
-router.put("/groups/:id/:userId",  updateGroup); // Atualizar grupo
+router.put("/groups/:groupId/:userId",  updateGroup); // Atualizar grupo
 router.delete("/groups/:groupId/:userId",  deleteGroup); // Deletar grupo
 
 
 // Rotas para Anotações
 router.post("/notes", addNoteToGroup);
-router.get("/notes/group/:userId/:groupId", getNotesByGroup);
+router.get("/notes/group/:groupId", getNotesByGroup);
 router.post("/category", createCategory);
 router.get("/categories", getCategories);
 router.delete("/category/:id", deleteCategory);
+router.put("/category/:id", updateCategory);
 
 // router.post("/notes", createNote); 
 router.get("/notes", getAllNotes);
 router.get("/notes/:noteId", getNoteById);
-router.put("/notes/:noteid", updateNote); 
+router.put("/notes/:noteId", updateNote); 
 router.delete("/notes/:noteId", deleteNote);
 
 
