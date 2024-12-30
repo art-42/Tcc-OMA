@@ -21,28 +21,20 @@ export default function GroupPage() {
 
   const [id, setId] = useState(groupInfo.id);
   const [name, setName] = useState(groupInfo.name);
+  const [edit, setEdit] = useState(false);
   const [date, setDate] = useState('');
 
   const [anotations, setAnotation] = useState<any[]>([]);
 
   useEffect(() => {
-    if(id){
-      noteService.getNotesByGroup(id).then(resp => {
-        setAnotation(resp);
-        console.log(anotations)
-  
-      }).catch(()=> {
-        alert(`Erro ao encontrar anotações do grupo`)
-      })
-    }
+    fetchGoupData();
   }, [id]);
 
   useFocusEffect(
     React.useCallback(() => {
-      console.log('Page is focused. Refreshing data...');
+      fetchGoupData();
     }, [])
   );
-  
 
   const saveGroup = () => {
     groupService.createGroup({name})
@@ -51,6 +43,20 @@ export default function GroupPage() {
         alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         
         setId(group._id);
+      })
+      .catch((error) => {
+
+        alert(`Erro no cadastro`);
+      }); 
+  }
+
+  const updateGroup = () => {
+    groupService.updateGroup(id, {name})
+      .then(resp => {
+        const group = resp.group;
+        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
+        setEdit(false);
+        
       })
       .catch((error) => {
 
@@ -76,13 +82,25 @@ export default function GroupPage() {
   }
 
 
-  const rightIcons = [
+  const rightIcons = !edit ? 
+  [
     {
-      iconName: "edit"
+      iconName: "edit",
+      onClick: () => {
+        setEdit(true);
+        console.log(edit)
+      }
     },
     {
       iconName: "trash",
       onClick: deleteGroup
+    },
+  ] : [
+    {
+      iconName: "check",
+      onClick: () => {
+        updateGroup();
+      }
     },
   ];
 
@@ -101,7 +119,7 @@ export default function GroupPage() {
             </TouchableOpacity>
 
             <View style={styles.inputInfoContainer}>
-              <InputText placeholder="Título" textValue={name} onChangeText={setName} />
+              <InputText placeholder="Título" disabled={!edit} textValue={name} onChangeText={setName} />
               {/* <InputText placeholder="Data" textValue={date} onChangeText={setDate} /> */}
             </View>
 
@@ -140,6 +158,18 @@ export default function GroupPage() {
       }      
     </View>
   );
+
+  function fetchGoupData() {
+    if (id) {
+      noteService.getNotesByGroup(id).then(resp => {
+        setAnotation(resp);
+        console.log(anotations);
+
+      }).catch(() => {
+        alert(`Erro ao encontrar anotações do grupo`);
+      });
+    }
+  }
 }
 
 const styles = StyleSheet.create({

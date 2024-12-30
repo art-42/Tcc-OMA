@@ -42,7 +42,7 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
   // 2. Buscar nota por ID
   export const getNoteById = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { noteId, userId } = req.params;
+      const { noteId } = req.params;
   
       const note = await Note.findOne({ _id: noteId }).populate("groupId", "name");
       if (!note) return res.status(404).json({ error: "Anotação não encontrada." });
@@ -56,18 +56,17 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
   // 3. Atualizar anotação
   export const updateNote = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { id } = req.params;
+      const { noteId } = req.params;
       const { title, content, groupId } = req.body;
-      const userId = req.user?.id;
   
       // Verificar se o grupo pertence ao usuário (se foi alterado)
       if (groupId) {
-        const group = await Group.findOne({ _id: groupId, userId });
+        const group = await Group.findOne({ _id: groupId });
         if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
       }
   
       const note = await Note.findOneAndUpdate(
-        { _id: id, userId },
+        { _id: noteId },
         { title, content, groupId },
         { new: true }
       );
@@ -82,10 +81,9 @@ export const createNote = async (req: AuthenticatedRequest, res: Response) => {
   // 4. Deletar anotação
   export const deleteNote = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { id } = req.params;
-      const userId = req.user?.id;
+      const { noteId } = req.params;
   
-      const note = await Note.findOneAndDelete({ _id: id, userId });
+      const note = await Note.findOneAndDelete({ _id: noteId });
       if (!note) return res.status(404).json({ error: "Anotação não encontrada." });
   
       res.status(200).json({ message: "Anotação deletada com sucesso." });

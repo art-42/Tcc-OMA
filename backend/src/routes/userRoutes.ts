@@ -45,7 +45,7 @@ router.get("/groups/date/:userId", getGroupsByDate);
 router.get("/groups/:categoryId/:userId", getGroupsByCategory);
 router.post("/groups", createGroup);
 router.get("/groups/:id",  getGroupById); // Buscar grupo por ID
-router.put("/groups/:id",  updateGroup); // Atualizar grupo
+router.put("/groups/:id/:userId",  updateGroup); // Atualizar grupo
 router.delete("/groups/:groupId/:userId",  deleteGroup); // Deletar grupo
 
 
@@ -60,7 +60,7 @@ router.delete("/category/:id", deleteCategory);
 router.get("/notes", getAllNotes);
 router.get("/notes/:noteId", getNoteById);
 router.put("/notes/:noteid", updateNote); 
-router.delete("/notes/:id", deleteNote);
+router.delete("/notes/:noteId", deleteNote);
 
 
 export default router;

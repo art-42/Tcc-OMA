@@ -7,32 +7,34 @@ type InputTextProps = {
     size?: string;
     position?: string;
     onChangeText: any;
-    textValue: string
+    textValue: string;
+    disabled?: boolean;
 }
 
-export default function InputText({label, placeholder, onChangeText, textValue} : InputTextProps) {
+export default function InputText(inputProp : InputTextProps) {
   
   const handleTextChange = (text: string) => {
-    if (onChangeText) {
-      onChangeText(text);
+    if (inputProp.onChangeText) {
+      inputProp.onChangeText(text);
     }
   };
 
   return(
     <View style={styles.container}>
       {
-        label &&
+        inputProp.label &&
         <Text>
-          {label}
+          {inputProp.label}
         </Text>
       }
       
       <TextInput
-        style={styles.inputBox}
-        placeholder={placeholder}
+        style={[styles.inputBox, !inputProp.disabled && styles.border]}
+        placeholder={inputProp.placeholder}
         textAlign={'center'}
         onChangeText={handleTextChange}
-        value={textValue}
+        value={inputProp.textValue}
+        editable={!inputProp.disabled}
       />
     </View>
   )
@@ -44,8 +46,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   inputBox:{
-    borderWidth: 1,
     borderRadius: 15,
+    borderBottomWidth: 1,
     width:200
+  },
+  border:{
+    borderWidth: 1
   }
 });

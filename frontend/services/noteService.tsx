@@ -46,8 +46,7 @@ export const noteService = {
 
   getNoteById: async (noteId: string): Promise<NoteResponse> => {
     try {
-      const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/notes/${userId}/${noteId}`);
+      const response = await fetch(`${API_URL}/notes/${noteId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }
@@ -70,5 +69,22 @@ export const noteService = {
     }
   },
 
+  deleteNote: async (noteId: string): Promise<NoteResponse> => {
+    try {
+
+      const response = await fetch(`${API_URL}/notes/${noteId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete note');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
 
 };

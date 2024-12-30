@@ -1,7 +1,7 @@
 import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useEffect, useState } from "react";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Picker} from '@react-native-picker/picker';
 import React from 'react';
@@ -17,13 +17,25 @@ export default function HomeScreen() {
   const [groups, setGroups] = useState<any[]>([]);
 
   useEffect(() => {
+    fetchHomeData();
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchHomeData();
+    }, [])
+  );
+
+
+  function fetchHomeData() {
     groupService.getGroups().then(resp => {
       setGroups(resp.groups);
-      console.log(groups)
+      console.log(groups);
 
-    }).catch(()=> {
-      alert(`Erro no cadastro de pessoa`)
-  })}, []);
+    }).catch(() => {
+      alert(`Erro no cadastro de pessoa`);
+    });
+  }
 
   function getMonthName(monthNumber: number) {
     const months = [

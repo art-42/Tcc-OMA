@@ -29,6 +29,25 @@ export const groupService = {
     }
   },
 
+  updateGroup: async (groupId: string, group: Group): Promise<GroupResponse> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/groups/${groupId}/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(group),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create group');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
   deleteGroup: async (groupId: string): Promise<GroupResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');

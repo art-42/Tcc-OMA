@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler } from "react-native";
 import { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -27,7 +27,10 @@ export default function AnotationPage() {
       }
     },
     {
-      iconName: "trash"
+      iconName: "trash",
+      onClick: () => {
+        deleteNote();
+      }
     },
   ];
 
@@ -50,6 +53,18 @@ export default function AnotationPage() {
       }); 
   }
 
+  const deleteNote = () => {
+      noteService.deleteNote(id)
+        .then(resp => {
+          alert(`deletado com sucesso`);
+          router.back();
+          
+        })
+        .catch((error) => {
+          alert(`Erro na deleção`);
+        }); 
+    }
+
   const enterEditMode = () => {
     setAnotationTitle(anotation.title)
     setAnotationText(anotation.content)
@@ -67,7 +82,28 @@ export default function AnotationPage() {
       })
     }
   }, []);
-    
+
+  useEffect(() => {
+    const handleBackPress = () => {
+      console.log(edit)
+      if(!id){
+        return false;
+      }
+      if(edit){
+        console.log("sim edit")
+        setEdit(false);
+        return true;
+      } 
+      console.log("nao edit")
+      return false;
+    };
+
+    BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+
+    return () => {
+      BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
+    };
+  }, [edit]);
 
   return (
     <View
