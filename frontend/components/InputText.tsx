@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TextInput } from "react-native";
 
-type InputTextProps = {
+// Definindo o tipo de InputTextProps
+export type InputTextProps = {
     label?: string;
     placeholder?: string;
     size?: string;
@@ -37,11 +38,11 @@ export default function InputText(inputProp : InputTextProps) {
         editable={!inputProp.disabled}
       />
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
-  container:{
+  container: {
     justifyContent: "center",
     alignItems: "center",
   },

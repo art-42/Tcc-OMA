@@ -1,5 +1,5 @@
 import { Octicons } from "@expo/vector-icons";
-import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, ScrollView, BackHandler, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,10 +9,11 @@ import Header from "@/components/Header"
 import Button from "@/components/Button";
 import { groupService } from "@/services/groupService";
 import GroupCard from "@/components/GroupCard";
+import { useAuth } from "../../context/AuthContext";
 
 export default function HomeScreen() {
-
   const router = useRouter();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const [groups, setGroups] = useState<any[]>([]);
 
@@ -92,19 +93,49 @@ export default function HomeScreen() {
   console.log(groupedArray);
   
   useEffect(() => {
-    const checkAuth = async () => {
-      const token = await AsyncStorage.getItem('token');
-      if (!token) {
-        router.replace("/(tabs)");
-      }
+    if (!isAuthenticated) {
+      router.replace("/"); // Redireciona para a página de login se não autenticado
+    }
+
+    // Checa se estamos na Home antes de adicionar o listener do back
+    const backAction = () => {
+      Alert.alert(
+        "Confirmar Logout",
+        "Você tem certeza que deseja sair?",
+        [
+          {
+            text: "Cancelar",
+            onPress: () => null, // Não faz nada, apenas fecha o alerta
+            style: "cancel",
+          },
+          {
+            text: "Sair",
+            onPress: () => {
+              logout(); // Faz o logout
+              router.replace("/"); // Redireciona para a página de login
+            },
+          },
+        ],
+        { cancelable: false }
+      );
+      return true; // Impede o comportamento padrão de voltar
     };
-    checkAuth();
-  }, [] );
+
+    // Só adiciona o listener de back na tela Home
+    // if (router.  === "/home") { // Confere se está na tela "Home"
+    const backHandlerListener = BackHandler.addEventListener("hardwareBackPress", backAction);
+
+    //   // Limpeza do listener quando o componente for desmontado
+    //   return () => {
+    //     backHandlerListener.remove();
+    //   };
+    // }
+  }, [isAuthenticated, logout, router]);
 
   const rightIcons = [
     {
-      iconName: "user-circle"
-    }
+      iconName: "user-circle",
+    },
   ];
 
   // const months = [
@@ -141,7 +172,7 @@ export default function HomeScreen() {
   // ]
 
   const navigateToInfoScreen = () => {
-    router.push('/infoScreen');
+    router.push("/infoScreen");
   };
 
   return (
@@ -202,22 +233,22 @@ const styles = StyleSheet.create({
   picker:{
     width: "60%",
     margin: 4,
-    alignSelf: "flex-end"
+    alignSelf: "flex-end",
   },
-  textHeadContainer:{
+  textHeadContainer: {
     width: "40%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
     margin: 10,
 
   },
-  textSubContainer:{
+  textSubContainer: {
     width: "20%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
     marginLeft: 25,
   },
-  AnotationContainer:{
+  AnotationContainer: {
     width: "80%",
     marginTop: 10,
     marginLeft: "10%"
@@ -228,7 +259,7 @@ const styles = StyleSheet.create({
     width: "100%",
     gap: 5,
   },
-  text:{
-    fontSize: 25
-  }
+  text: {
+    fontSize: 25,
+  },
 });

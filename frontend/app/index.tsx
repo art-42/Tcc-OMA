@@ -5,36 +5,41 @@ import { useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
+import { useAuth } from "../context/AuthContext";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function Index() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const router = useRouter();  // Move 'useRouter' here to prevent creating it multiple times
+  const [passwordVisible, setPasswordVisible] = useState(false); // Controle de visibilidade da senha
+  const router = useRouter(); 
+  const { login } = useAuth();
 
-  const login = async () => {
+  const loginUser = async () => {
     if (email === '' || password === '') {
       alert('Preencha todos os campos');
-      return; // Exit early if fields are empty
+      return;
     }
 
     try {
       const resp = await userService.loginUser({ email, password });
       const { user, token } = resp;
 
-      // Armazenando o token no AsyncStorage
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('idUser', user.id);
-
-      // Exibe os dados do usuário
-      alert(`Login concluído: \n nome: ${user.name} \n email: ${user.email}`);
-
-      // Navegar para outra tela após o login
-      router.push('/(tabs)/home');
+      if (token) {
+        await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('idUser', user.id);
+        login(token, user);
+        router.push('/(tabs)/home');
+      } else {
+        alert('Erro ao obter o token. Tente novamente.');
+      }
     } catch (error) {
-      // Tratar qualquer erro que ocorrer no login
-      alert('Erro ao fazer login');
+      console.error(error);
+      alert('Erro ao fazer login. Tente novamente.');
     }
   };
+
+  const togglePasswordVisibility = () => setPasswordVisible(!passwordVisible); // Alternar visibilidade da senha
 
   return (
     <View style={{ flex: 1, alignItems: "center", padding: '5%' }}>
@@ -42,19 +47,24 @@ export default function Index() {
         <Text style={styles.topText}>Bem-vindo</Text>
         <Text style={styles.topText}>Faça o Login ou crie uma nova conta</Text>
       </View>
-     
+
       <View style={styles.inputInfoContainer}>
         <InputText
           placeholder="email"
           textValue={email}
           onChangeText={setEmail}
         />
-        <InputText
+
+        {}
+        <PasswordInput
           placeholder="senha"
           textValue={password}
           onChangeText={setPassword}
+          isPasswordVisible={passwordVisible}
+          togglePasswordVisibility={togglePasswordVisibility}
         />
-        <Button label="entrar" onClick={login} />
+
+        <Button label="entrar" onClick={loginUser} />
       </View>
 
       <Button label="Criar Nova Conta" href={'/signinScreen'} />
@@ -70,10 +80,11 @@ const styles = StyleSheet.create({
   },
   topText: {
     fontSize: 20,
-    textAlign: 'center'
+    textAlign: 'center',
   },
   inputInfoContainer: {
     flex: 18,
     gap: '8%',
+    textAlign: 'center',
   },
 });

@@ -1,73 +1,113 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
-import Header from "@/components/Header"
+import Header from "@/components/Header";
 import { Text, View, StyleSheet } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { userService } from "@/services/userService";
+import { useAuth } from "@/context/AuthContext";  // Importando o hook useAuth
+import PasswordInput from "@/components/PasswordInput";  
+import { useRouter } from "expo-router";
 
 export default function ChangePasswordScreen() {
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const router = useRouter();
+  const { user } = useAuth();  // Pegando o usuário autenticado do contexto
 
-  const [password, setPassword] = React.useState('');
-  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const handleSubmit = () => {
+   
+    if (password !== confirmPassword) {
+      alert('As senhas precisam ser iguais');
+      return false;
+    }
 
-  const save = () => {
-     if(password !== confirmPassword){
-      alert('As senhas precisão ser iguais')
-    } else {
+    if (password.length < 6) {
+      alert("A senha deve ter no mínimo 6 caracteres.");
+      return false;
+    }
+    return true;
+  };
 
-      userService.updateUser({
-        id: '67521dff1b5b5e57511f521f',
+
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+
+  const save = async () => {
+    if (handleSubmit()){
+
+
+    if (!user?.id) {
+      alert('Usuário não encontrado');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const response = await userService.updateUser({
+        id: user.id,
         password
-      }).then(resp => {
-        var user = resp.user;
-        alert(`senha trocada com sucesso: senha nova:${user.password} \n`)
-      }).catch(()=> {
-        alert(`Erro no cadastro de pessoa`)
-      })
+      });
+
+      if (response.user) {
+        alert(`Senha trocada com sucesso`);
+        router.push('/(tabs)/home'); 
+      } else {
+        alert('Erro ao alterar a senha');
+      }
+
+    } catch (error) {
+      alert('Erro ao alterar a senha. Tente novamente.');
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   }
+  };
 
-  var leftIcons = [    
+  const leftIcons = [
     {
       iconName: "arrow-left",
       href: "/infoScreen"
     }
-  ]
+  ];
 
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        padding: '5%'
-      }}
-    >
-      
+    <View style={{ flex: 1, alignItems: "center", padding: '5%' }}>
       <View style={styles.headerContainer}>
-        <Header leftIcons={leftIcons} text="Alterar senha"></Header>
+        <Header leftIcons={leftIcons} text="Alterar senha" />
       </View>
       <View style={styles.inputInfoContainer}>
-        <InputText label="Senha" textValue={password} onChangeText={setPassword}></InputText>
-
-        <InputText label="Confimar senha" textValue={confirmPassword} onChangeText={setConfirmPassword}></InputText>
-
+        <PasswordInput
+          placeholder="Senha"
+          textValue={password}
+          onChangeText={setPassword}
+          isPasswordVisible={passwordVisible}
+          togglePasswordVisibility={togglePasswordVisibility}
+        />
+        <PasswordInput
+          placeholder="Confirmar Senha"
+          textValue={confirmPassword}
+          onChangeText={setConfirmPassword}
+          isPasswordVisible={passwordVisible}
+          togglePasswordVisibility={togglePasswordVisibility}
+        />
       </View>
 
-      <Button label="Salvar" onClick={save}></Button>
-
+      <Button label="Salvar" onClick={save}  />
+      
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  headerContainer:{
+  headerContainer: {
     flex: 8
   },
-  topText:{
-    fontSize: 20,
-    textAlign: 'center'
-  },
-  inputInfoContainer:{
+  inputInfoContainer: {
     flex: 18,
     gap: '20%',
   },
