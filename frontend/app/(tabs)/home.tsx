@@ -11,6 +11,7 @@ import { groupService } from "@/services/groupService";
 import GroupCard from "@/components/GroupCard";
 import { useAuth } from "../../context/AuthContext";
 
+
 export default function HomeScreen() {
   const router = useRouter();
   const { isAuthenticated, user, logout } = useAuth();
@@ -96,42 +97,44 @@ export default function HomeScreen() {
     if (!isAuthenticated) {
       router.replace("/"); // Redireciona para a página de login se não autenticado
     }
+    
 
-    // Checa se estamos na Home antes de adicionar o listener do back
-    const backAction = () => {
-      Alert.alert(
-        "Confirmar Logout",
-        "Você tem certeza que deseja sair?",
-        [
-          {
-            text: "Cancelar",
-            onPress: () => null, // Não faz nada, apenas fecha o alerta
-            style: "cancel",
-          },
-          {
-            text: "Sair",
-            onPress: () => {
-              logout(); // Faz o logout
-              router.replace("/"); // Redireciona para a página de login
-            },
-          },
-        ],
-        { cancelable: false }
-      );
-      return true; // Impede o comportamento padrão de voltar
-    };
-
-    // Só adiciona o listener de back na tela Home
-    // if (router.  === "/home") { // Confere se está na tela "Home"
-    const backHandlerListener = BackHandler.addEventListener("hardwareBackPress", backAction);
-
-    //   // Limpeza do listener quando o componente for desmontado
-    //   return () => {
-    //     backHandlerListener.remove();
-    //   };
-    // }
   }, [isAuthenticated, logout, router]);
-
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      const backAction = () => {
+        Alert.alert(
+          "Sair",
+          "Deseja se deslogar?",
+          [
+            {
+              text: "Cancelar",
+              onPress: () => null,
+              style: "cancel",
+            },
+            {
+              text: "Sim",
+              onPress: () => {
+                logout(); // Função de logout
+                router.replace("/"); // Redireciona para a página de login
+              },
+            },
+          ],
+          { cancelable: true }
+        );
+        return true; // Previne o comportamento padrão de voltar
+      };
+  
+      const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
+  
+      // Limpeza do listener ao sair da tela
+      return () => backHandler.remove();
+    }, [logout, router])
+  );
   const rightIcons = [
     {
       iconName: "user-circle",
