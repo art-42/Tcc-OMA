@@ -1,16 +1,25 @@
+import { useRouter } from "expo-router";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
 export type CardProps = {
+    id?: string;
     title?: string;
     category?: string;
     date?: string;
     time?: string;
 }
 
-export default function AnotationCard(prop : CardProps) {
+export default function GroupCard(prop : CardProps) {
+
+  const router = useRouter();
+
+  const onPress = () => {
+    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title}})
+  }
+
   return (
     <View>
-      <Pressable style={styles.container}>
+      <Pressable style={styles.container} onPress={onPress}>
         <View style={styles.titleDateRow}>
           <Text style={styles.text}>
             {prop.title}

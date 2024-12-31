@@ -27,6 +27,7 @@ export default function Index() {
 
       if (token) {
         await AsyncStorage.setItem('token', token);
+        await AsyncStorage.setItem('idUser', user.id);
         login(token, user);
         router.push('/(tabs)/home');
       } else {

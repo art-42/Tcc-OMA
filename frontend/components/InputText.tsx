@@ -7,29 +7,35 @@ export type InputTextProps = {
     placeholder?: string;
     size?: string;
     position?: string;
-    onChangeText: (text: string) => void;  // Melhorando o tipo da função onChangeText
+    onChangeText: any;
     textValue: string;
+    disabled?: boolean;
 }
 
-// Componente InputText
-const InputText: React.FC<InputTextProps> = ({ label, placeholder, onChangeText, textValue }) => {
-
+export default function InputText(inputProp : InputTextProps) {
+  
   const handleTextChange = (text: string) => {
-    if (onChangeText) {
-      onChangeText(text);
+    if (inputProp.onChangeText) {
+      inputProp.onChangeText(text);
     }
   };
 
   return(
     <View style={styles.container}>
-      {label && <Text>{label}</Text>}
+      {
+        inputProp.label &&
+        <Text>
+          {inputProp.label}
+        </Text>
+      }
       
       <TextInput
-        style={styles.inputBox}
-        placeholder={placeholder}
+        style={[styles.inputBox, !inputProp.disabled && styles.border]}
+        placeholder={inputProp.placeholder}
         textAlign={'center'}
         onChangeText={handleTextChange}
-        value={textValue}
+        value={inputProp.textValue}
+        editable={!inputProp.disabled}
       />
     </View>
   );
@@ -40,11 +46,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  inputBox: {
-    borderWidth: 1,
+  inputBox:{
     borderRadius: 15,
-    width: 200,
+    borderBottomWidth: 1,
+    width:200
   },
+  border:{
+    borderWidth: 1
+  }
 });
-
-export default InputText;  // Exportando o componente

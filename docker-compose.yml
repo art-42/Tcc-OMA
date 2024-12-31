@@ -31,6 +31,7 @@ services:
 
   database:
     image: mongo
+    # command: ["--verbosity", "1"]
     ports:
       - "27017:27017"
     volumes:

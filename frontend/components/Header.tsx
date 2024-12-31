@@ -17,6 +17,7 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
             label={i.label} 
             iconName={i.iconName} 
             href={i.href} 
+            onClick={i.onClick}
           />
         ))}
       </View>
@@ -27,7 +28,8 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
             key={`right-${index}`}
             label={i.label} 
             iconName={i.iconName} 
-            href={i.href} 
+            href={i.href}
+            onClick={i.onClick}
           />
         ))}
       </View>
@@ -37,7 +39,7 @@ export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps
 
 const styles = StyleSheet.create({
   container: {
-    margin: 15,
+    marginTop: 5,
     width: "98%",
     flexDirection: "row",
     justifyContent: "space-between",
@@ -47,6 +49,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginLeft: "auto",
     marginRight: "auto",
+    width: "60%",
   },
   icons: {
     width: "20%",

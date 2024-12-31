@@ -7,7 +7,7 @@ export type ButtonProps = {
     label?: string;
     iconName?: any;
     border?: boolean;
-    onClick?: any;
+    onClick?: () => void;
     href?: any;
 }
 
@@ -34,7 +34,7 @@ export default function Button({label, iconName, border, onClick, href} : Button
   )
 
   return (
-    <View style={!iconName ? [styles.container, styles.containerBorder] : []}>
+    <View style={!iconName ? [styles.container, styles.containerBorder] : [styles.container]}>
       {href ?
         <Link href={href} asChild>
             {content}
@@ -49,8 +49,9 @@ export default function Button({label, iconName, border, onClick, href} : Button
 
 const styles = StyleSheet.create({
   container:{
-    width: "50%",
-    justifyContent:"center"
+    width: "auto",
+    paddingHorizontal: "5%",
+    justifyContent:"center",
   },
   containerBorder:{
     alignSelf:"center",
