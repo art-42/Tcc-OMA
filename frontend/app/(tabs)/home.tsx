@@ -53,7 +53,7 @@ export default function HomeScreen() {
   }
 
   function groupByMonthAndDay(data: any[]): any[] {
-    const grouped: { [key: string]: { [key: string]: { id: string, name: string, time: string }[] } } = {};
+    const grouped: { [key: string]: { [key: string]: { id: string, name: string, time: string, categoryId: string }[] } } = {};
   
     data.forEach(item => {
       const date = new Date(item.createdAt);
@@ -68,7 +68,7 @@ export default function HomeScreen() {
         grouped[monthName][dayName] = [];
       }
   
-      grouped[monthName][dayName].push({ id: item._id, name: item.name, time: item.createdAt });
+      grouped[monthName][dayName].push({ id: item._id, name: item.name, time: item.createdAt, categoryId: item.categoryId });
     });
   
     return Object.keys(grouped).map(month => ({
@@ -164,12 +164,13 @@ export default function HomeScreen() {
                     <View style={styles.textSubContainer}> 
                       <Text style={styles.text}> {day.daysName} </Text>
                     </View>
-                    {day.data.map(anotation => 
-                      <View style={styles.AnotationContainer} key={anotation.id}>
+                    {day.data.map(group => 
+                      <View style={styles.AnotationContainer} key={group.id}>
                         <GroupCard
-                          id={anotation.id}
-                          title={anotation.name}
-                          time={formatToHHMM(anotation.time)}
+                          id={group.id}
+                          category={group.categoryId}
+                          title={group.name}
+                          time={formatToHHMM(group.time)}
                         />
                     </View>
                     )}

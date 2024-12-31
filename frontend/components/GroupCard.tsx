@@ -14,7 +14,7 @@ export default function GroupCard(prop : CardProps) {
   const router = useRouter();
 
   const onPress = () => {
-    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title}})
+    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title, category: prop.category}})
   }
 
   return (
