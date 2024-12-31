@@ -66,9 +66,8 @@ export const getGroupsByCategory = async (req: Request, res: Response) => {
 
     const groups = await Group.find({ userId, categoryId });
 
-    // Adicionando o categoryName em cada grupo
     const groupsWithCategoryName = groups.map(group => ({
-      ...group.toObject(), // Converte o documento Mongoose para um objeto JavaScript
+      ...group.toObject(), 
       categoryName: category.name,
     }));
 
