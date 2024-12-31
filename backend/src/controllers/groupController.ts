@@ -63,14 +63,23 @@ export const getGroupsByCategory = async (req: Request, res: Response) => {
     if (!category) {
       return res.status(400).json({ error: "Categoria não encontrada." });
     }
+
     const groups = await Group.find({ userId, categoryId });
 
-    res.status(200).json({ groups });
+    // Adicionando o categoryName em cada grupo
+    const groupsWithCategoryName = groups.map(group => ({
+      ...group.toObject(), // Converte o documento Mongoose para um objeto JavaScript
+      categoryName: category.name,
+    }));
+
+    res.status(200).json({ groups: groupsWithCategoryName });
   } catch (err) {
     console.error("Erro ao buscar grupos por categoria:", err);
     res.status(500).json({ error: "Erro ao buscar grupos." });
   }
 };
+
+
 
 
 export const searchGroupByName = async (req: Request, res: Response) => {
