@@ -20,7 +20,6 @@ export const noteService = {
       }
       return await response.json();
     } catch (error) {
-      console.log(error)
       throw error;
     }
   },
@@ -39,7 +38,6 @@ export const noteService = {
       }
       return await response.json();
     } catch (error) {
-      console.log(error)
       throw error;
     }
   },

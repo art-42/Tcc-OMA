@@ -88,7 +88,6 @@ export default function GroupPage() {
       iconName: "edit",
       onClick: () => {
         setEdit(true);
-        console.log(edit)
       }
     },
     {
@@ -126,7 +125,7 @@ export default function GroupPage() {
             <View style={styles.scrollView}>
               <ScrollView>
                 {anotations.map(anotation => 
-                  <View style={styles.card}>
+                  <View style={styles.card} key={anotation._id}>
                     <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
                   </View>
                 )}
@@ -163,7 +162,6 @@ export default function GroupPage() {
     if (id) {
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
-        console.log(anotations);
 
       }).catch(() => {
         alert(`Erro ao encontrar anotações do grupo`);

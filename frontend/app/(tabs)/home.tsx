@@ -32,7 +32,6 @@ export default function HomeScreen() {
   function fetchHomeData() {
     groupService.getGroups().then(resp => {
       setGroups(resp.groups);
-      console.log(groups);
 
     }).catch(() => {
       alert(`Erro no cadastro de pessoa`);
@@ -89,8 +88,6 @@ export default function HomeScreen() {
   }
   
   const groupedArray = groupByMonthAndDay(groups);
-
-  console.log(groupedArray);
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -140,39 +137,6 @@ export default function HomeScreen() {
     },
   ];
 
-  // const months = [
-  //   {
-  //     name: "Julho",
-  //     days: [{
-  //       name: "19",
-  //       anotations: [{
-  //         title: "Trigonometria",
-  //         time: "13:00"
-  //       },{
-  //         title: "Trigonometria",
-  //         time: "13:00"
-  //       }]
-  //     }]
-  //   },
-  //   {
-  //     name: "Agosto",
-  //     days: [{
-  //       name: "20",
-  //       anotations: [{
-  //         title: "Equações diferenciais",
-  //         time: "13:00"
-  //       },{
-  //         title: "Equações diferenciais",
-  //         time: "13:00"
-  //       },{
-  //         title: "Equações diferenciais",
-  //         time: "13:00"
-  //       }]
-
-  //     }]
-  //   },
-  // ]
-
   const navigateToInfoScreen = () => {
     router.push("/infoScreen");
   };
@@ -191,17 +155,17 @@ export default function HomeScreen() {
       <View style={styles.scrollView}>
         <ScrollView>
           {groupedArray.map(month => 
-            <View style={styles.list}>
+            <View style={styles.list} key={month.monthName}>
                <View style={styles.textHeadContainer}> 
                 <Text style={styles.text}> {month.monthName} </Text>
                </View>
-                {month.days.map((day: { daysName: string, data: any[]; }) => 
-                  <View style={styles.list}>
+                {month.days.map((day: { daysName: string, data: any[]; }, index: number) => 
+                  <View style={styles.list} key={index}>
                     <View style={styles.textSubContainer}> 
                       <Text style={styles.text}> {day.daysName} </Text>
                     </View>
                     {day.data.map(anotation => 
-                      <View style={styles.AnotationContainer}>
+                      <View style={styles.AnotationContainer} key={anotation.id}>
                         <GroupCard
                           id={anotation.id}
                           title={anotation.name}

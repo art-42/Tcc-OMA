@@ -13,8 +13,6 @@ export default function AnotationPage() {
 
   var groupInfo = useLocalSearchParams<{ noteId: string, groupId: string }>();
 
-  console.log(groupInfo)
-
   const [id, setId] = useState(groupInfo.noteId);
   
   const [edit, setEdit] = useState(!id);
@@ -75,7 +73,6 @@ export default function AnotationPage() {
     if(id){
       noteService.getNoteById(id).then(resp => {
         setAnotation(resp);
-        console.log(resp)
   
       }).catch(()=> {
           alert(`Erro ao buscar anotação`)
@@ -85,16 +82,13 @@ export default function AnotationPage() {
 
   useEffect(() => {
     const handleBackPress = () => {
-      console.log(edit)
       if(!id){
         return false;
       }
       if(edit){
-        console.log("sim edit")
         setEdit(false);
         return true;
       } 
-      console.log("nao edit")
       return false;
     };
 
