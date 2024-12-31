@@ -59,7 +59,7 @@ export const noteService = {
   getNotesByGroup: async (groupId: string): Promise<NoteResponse[]> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/notes/group/${userId}/${groupId}`);
+      const response = await fetch(`${API_URL}/notes/group/${groupId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }
