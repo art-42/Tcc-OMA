@@ -71,7 +71,7 @@ export const groupService = {
   getGroups: async (): Promise<GroupsResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/groups/date/${userId}`);
+      const response = await fetch(`${API_URL}/grupos/get/allGroups`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }

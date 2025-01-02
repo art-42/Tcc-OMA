@@ -154,7 +154,7 @@ export default function GroupPage() {
                   onValueChange={(itemValue) =>
                     setSelectedCategory(itemValue)
                 }>
-                  <Picker.Item label="Categoria" value={''} style={{ color: '#707070' }} />
+                  <Picker.Item label="Sem categoria" value={''} style={{ color: '#707070' }} />
                   {
                     categories.map(category =>
                       <Picker.Item label={category.name} value={category._id} key={category._id}/>
@@ -194,7 +194,7 @@ export default function GroupPage() {
                   onValueChange={(itemValue) =>
                     setSelectedCategory(itemValue)
                 }>
-                  <Picker.Item label="Categoria" value={undefined}/>
+                  <Picker.Item label="Sem categoria" value={undefined}/>
                   {
                     categories.map(category =>
                       <Picker.Item label={category.name} value={category._id} key={category._id}/>

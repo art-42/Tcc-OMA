@@ -4,7 +4,8 @@ import { Pressable, View, Text, StyleSheet } from "react-native";
 export type CardProps = {
     id?: string;
     title?: string;
-    category?: string;
+    categoryId?: string;
+    categoryName?: string;
     date?: string;
     time?: string;
 }
@@ -14,7 +15,7 @@ export default function GroupCard(prop : CardProps) {
   const router = useRouter();
 
   const onPress = () => {
-    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title, category: prop.category}})
+    router.push({pathname: "/(tabs)/groupPage", params: {id: prop.id, name: prop.title, category: prop.categoryId}})
   }
 
   return (
@@ -30,7 +31,7 @@ export default function GroupCard(prop : CardProps) {
         </View>
         <View style={styles.categoryRow}>
           <Text style={styles.text}>
-            {prop.category}
+            {prop.categoryName}
           </Text>
         </View>
       </Pressable>
