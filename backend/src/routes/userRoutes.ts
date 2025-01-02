@@ -49,7 +49,7 @@ router.post("/groups", createGroup);
 router.get("/groups/:id",  getGroupById); 
 router.put("/groups/:groupId/:userId",  updateGroup); 
 router.delete("/groups/:groupId/:userId",  deleteGroup);
-//router.get("/todos",getAllGroups);
+router.get("/grupos/get/allGroups",getAllGroups);
 
 
 // Rotas para Anotações

@@ -32,45 +32,45 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
-// controller: groupController.ts
 export const getAllGroups = async (req: Request, res: Response) => {
   try {
-    // Buscar todos os grupos sem filtros ou relações com usuários
+
     const groups = await Group.find().lean();
-    
-    // Retornar os grupos encontrados
-    res.status(200).json(groups);
+
+    const groupsWithCategory = await Promise.all(groups.map(async (group) => {
+      const category = await Category.findById(group.categoryId); 
+      const categoryName = category ? category.name : "Sem categoria";
+      
+      return {
+        ...group,
+        categoryName, 
+      };
+    }));
+
+    res.status(200).json(groupsWithCategory);
   } catch (err) {
     console.error("Erro ao buscar todos os grupos:", err);
     res.status(500).json({ error: "Erro ao buscar todos os grupos." });
   }
 };
 
-
-
 export const getGroupsByDate = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    // Verificar se o usuário existe
     const user = await User.findById(userId);
     if (!user) {
       return res.status(400).json({ error: "Usuário não encontrado." });
     }
 
-    // Buscar grupos do usuário, ordenados por data de criação
     const groups = await Group.find({ userId }).sort({ createdAt: -1 }).lean();
 
-    // Obter o nome da categoria e agrupar por data
     const groupsByDate: { [date: string]: any[] } = {};
     for (const group of groups) {
       const category = await Category.findById(group.categoryId);
       const categoryName = category ? category.name : "Sem categoria";
-
-      // Verificar se 'createdAt' é uma instância de Date e formatar a data (YYYY-MM-DD)
       const date = group.createdAt instanceof Date ? group.createdAt.toISOString().split("T")[0] : null;
 
-      // Adicionar o grupo ao agrupamento por data
       if (date) {
         if (!groupsByDate[date]) {
           groupsByDate[date] = [];
@@ -233,25 +233,20 @@ export const search = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "O termo de busca é obrigatório." });
     }
 
-    const collationOptions = {
-      locale: "pt", // ou "root" dependendo do idioma esperado
-      strength: 2   // Ignora diferenças de caso e acentuação
-    };
-
     const notes = await Note.find({
       $or: [
         { title: { $regex: query, $options: "i" } }, 
         { content: { $regex: query, $options: "i" } }
       ]
-    }).collation(collationOptions);
+    });
 
     const groups = await Group.find({
       name: { $regex: query, $options: "i" }
-    }).collation(collationOptions);
+    });
 
     const categories = await Category.find({
       name: { $regex: query, $options: "i" }
-    }).collation(collationOptions);
+    });
 
     const result = {
       notes,
