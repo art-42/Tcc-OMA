@@ -22,7 +22,8 @@ import {
 
 import {
   addNoteToGroup,
-  getNotesByGroup
+  getNotesByGroup,
+  searchNote
 } from '../controllers/noteController';
 
 import {
@@ -54,7 +55,7 @@ router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 
 // Rotas para Anotações
 router.post("/notes/:userId", addNoteToGroup);
-router.get("/notes/group/:groupId", getNotesByGroup);
+router.get("/notes/group/:userId/:groupId", getNotesByGroup);
 router.post("/category", createCategory);
 router.get("/categories/:userId", getCategories);
 router.delete("/category/:id", deleteCategory);
@@ -65,9 +66,10 @@ router.get("/notes/:userId", getAllNotes);
 router.get("/notes/:userId/:noteId", getNoteById);
 router.put("/notes/:userId/:noteId", updateNote); 
 router.delete("/notes/:userId/:noteId", deleteNote);
+router.get("/searchNotes/:userId/:query",searchNote)
 
 
-router.get("/search/:query",search)//pesquisa o termo em notas, grupos e categorias
+router.get("/search/:userId/:query",search)//pesquisa o termo em notas, grupos e categorias
 
 
 

@@ -230,24 +230,31 @@ export const deleteGroup = async (req: Request, res: Response) => {
 
 export const search = async (req: Request, res: Response) => {
   try {
-    const { query } = req.params;
+    const { userId, query } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+    }
 
     if (!query || query.trim() === "") {
       return res.status(400).json({ error: "O termo de busca é obrigatório." });
     }
 
     const notes = await Note.find({
+      userId,
       $or: [
-        { title: { $regex: query, $options: "i" } }, 
+        { title: { $regex: query, $options: "i" } },
         { content: { $regex: query, $options: "i" } }
       ]
     });
 
     const groups = await Group.find({
+      userId,
       name: { $regex: query, $options: "i" }
     });
 
     const categories = await Category.find({
+      userId,
       name: { $regex: query, $options: "i" }
     });
 

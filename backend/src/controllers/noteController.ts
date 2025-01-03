@@ -4,8 +4,9 @@ import Group from "../models/Group";
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
-    const { userId, groupId, title, content } = req.body;
-    const note = new Note({ userId, groupId, title, content });
+    const { userId } = req.params;
+    const { groupId, title, content } = req.body;
+    const note = new Note({ title, content, userId, groupId });
     await note.save();
     res.status(201).json(note);
   } catch (err) {
@@ -89,7 +90,7 @@ export const getNotesByGroup = async (req: Request, res: Response) => {
     const group = await Group.findOne({ _id: groupId, userId });
     if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
 
-    const notes = await Note.find({ groupId, userId });
+    const notes = await Note.find({ userId }).populate("groupId", "name");
     res.status(200).json(notes);
   } catch (err) {
     res.status(500).json({ error: "Erro ao buscar anotações do grupo." });
@@ -104,5 +105,36 @@ export const getAllNotes = async (req: Request, res: Response) => {
     res.status(200).json(notes);
   } catch (err) {
     res.status(500).json({ error: "Erro ao listar anotações." });
+  }
+};
+
+export const searchNote = async (req: Request, res: Response) => {
+  try {
+    const { userId, query } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+    }
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({ error: "O termo de busca é obrigatório." });
+    }
+
+    const notes = await Note.find({
+      userId,
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } }
+      ]
+    });
+   
+    const result = {
+      notes
+    };
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Erro ao realizar a busca geral:", err);
+    res.status(500).json({ error: "Erro ao realizar a busca." });
   }
 };
