@@ -164,8 +164,6 @@ export default function HomeScreen() {
   }
   
   const groupedArray = selectedView === 'date'? groupByYearMonthAndDay(groups) : groupByCategory(groups);
-
-  console.log(groupedArray)
   
   useEffect(() => {
     if (!isAuthenticated) {

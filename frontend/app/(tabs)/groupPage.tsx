@@ -26,9 +26,6 @@ export default function GroupPage() {
   const [selectedCategory, setSelectedCategory] = useState(groupInfo.category);
   const [edit, setEdit] = useState(false);
 
-  console.log(selectedCategory)
-
-
   const [anotations, setAnotation] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
 
@@ -58,7 +55,6 @@ export default function GroupPage() {
   }
 
   const updateGroup = () => {
-    console.log(selectedCategory)
     groupService.updateGroup(id, {name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;

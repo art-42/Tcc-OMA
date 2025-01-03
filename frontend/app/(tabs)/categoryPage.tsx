@@ -85,7 +85,6 @@ export default function CategoryPage() {
         setModalVisible(false)
       })
       .catch((error) => {
-        console.log(error)
         alert(`Erro no cadastro`);
       }); 
   }
