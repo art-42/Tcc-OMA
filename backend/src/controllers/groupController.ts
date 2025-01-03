@@ -270,3 +270,33 @@ export const search = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Erro ao realizar a busca." });
   }
 };
+
+export const searchGroup = async (req: Request, res: Response) => {
+    try {
+      const { userId, query } = req.params;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+      }
+  
+      if (!query || query.trim() === "") {
+        return res.status(400).json({ error: "O termo de busca é obrigatório." });
+      }
+
+  
+      const groups = await Group.find({
+        userId,
+        name: { $regex: query, $options: "i" }
+      });
+
+  
+      const result = {
+        groups
+      };
+  
+      res.status(200).json(result);
+    } catch (err) {
+      console.error("Erro ao realizar a busca geral:", err);
+      res.status(500).json({ error: "Erro ao realizar a busca." });
+    }
+};

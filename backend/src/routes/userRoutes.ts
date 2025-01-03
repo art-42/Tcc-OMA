@@ -7,7 +7,7 @@ import {
   updateUser,
   deleteUser,
 } from '../controllers/userController';
-import { createCategory, getCategories, deleteCategory, updateCategory } from "../controllers/categoryController";
+import { createCategory, getCategories, deleteCategory, updateCategory, searchCategory } from "../controllers/categoryController";
 
 import {
   getGroupsByDate,
@@ -17,7 +17,8 @@ import {
   updateGroup,
   deleteGroup,
   search,
-  getAllGroupsByUser
+  getAllGroupsByUser,
+  searchGroup
 } from '../controllers/groupController';
 
 import {
@@ -51,6 +52,7 @@ router.get("/groups/:id",  getGroupById);
 router.put("/groups/:groupId/:userId",  updateGroup); 
 router.delete("/groups/:groupId/:userId",  deleteGroup);
 router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
+router.get("/searchGroups/:userId/:query",searchGroup)
 
 
 // Rotas para Anotações
@@ -60,6 +62,7 @@ router.post("/category", createCategory);
 router.get("/categories/:userId", getCategories);
 router.delete("/category/:id", deleteCategory);
 router.put("/category/:id", updateCategory);
+router.get("/searchCategories/:userId/:query",searchCategory)
 
 //router.post("/notes", createNote); 
 router.get("/notes/:userId", getAllNotes);
