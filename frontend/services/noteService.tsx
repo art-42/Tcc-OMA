@@ -8,7 +8,9 @@ export const noteService = {
 
   createNote: async (note: Note): Promise<any> => {
     try {
-      const response = await fetch(`${API_URL}/notes`, {
+      const userId = await AsyncStorage.getItem('idUser');
+
+      const response = await fetch(`${API_URL}/notes/${userId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +28,9 @@ export const noteService = {
 
   updateNote: async (id : string, note: Note): Promise<any> => {
     try {
-      const response = await fetch(`${API_URL}/notes/${id}`, {
+      const userId = await AsyncStorage.getItem('idUser');
+
+      const response = await fetch(`${API_URL}/notes/${userId}/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +48,9 @@ export const noteService = {
 
   getNoteById: async (noteId: string): Promise<NoteResponse> => {
     try {
-      const response = await fetch(`${API_URL}/notes/${noteId}`);
+      const userId = await AsyncStorage.getItem('idUser');
+
+      const response = await fetch(`${API_URL}/notes/${userId}/${noteId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }
@@ -57,7 +63,8 @@ export const noteService = {
   getNotesByGroup: async (groupId: string): Promise<NoteResponse[]> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/notes/group/${groupId}`);
+      
+      const response = await fetch(`${API_URL}/notes/group/${userId}/${groupId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }

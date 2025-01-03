@@ -253,15 +253,9 @@ export const search = async (req: Request, res: Response) => {
       name: { $regex: query, $options: "i" }
     });
 
-    const categories = await Category.find({
-      userId,
-      name: { $regex: query, $options: "i" }
-    });
-
     const result = {
       notes,
       groups,
-      categories
     };
 
     res.status(200).json(result);

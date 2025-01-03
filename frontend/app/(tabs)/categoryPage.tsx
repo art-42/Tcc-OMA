@@ -17,10 +17,30 @@ export default function CategoryPage() {
   const [currentCategoryId, setCurrentCategoryId] = useState('');
   const [currentCategoryName, setCurrentCategoryName] = useState('');
 
+  const [searchText, setSearchText] = useState('');
+
   useEffect(() => {
     fetchCategoryData();
   }, []);
 
+  const fetchCategoryData = () => {
+    categoryService.getCategories().then(resp => {
+      setCategories(resp.categorias);
+  
+    }).catch(() => {
+      alert(`Erro ao encontrar anotações do grupo`);
+    });
+  }
+
+  const searchCategoryData = (value: string) => {
+    categoryService.searchCategories(value).then(resp => {
+      setCategories(resp.categorias);
+  
+    }).catch(() => {
+      alert(`Erro ao encontrar anotações do grupo`);
+    });
+  }
+  
   const addCategory = () => {
     setCurrentCategoryName('')
     setModalVisible(true)
@@ -46,13 +66,22 @@ export default function CategoryPage() {
       }); 
   }
 
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    if(value !== ''){
+      searchCategoryData(value);
+    } else{
+      fetchCategoryData();
+    }
+  }
+
   const saveCategory = () => {
     (!edit ? categoryService.createCategory({name: currentCategoryName}) : 
              categoryService.updateCategory(currentCategoryId , {name: currentCategoryName}))
       .then(resp => {
         const category = resp.category;
         alert(`Cadastro concluído: \n nome: ${category.name} \n`);
-        fetchCategoryData()
+        fetchCategoryData();
         setModalVisible(false)
       })
       .catch((error) => {
@@ -71,6 +100,10 @@ export default function CategoryPage() {
       <TouchableOpacity style = {{flex: 2}}>
         <Header text="Categorias" />
       </TouchableOpacity>
+
+      <View style = {{flex: 2}}>
+        <InputText placeholder="Pesquisar" onChangeText={handleSearchChange} textValue={searchText}/>
+      </View>
 
       <View style={styles.scrollView}>
         <ScrollView>
@@ -119,27 +152,18 @@ export default function CategoryPage() {
         </Modal>
       </View>
   );
-
-  function fetchCategoryData() {
-    categoryService.getCategories().then(resp => {
-      setCategories(resp.categorias);
-
-    }).catch(() => {
-      alert(`Erro ao encontrar anotações do grupo`);
-    });
-  }
 }
 
 const styles = StyleSheet.create({
   scrollView:{
-    flex: 15,
+    flex: 14,
     width: "100%",
   },
   card:{
     marginBottom: "3%"
   },
   buttonGroup:{
-    flex: 2,
+    flex: 1,
     paddingTop: 15,
     alignItems: "center"
   },
@@ -147,11 +171,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flex: 5,
     gap: '10%',
-  },
-  headerCreateText: {
-    flex: 2,
-    paddingTop: 15,
-    fontSize: 20
   },
   inputCreateInfoContainer: {
     alignItems:"center",

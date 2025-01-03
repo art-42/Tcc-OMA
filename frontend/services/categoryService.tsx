@@ -3,14 +3,15 @@ import { Note, NoteResponse } from "@/interfaces/Note";
 import { User, UserResponse } from "@/interfaces/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-//const API_URL = 'http://192.168.0.14:5001';
-const API_URL = 'http://10.0.0.16:5001';
+const API_URL = 'http://192.168.0.14:5001';
+// const API_URL = 'http://10.0.0.16:5001';
 
 export const categoryService = {
 
   createCategory: async (category: Category): Promise<any> => {
     try {
       const id = await AsyncStorage.getItem('idUser');
+
       if(id){
         category.userId = id;
       }
@@ -30,7 +31,6 @@ export const categoryService = {
     }
   },
 
-  // Create a new user (POST)
   getCategories: async (): Promise<CategoriesResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
@@ -77,6 +77,19 @@ export const categoryService = {
       });
       if (!response.ok) {
         throw new Error('Failed to delete category');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  searchCategories: async (value: string): Promise<CategoriesResponse> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/searchCategories/${userId}/${value}`);
+      if (!response.ok) {
+        throw new Error('Failed to search for category');
       }
       return await response.json();
     } catch (error) {

@@ -38,6 +38,8 @@ import {
 const router = express.Router();
 
 // Rotas do CRUD
+
+// Rotas para user
 router.post('/user/register', registerUser);
 router.post('/user/login', loginUser);
 router.get('/user', getAllUsers);
@@ -45,6 +47,7 @@ router.get('/user/:id', getUserById);
 router.put('/user/:id', updateUser);
 router.delete('/user/:id', deleteUser);
 
+// Rotas para groups
 router.get("/groups/date/:userId", getGroupsByDate);
 router.get("/groups/:categoryId/:userId", getGroupsByCategory);
 router.post("/groups", createGroup);
@@ -54,25 +57,24 @@ router.delete("/groups/:groupId/:userId",  deleteGroup);
 router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 router.get("/searchGroups/:userId/:query",searchGroup)
 
-
-// Rotas para Anotações
+// Rotas para notes
 router.post("/notes/:userId", addNoteToGroup);
 router.get("/notes/group/:userId/:groupId", getNotesByGroup);
-router.post("/category", createCategory);
-router.get("/categories/:userId", getCategories);
-router.delete("/category/:id", deleteCategory);
-router.put("/category/:id", updateCategory);
-router.get("/searchCategories/:userId/:query",searchCategory)
-
-//router.post("/notes", createNote); 
 router.get("/notes/:userId", getAllNotes);
 router.get("/notes/:userId/:noteId", getNoteById);
 router.put("/notes/:userId/:noteId", updateNote); 
 router.delete("/notes/:userId/:noteId", deleteNote);
 router.get("/searchNotes/:userId/:query",searchNote)
 
+// Rotas para categories
+router.post("/category", createCategory);
+router.get("/categories/:userId", getCategories);
+router.delete("/category/:id", deleteCategory);
+router.put("/category/:id", updateCategory);
+router.get("/searchCategories/:userId/:query",searchCategory)
 
-router.get("/search/:userId/:query",search)//pesquisa o termo em notas, grupos e categorias
+
+router.get("/search/:userId/:query",search)//pesquisa o termo em notas, grupos
 
 
 

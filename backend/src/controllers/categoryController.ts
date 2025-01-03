@@ -96,13 +96,13 @@ export const searchCategory = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "O termo de busca é obrigatório." });
     }
 
-    const categories = await Category.find({
+    const categorias = await Category.find({
       userId,
       name: { $regex: query, $options: "i" }
     });
 
     const result = {
-      categories
+      categorias
     };
 
     res.status(200).json(result);
