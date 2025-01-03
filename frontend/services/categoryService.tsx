@@ -3,7 +3,8 @@ import { Note, NoteResponse } from "@/interfaces/Note";
 import { User, UserResponse } from "@/interfaces/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const API_URL = 'http://192.168.0.14:5001';
+//const API_URL = 'http://192.168.0.14:5001';
+const API_URL = 'http://10.0.0.16:5001';
 
 export const categoryService = {
 
@@ -33,7 +34,7 @@ export const categoryService = {
   getCategories: async (): Promise<CategoriesResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/categories`);
+      const response = await fetch(`${API_URL}/categories/${userId}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }

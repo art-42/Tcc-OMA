@@ -32,25 +32,28 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllGroups = async (req: Request, res: Response) => {
+export const getAllGroupsByUser = async (req: Request, res: Response) => {
   try {
+    const { userId } = req.params;
 
-    const groups = await Group.find().lean();
+    const groups = await Group.find({ userId }).lean();
 
-    const groupsWithCategory = await Promise.all(groups.map(async (group) => {
-      const category = await Category.findById(group.categoryId); 
-      const categoryName = category ? category.name : "Sem categoria";
-      
-      return {
-        ...group,
-        categoryName, 
-      };
-    }));
+    const groupsWithCategory = await Promise.all(
+      groups.map(async (group) => {
+        const category = await Category.findById(group.categoryId);
+        const categoryName = category ? category.name : "Sem categoria";
+
+        return {
+          ...group,
+          categoryName,
+        };
+      })
+    );
 
     res.status(200).json(groupsWithCategory);
   } catch (err) {
-    console.error("Erro ao buscar todos os grupos:", err);
-    res.status(500).json({ error: "Erro ao buscar todos os grupos." });
+    console.error("Erro ao buscar grupos por usuário:", err);
+    res.status(500).json({ error: "Erro ao buscar grupos." });
   }
 };
 

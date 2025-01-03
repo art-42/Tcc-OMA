@@ -26,9 +26,14 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categorias = await Category.find();
+    const { userId } = req.params; 
+
+    if (!userId) {
+      return res.status(400).json({ error: "Usuário não fornecido." });
+    }
+
+    const categorias = await Category.find({ userId });
     res.status(200).json({ categorias });
-    
   } catch (err) {
     console.error("Erro ao buscar categorias:", err);
     res.status(500).json({ error: "Erro ao buscar categorias." });

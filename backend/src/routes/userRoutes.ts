@@ -17,7 +17,7 @@ import {
   updateGroup,
   deleteGroup,
   search,
-  getAllGroups
+  getAllGroupsByUser
 } from '../controllers/groupController';
 
 import {
@@ -49,22 +49,23 @@ router.post("/groups", createGroup);
 router.get("/groups/:id",  getGroupById); 
 router.put("/groups/:groupId/:userId",  updateGroup); 
 router.delete("/groups/:groupId/:userId",  deleteGroup);
-router.get("/grupos/get/allGroups",getAllGroups);
+router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 
 
 // Rotas para Anotações
-router.post("/notes", addNoteToGroup);
+router.post("/notes/:userId", addNoteToGroup);
 router.get("/notes/group/:groupId", getNotesByGroup);
 router.post("/category", createCategory);
-router.get("/categories", getCategories);
+router.get("/categories/:userId", getCategories);
 router.delete("/category/:id", deleteCategory);
 router.put("/category/:id", updateCategory);
 
-// router.post("/notes", createNote); 
-router.get("/notes", getAllNotes);
-router.get("/notes/:noteId", getNoteById);
-router.put("/notes/:noteId", updateNote); 
-router.delete("/notes/:noteId", deleteNote);
+//router.post("/notes", createNote); 
+router.get("/notes/:userId", getAllNotes);
+router.get("/notes/:userId/:noteId", getNoteById);
+router.put("/notes/:userId/:noteId", updateNote); 
+router.delete("/notes/:userId/:noteId", deleteNote);
+
 
 router.get("/search/:query",search)//pesquisa o termo em notas, grupos e categorias
 
