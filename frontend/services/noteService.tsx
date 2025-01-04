@@ -76,8 +76,8 @@ export const noteService = {
 
   deleteNote: async (noteId: string): Promise<NoteResponse> => {
     try {
-
-      const response = await fetch(`${API_URL}/notes/${noteId}`, {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/notes/${userId}/${noteId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
