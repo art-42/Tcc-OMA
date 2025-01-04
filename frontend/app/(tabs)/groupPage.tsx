@@ -18,12 +18,11 @@ export default function GroupPage() {
 
   const router = useRouter();
 
-
-  var groupInfo = useLocalSearchParams<{ id: string, name: string, category: string }>();
+  var groupInfo = useLocalSearchParams<{ id: string}>();
 
   const [id, setId] = useState(groupInfo.id);
-  const [name, setName] = useState(groupInfo.name);
-  const [selectedCategory, setSelectedCategory] = useState(groupInfo.category);
+  const [name, setName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [edit, setEdit] = useState(false);
 
   const [anotations, setAnotation] = useState<any[]>([]);
@@ -109,6 +108,13 @@ export default function GroupPage() {
 
   function fetchGroupData() {
     if (id) {
+      groupService.getGroupById(id).then(resp => {
+        setName(resp.group.name);
+        setSelectedCategory(resp.group.categoryId);
+
+      }).catch(() => {
+        alert(`Erro ao encontrar anotações do grupo`);
+      });
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
 

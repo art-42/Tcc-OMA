@@ -11,9 +11,9 @@ export default function AnotationPage() {
 
   const router = useRouter();
 
-  var groupInfo = useLocalSearchParams<{ noteId: string, groupId: string }>();
+  var params = useLocalSearchParams<{ noteId: string, groupId: string, fromHome: string }>();
 
-  const [id, setId] = useState(groupInfo.noteId);
+  const [id, setId] = useState(params.noteId);
   
   const [edit, setEdit] = useState(!id);
 
@@ -38,8 +38,8 @@ export default function AnotationPage() {
   const [anotation, setAnotation] = useState<any>();
 
   const saveNote = () => {
-    (!id? noteService.createNote({title: anotationTitle, content: anotationText, groupId: groupInfo.groupId })
-      : noteService.updateNote(id ,{title: anotationTitle, content: anotationText, groupId: groupInfo.groupId }))
+    (!id? noteService.createNote({title: anotationTitle, content: anotationText, groupId: params.groupId })
+      : noteService.updateNote(id ,{title: anotationTitle, content: anotationText, groupId: params.groupId }))
       .then(resp => {
         alert(`Cadastro concluído: \n title: ${resp.title} \n`);
         
@@ -117,6 +117,12 @@ export default function AnotationPage() {
               <Text style={styles.text}>{anotation?.content}</Text>
             </ScrollView>
           </View>
+          {params.fromHome === 'true' && 
+            <View style={{flex: 1}}>
+              <Button label="Abrir Grupo" onClick={() => router.push({pathname: "/(tabs)/groupPage", params: {id: params.groupId}})}/>
+            </View>
+          }
+          
         </View>
 
         :

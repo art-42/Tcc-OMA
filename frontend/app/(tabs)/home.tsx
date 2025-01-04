@@ -10,6 +10,9 @@ import Button from "@/components/Button";
 import { groupService } from "@/services/groupService";
 import GroupCard from "@/components/GroupCard";
 import { useAuth } from "../../context/AuthContext";
+import InputText from "@/components/InputText";
+import { searchService } from "@/services/searchService";
+import AnotationCard from "@/components/AnotationCard";
 
 
 export default function HomeScreen() {
@@ -17,7 +20,11 @@ export default function HomeScreen() {
   const { isAuthenticated, user, logout } = useAuth();
 
   const [groups, setGroups] = useState<any[]>([]);
+  const [searchedResults, setSearchedResults] = useState<any | undefined>(undefined);
   const [selectedView, setSelectedView] = useState('date');
+
+  const [searchText, setSearchText] = useState('');
+  
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -128,6 +135,16 @@ export default function HomeScreen() {
     return `${hours}:${minutes}`;
   }
 
+  function formatToDDMMYYYY(dateString: string): string {
+    const date = new Date(dateString);
+  
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year} `;
+  }
+
   function groupByCategory(data: any[]): any[] {
     const grouped: { [key: string]: { id: string, name: string, time: string, categoryId: string }[] } = {};
   
@@ -163,7 +180,7 @@ export default function HomeScreen() {
     }));
   }
   
-  const groupedArray = selectedView === 'date'? groupByYearMonthAndDay(groups) : groupByCategory(groups);
+  const groupedArray = selectedView === 'date' ? groupByYearMonthAndDay(groups) : groupByCategory(groups);
   
   useEffect(() => {
     if (!isAuthenticated) {
@@ -215,6 +232,123 @@ export default function HomeScreen() {
     router.push("/infoScreen");
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    if(value !== ''){
+      fetchResults(value);
+    } else{
+      setSearchedResults(undefined);
+    }
+  }
+
+  const fetchResults = (value: string) => {
+      searchService.search(value).then(resp => {
+        setSearchedResults(resp);
+    
+      }).catch(() => {
+        alert(`Erro ao encontrar anotações do grupo`);
+      });
+  }
+
+  const renderGroupedArray = selectedView === 'date' ? 
+    groupedArray.map(year => (
+      <View style={styles.list} key={year.year}>
+        <View style={styles.textHeadContainer}>
+          <Text style={styles.text}>{year.year}</Text>
+        </View>
+
+        {year.months.map((month: any) => (
+          <View style={styles.list} key={month.monthName}>
+            <View style={[styles.textHeadContainer, styles.monthHeader]}>
+              <Text style={styles.text}>{month.monthName}</Text>
+            </View>
+
+            {month.days.map((day: { dayName: string, data: any[] }, index: number) => (
+              <View style={styles.list} key={index}>
+                <View style={[styles.textSubContainer, styles.dayHeader]}>
+                  <Text style={styles.text}>{day.dayName}</Text>
+                </View>
+
+                {day.data.map(group => (
+                  <View style={styles.AnotationContainer} key={group.id}>
+                    <GroupCard
+                      id={group.id}
+                      categoryId={group.categoryId}
+                      categoryName={group.categoryName}
+                      title={group.name}
+                      time={formatToHHMM(group.time)}
+                    />
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    )) : 
+    groupedArray.map(category => (
+      <View style={styles.list} key={category.categoryName}>
+        <View style={styles.list}>
+          <View style={[styles.textSubContainer, styles.dayHeader]}>
+            <Text style={styles.text}>{category.categoryName}</Text>
+          </View>
+
+          {category.data.map((data: any) => (
+            <View style={styles.AnotationContainer} key={data.id}>
+              <GroupCard
+                id={data.id}
+                categoryId={data.categoryId}
+                categoryName={data.categoryName}
+                title={data.name}
+                time={formatToHHMM(data.time)}
+              />
+            </View>
+          ))}
+        </View>
+      </View>
+    ));
+  
+  const renderSearchedResults = 
+      <View style={styles.list}>
+        {searchedResults?.groups?.length > 0 &&
+          <View>
+            <View style={styles.textHeadContainer}>
+              <Text style={styles.text}>Grupos</Text>
+            </View>
+
+            <View style={styles.list}>
+              {searchedResults?.groups?.map((group: any) => (
+                <View style={styles.AnotationContainer} key={group._id}>
+                  <GroupCard
+                    id={group._id}
+                    categoryId={group.categoryId}
+                    categoryName={group.categoryName}
+                    title={group.name}
+                    date={formatToDDMMYYYY(group.createdAt)}
+                    time={formatToHHMM(group.createdAt)}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+        {searchedResults?.notes?.length > 0 &&
+          <View>
+            <View style={styles.textHeadContainer}>
+              <Text style={styles.text}>Anotações</Text>
+            </View>
+
+            <View style={styles.list}>
+              {searchedResults?.notes?.map((note: any) => (
+                <View style={styles.AnotationContainer} key={note._id}>
+                  <AnotationCard id={note._id} groupId={note.groupId} title={note.title} fromHome="true"/>
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+      </View>
+
   return (
     <View
       style={{
@@ -225,6 +359,10 @@ export default function HomeScreen() {
       <TouchableOpacity style = {{flex: 1}} onPress={navigateToInfoScreen}>
         <Header rightIcons={rightIcons} text="Página Inicial" />
       </TouchableOpacity>
+
+      <View style = {{flex: 1}}>
+        <InputText placeholder="Pesquisar" onChangeText={handleSearchChange} textValue={searchText}/>
+      </View>
 
       <View style={styles.picker}>
         <Picker
@@ -239,73 +377,9 @@ export default function HomeScreen() {
         </Picker>
       </View>
 
-
-
       <View style={styles.scrollView}>
         <ScrollView ref={scrollViewRef} >
-          {
-            selectedView === 'date' ?
-              groupedArray.map(year => (
-                <View style={styles.list} key={year.year}>
-                  <View style={styles.textHeadContainer}>
-                    <Text style={styles.text}>{year.year}</Text>
-                  </View>
-    
-                  {year.months.map((month: any) => (
-                    <View style={styles.list} key={month.monthName}>
-                      <View style={[styles.textHeadContainer, styles.monthHeader]}>
-                        <Text style={styles.text}>{month.monthName}</Text>
-                      </View>
-    
-                      {/* Iterate through days in the month */}
-                      {month.days.map((day: { dayName: string, data: any[] }, index: number) => (
-                        <View style={styles.list} key={index}>
-                          <View style={[styles.textSubContainer, styles.dayHeader]}>
-                            <Text style={styles.text}>{day.dayName}</Text>
-                          </View>
-    
-                          {/* Iterate through the data for each day */}
-                          {day.data.map(group => (
-                            <View style={styles.AnotationContainer} key={group.id}>
-                              <GroupCard
-                                id={group.id}
-                                categoryId={group.categoryId}
-                                categoryName={group.categoryName}
-                                title={group.name}
-                                time={formatToHHMM(group.time)}
-                              />
-                            </View>
-                          ))}
-                        </View>
-                      ))}
-                    </View>
-                  ))}
-                </View>
-              )) 
-              : (
-                groupedArray.map( category => (
-                  <View style={styles.list} key={category.categoryName}>
-                      <View style={styles.list}>
-                        <View style={[styles.textSubContainer, styles.dayHeader]}>
-                          <Text style={styles.text}>{category.categoryName}</Text>
-                        </View>
-  
-                        {category.data.map((data:any) => (
-                          <View style={styles.AnotationContainer} key={data.id}>
-                            <GroupCard
-                              id={data.id}
-                              categoryId={data.categoryId}
-                              categoryName={data.categoryName}
-                              title={data.name}
-                              time={formatToHHMM(data.time)}
-                            />
-                          </View>
-                        ))}
-                      </View>
-                  </View>
-                ))
-              )
-          } 
+          {searchedResults ? renderSearchedResults : renderGroupedArray }
           
         </ScrollView>
       </View>

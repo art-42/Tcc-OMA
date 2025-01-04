@@ -248,14 +248,23 @@ export const search = async (req: Request, res: Response) => {
       ]
     });
 
-    const groups = await Group.find({
-      userId,
-      name: { $regex: query, $options: "i" }
-    });
+    const groups = await Group.find({ userId, name: { $regex: query, $options: "i" } }).lean();
+
+    const groupsWithCategory = await Promise.all(
+      groups.map(async (group) => {
+        const category = await Category.findById(group.categoryId);
+        const categoryName = category ? category.name : "Sem categoria";
+
+        return {
+          ...group,
+          categoryName,
+        };
+      })
+    );
 
     const result = {
       notes,
-      groups,
+      groups: groupsWithCategory,
     };
 
     res.status(200).json(result);
@@ -282,7 +291,6 @@ export const searchGroup = async (req: Request, res: Response) => {
         userId,
         name: { $regex: query, $options: "i" }
       });
-
   
       const result = {
         groups

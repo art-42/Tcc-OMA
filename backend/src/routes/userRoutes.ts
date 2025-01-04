@@ -49,9 +49,9 @@ router.delete('/user/:id', deleteUser);
 
 // Rotas para groups
 router.get("/groups/date/:userId", getGroupsByDate);
-router.get("/groups/:categoryId/:userId", getGroupsByCategory);
+router.get("/groups/category/:categoryId/:userId", getGroupsByCategory);
 router.post("/groups", createGroup);
-router.get("/groups/:id",  getGroupById); 
+router.get("/groups/:groupId/:userId",  getGroupById); 
 router.put("/groups/:groupId/:userId",  updateGroup); 
 router.delete("/groups/:groupId/:userId",  deleteGroup);
 router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
