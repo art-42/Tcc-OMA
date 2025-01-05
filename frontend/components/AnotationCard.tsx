@@ -6,12 +6,13 @@ export type CardProps = {
     groupId?: string;
     title?: string;
     type?: string;
+    fromHome?: string;
 }
 
 export default function AnotationCard(prop : CardProps) {
   return (
     <View>
-      <Pressable style={styles.container} onPress={() => router.push({pathname: "/(tabs)/anotationPage", params: {noteId: prop.id, groupId: prop.groupId}})}>
+      <Pressable style={styles.container} onPress={() => router.push({pathname: "/(tabs)/anotationPage", params: {noteId: prop.id, groupId: prop.groupId, fromHome: prop.fromHome}})}>
         <View style={styles.titleDateRow}>
           <Text style={styles.text}>
             Título: {prop.title}
@@ -25,7 +26,7 @@ export default function AnotationCard(prop : CardProps) {
 const styles = StyleSheet.create({
   container:{
     borderWidth: 1,
-    marginHorizontal:"8%"
+    marginHorizontal:"5%"
   },
   titleDateRow:{
     flexDirection: "column",  

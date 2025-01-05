@@ -6,7 +6,7 @@ export const userService = {
 
   loginUser: async (user: User): Promise<UserResponse> => {
     try {
-      const response = await fetch(`${API_URL}/login`, {
+      const response = await fetch(`${API_URL}/user/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export const userService = {
   // Create a new user (POST)
   createUser: async (user: User): Promise<UserResponse> => {
     try {
-      const response = await fetch(`${API_URL}/register`, {
+      const response = await fetch(`${API_URL}/user/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ export const userService = {
 
   updateUser: async (user: User): Promise<UserResponse> => {
     try {
-      const response = await fetch(`${API_URL}/${user.id}`, {
+      const response = await fetch(`${API_URL}/user/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export const userService = {
   // Create a new user (POST)
   getUser: async (id: string): Promise<UserResponse> => {
     try {
-      const response = await fetch(`${API_URL}/${id}`);
+      const response = await fetch(`${API_URL}/user/${id}`);
       if (!response.ok) {
         throw new Error('Failed to get user');
       }

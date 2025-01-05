@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Group from "../models/Group";
 import User from "../models/User"; 
 import Category from "../models/Category"; 
+import Note from "../models/Note";
 
 export const createGroup = async (req: Request, res: Response) => {
   try {
@@ -31,6 +32,30 @@ export const createGroup = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllGroupsByUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    const groups = await Group.find({ userId }).lean();
+
+    const groupsWithCategory = await Promise.all(
+      groups.map(async (group) => {
+        const category = await Category.findById(group.categoryId);
+        const categoryName = category ? category.name : "Sem categoria";
+
+        return {
+          ...group,
+          categoryName,
+        };
+      })
+    );
+
+    res.status(200).json(groupsWithCategory);
+  } catch (err) {
+    console.error("Erro ao buscar grupos por usuário:", err);
+    res.status(500).json({ error: "Erro ao buscar grupos." });
+  }
+};
 
 export const getGroupsByDate = async (req: Request, res: Response) => {
   try {
@@ -41,14 +66,32 @@ export const getGroupsByDate = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Usuário não encontrado." });
     }
 
-    const groups = await Group.find({ userId }).sort({ createdAt: -1 });
+    const groups = await Group.find({ userId }).sort({ createdAt: -1 }).lean();
 
-    res.status(200).json({ groups });
+    const groupsByDate: { [date: string]: any[] } = {};
+    for (const group of groups) {
+      const category = await Category.findById(group.categoryId);
+      const categoryName = category ? category.name : "Sem categoria";
+      const date = group.createdAt instanceof Date ? group.createdAt.toISOString().split("T")[0] : null;
+
+      if (date) {
+        if (!groupsByDate[date]) {
+          groupsByDate[date] = [];
+        }
+        groupsByDate[date].push({
+          ...group,
+          categoryName,
+        });
+      }
+    }
+
+    res.status(200).json(groupsByDate);
   } catch (err) {
     console.error("Erro ao buscar grupos por data:", err);
     res.status(500).json({ error: "Erro ao buscar grupos." });
   }
 };
+
 
 export const getGroupsByCategory = async (req: Request, res: Response) => {
   try {
@@ -63,14 +106,22 @@ export const getGroupsByCategory = async (req: Request, res: Response) => {
     if (!category) {
       return res.status(400).json({ error: "Categoria não encontrada." });
     }
+
     const groups = await Group.find({ userId, categoryId });
 
-    res.status(200).json({ groups });
+    const groupsWithCategoryName = groups.map(group => ({
+      ...group.toObject(), 
+      categoryName: category.name,
+    }));
+
+    res.status(200).json({ groups: groupsWithCategoryName });
   } catch (err) {
     console.error("Erro ao buscar grupos por categoria:", err);
     res.status(500).json({ error: "Erro ao buscar grupos." });
   }
 };
+
+
 
 
 export const searchGroupByName = async (req: Request, res: Response) => {
@@ -174,4 +225,80 @@ export const deleteGroup = async (req: Request, res: Response) => {
     console.error("Erro ao excluir grupo:", err);
     res.status(500).json({ error: "Erro ao excluir grupo." });
   }
+};
+
+
+export const search = async (req: Request, res: Response) => {
+  try {
+    const { userId, query } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+    }
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({ error: "O termo de busca é obrigatório." });
+    }
+
+    const notes = await Note.find({
+      userId,
+      $or: [
+        { title: { $regex: query, $options: "i" } },
+        { content: { $regex: query, $options: "i" } }
+      ]
+    });
+
+    const groups = await Group.find({ userId, name: { $regex: query, $options: "i" } }).lean();
+
+    const groupsWithCategory = await Promise.all(
+      groups.map(async (group) => {
+        const category = await Category.findById(group.categoryId);
+        const categoryName = category ? category.name : "Sem categoria";
+
+        return {
+          ...group,
+          categoryName,
+        };
+      })
+    );
+
+    const result = {
+      notes,
+      groups: groupsWithCategory,
+    };
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Erro ao realizar a busca geral:", err);
+    res.status(500).json({ error: "Erro ao realizar a busca." });
+  }
+};
+
+export const searchGroup = async (req: Request, res: Response) => {
+    try {
+      const { userId, query } = req.params;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+      }
+  
+      if (!query || query.trim() === "") {
+        return res.status(400).json({ error: "O termo de busca é obrigatório." });
+      }
+
+  
+      const groups = await Group.find({
+        userId,
+        name: { $regex: query, $options: "i" }
+      });
+  
+      const result = {
+        groups
+      };
+  
+      res.status(200).json(result);
+    } catch (err) {
+      console.error("Erro ao realizar a busca geral:", err);
+      res.status(500).json({ error: "Erro ao realizar a busca." });
+    }
 };

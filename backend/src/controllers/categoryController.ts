@@ -26,9 +26,14 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getCategories = async (req: Request, res: Response) => {
   try {
-    const categorias = await Category.find();
+    const { userId } = req.params; 
+
+    if (!userId) {
+      return res.status(400).json({ error: "Usuário não fornecido." });
+    }
+
+    const categorias = await Category.find({ userId });
     res.status(200).json({ categorias });
-    
   } catch (err) {
     console.error("Erro ao buscar categorias:", err);
     res.status(500).json({ error: "Erro ao buscar categorias." });
@@ -76,5 +81,33 @@ export const deleteCategory = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Erro ao deletar categoria:", err);
     res.status(500).json({ error: "Erro ao deletar categoria." });
+  }
+};
+
+export const searchCategory = async (req: Request, res: Response) => {
+  try {
+    const { userId, query } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+    }
+
+    if (!query || query.trim() === "") {
+      return res.status(400).json({ error: "O termo de busca é obrigatório." });
+    }
+
+    const categorias = await Category.find({
+      userId,
+      name: { $regex: query, $options: "i" }
+    });
+
+    const result = {
+      categorias
+    };
+
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("Erro ao realizar a busca geral:", err);
+    res.status(500).json({ error: "Erro ao realizar a busca." });
   }
 };

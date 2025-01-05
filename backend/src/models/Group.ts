@@ -2,8 +2,10 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface GroupDocument extends Document {
   name: string;
-  categoryId: string; // Relacionamento com a categoria
-  userId: string; // Relacionamento com o usuário
+  categoryId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date; 
 }
 
 const GroupSchema = new Schema<GroupDocument>(
@@ -16,4 +18,3 @@ const GroupSchema = new Schema<GroupDocument>(
 );
 
 export default mongoose.model<GroupDocument>("Group", GroupSchema);
-

@@ -5,10 +5,10 @@ export interface Group {
 }
 
 export interface GroupResponse {
-  message: string;
   group: {
     _id: string;
     name: string;
+    categoryId: string;
   };
 }
 

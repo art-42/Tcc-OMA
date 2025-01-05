@@ -1,6 +1,6 @@
 import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView, BackHandler, Alert } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Picker} from '@react-native-picker/picker';
@@ -10,6 +10,9 @@ import Button from "@/components/Button";
 import { groupService } from "@/services/groupService";
 import GroupCard from "@/components/GroupCard";
 import { useAuth } from "../../context/AuthContext";
+import InputText from "@/components/InputText";
+import { searchService } from "@/services/searchService";
+import AnotationCard from "@/components/AnotationCard";
 
 
 export default function HomeScreen() {
@@ -17,6 +20,12 @@ export default function HomeScreen() {
   const { isAuthenticated, user, logout } = useAuth();
 
   const [groups, setGroups] = useState<any[]>([]);
+  const [searchedResults, setSearchedResults] = useState<any | undefined>(undefined);
+  const [selectedView, setSelectedView] = useState('date');
+
+  const [searchText, setSearchText] = useState('');
+  
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     fetchHomeData();
@@ -28,11 +37,9 @@ export default function HomeScreen() {
     }, [])
   );
 
-
   function fetchHomeData() {
     groupService.getGroups().then(resp => {
-      setGroups(resp.groups);
-
+      setGroups(resp);
     }).catch(() => {
       alert(`Erro no cadastro de pessoa`);
     });
@@ -45,56 +52,140 @@ export default function HomeScreen() {
     ];
   
     // Ensure the monthNumber is between 1 and 12 (inclusive)
-    if (monthNumber >= 1 && monthNumber <= 12) {
+    if (monthNumber >= 0 && monthNumber <= 12) {
       return months[monthNumber];  // Subtract 1 since the array is 0-based
     } else {
       return 'Mês inválido';  // Return an error message if the number is invalid
     }
   }
 
-  function groupByMonthAndDay(data: any[]): any[] {
-    const grouped: { [key: string]: { [key: string]: { id: string, name: string, time: string }[] } } = {};
+  function groupByYearMonthAndDay(data: any[]): any[] {
+    const grouped: {
+      [key: string]: {
+        [key: string]: {
+          [key: string]: {
+            id: string;
+            name: string;
+            time: string;
+            categoryName: string;
+            categoryId: string;
+          }[];
+        };
+      };
+    } = {};
   
-    data.forEach(item => {
+    // Sort the data by createdAt in descending order (newest first)
+    const sortedData = [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  
+    sortedData.forEach(item => {
       const date = new Date(item.createdAt);
-      const monthName = getMonthName(date.getMonth());
+      const year = date.getFullYear().toString(); // Get the year
+      const monthName = getMonthName(date.getMonth()); // Get the month name
       const dayName = date.getDate().toString(); // Get the day as a string
   
-      if (!grouped[monthName]) {
-        grouped[monthName] = {};
-      }
-      
-      if (!grouped[monthName][dayName]) {
-        grouped[monthName][dayName] = [];
+      // Initialize year group if it doesn't exist
+      if (!grouped[year]) {
+        grouped[year] = {};
       }
   
-      grouped[monthName][dayName].push({ id: item._id, name: item.name, time: item.createdAt });
+      // Initialize month group within the year if it doesn't exist
+      if (!grouped[year][monthName]) {
+        grouped[year][monthName] = {};
+      }
+  
+      // Initialize day group within the month if it doesn't exist
+      if (!grouped[year][monthName][dayName]) {
+        grouped[year][monthName][dayName] = [];
+      }
+  
+      // Push the item into the correct year -> month -> day group
+      grouped[year][monthName][dayName].push({
+        id: item._id,
+        name: item.name,
+        time: item.createdAt,
+        categoryId: item.categoryId,
+        categoryName: item.categoryName
+      });
     });
   
-    return Object.keys(grouped).map(month => ({
-      monthName: month,
-      days: Object.keys(grouped[month]).map(day => ({
-        daysName: day,
-        data: grouped[month][day]
-      }))
-    }));
+    // Sort the grouped data
+    const sortedGroupedData = Object.keys(grouped)
+      .sort((a, b) => parseInt(b) - parseInt(a)) // Sort years from newest to oldest
+      .map(year => ({
+        year: year,
+        months: Object.keys(grouped[year])
+          .sort((a, b) => b.localeCompare(a)) // Sort months from newest to oldest
+          .map(month => ({
+            monthName: month,
+            days: Object.keys(grouped[year][month])
+              .sort((a, b) => parseInt(b) - parseInt(a)) // Sort days from newest to oldest
+              .map(day => ({
+                dayName: day,
+                data: grouped[year][month][day].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()) // Sort items by newest first
+              }))
+          }))
+      }));
+  
+    return sortedGroupedData;
   }
-
   function formatToHHMM(dateString: string): string {
     const date = new Date(dateString);
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   }
+
+  function formatToDDMMYYYY(dateString: string): string {
+    const date = new Date(dateString);
   
-  const groupedArray = groupByMonthAndDay(groups);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based, so add 1
+    const year = date.getFullYear();
+    
+    return `${day}/${month}/${year} `;
+  }
+
+  function groupByCategory(data: any[]): any[] {
+    const grouped: { [key: string]: { id: string, name: string, time: string, categoryId: string }[] } = {};
+  
+    data.forEach(item => {
+      const categoryName = item.categoryName; // Group by categoryName
+  
+      // Initialize category group if it doesn't exist
+      if (!grouped[categoryName]) {
+        grouped[categoryName] = [];
+      }
+  
+      // Push the item into the correct category group
+      grouped[categoryName].push({
+        id: item._id,
+        name: item.name,
+        time: item.createdAt,
+        categoryId: item.categoryId
+      });
+    });
+  
+    // Sort the categories by placing the one with null categoryId first, and the rest alphabetically
+    const sortedCategories = Object.keys(grouped)
+      .sort((a, b) => {
+        if (a === 'null') return -1; // Ensure category with null categoryId is first
+        if (b === 'null') return 1;
+        return a.localeCompare(b); // Sort the rest alphabetically
+      });
+  
+    // Format the grouped data as an array of categories with their items
+    return sortedCategories.map(category => ({
+      categoryName: category,
+      data: grouped[category].sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime()) // Sort items by newest first
+    }));
+  }
+  
+  const groupedArray = selectedView === 'date' ? groupByYearMonthAndDay(groups) : groupByCategory(groups);
   
   useEffect(() => {
     if (!isAuthenticated) {
       router.replace("/"); // Redireciona para a página de login se não autenticado
     }
-    
-
   }, [isAuthenticated, logout, router]);
   
   useFocusEffect(
@@ -141,6 +232,123 @@ export default function HomeScreen() {
     router.push("/infoScreen");
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchText(value);
+    if(value !== ''){
+      fetchResults(value);
+    } else{
+      setSearchedResults(undefined);
+    }
+  }
+
+  const fetchResults = (value: string) => {
+      searchService.search(value).then(resp => {
+        setSearchedResults(resp);
+    
+      }).catch(() => {
+        alert(`Erro ao encontrar anotações do grupo`);
+      });
+  }
+
+  const renderGroupedArray = selectedView === 'date' ? 
+    groupedArray.map(year => (
+      <View style={styles.list} key={year.year}>
+        <View style={styles.textHeadContainer}>
+          <Text style={styles.text}>{year.year}</Text>
+        </View>
+
+        {year.months.map((month: any) => (
+          <View style={styles.list} key={month.monthName}>
+            <View style={[styles.textHeadContainer, styles.monthHeader]}>
+              <Text style={styles.text}>{month.monthName}</Text>
+            </View>
+
+            {month.days.map((day: { dayName: string, data: any[] }, index: number) => (
+              <View style={styles.list} key={index}>
+                <View style={[styles.textSubContainer, styles.dayHeader]}>
+                  <Text style={styles.text}>{day.dayName}</Text>
+                </View>
+
+                {day.data.map(group => (
+                  <View style={styles.AnotationContainer} key={group.id}>
+                    <GroupCard
+                      id={group.id}
+                      categoryId={group.categoryId}
+                      categoryName={group.categoryName}
+                      title={group.name}
+                      time={formatToHHMM(group.time)}
+                    />
+                  </View>
+                ))}
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    )) : 
+    groupedArray.map(category => (
+      <View style={styles.list} key={category.categoryName}>
+        <View style={styles.list}>
+          <View style={[styles.textSubContainer, styles.dayHeader]}>
+            <Text style={styles.text}>{category.categoryName}</Text>
+          </View>
+
+          {category.data.map((data: any) => (
+            <View style={styles.AnotationContainer} key={data.id}>
+              <GroupCard
+                id={data.id}
+                categoryId={data.categoryId}
+                categoryName={data.categoryName}
+                title={data.name}
+                time={formatToHHMM(data.time)}
+              />
+            </View>
+          ))}
+        </View>
+      </View>
+    ));
+  
+  const renderSearchedResults = 
+      <View style={styles.list}>
+        {searchedResults?.groups?.length > 0 &&
+          <View>
+            <View style={styles.textHeadContainer}>
+              <Text style={styles.text}>Grupos</Text>
+            </View>
+
+            <View style={styles.list}>
+              {searchedResults?.groups?.map((group: any) => (
+                <View style={styles.AnotationContainer} key={group._id}>
+                  <GroupCard
+                    id={group._id}
+                    categoryId={group.categoryId}
+                    categoryName={group.categoryName}
+                    title={group.name}
+                    date={formatToDDMMYYYY(group.createdAt)}
+                    time={formatToHHMM(group.createdAt)}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+        {searchedResults?.notes?.length > 0 &&
+          <View>
+            <View style={styles.textHeadContainer}>
+              <Text style={styles.text}>Anotações</Text>
+            </View>
+
+            <View style={styles.list}>
+              {searchedResults?.notes?.map((note: any) => (
+                <View style={styles.AnotationContainer} key={note._id}>
+                  <AnotationCard id={note._id} groupId={note.groupId} title={note.title} fromHome="true"/>
+                </View>
+              ))}
+            </View>
+          </View>
+        }
+      </View>
+
   return (
     <View
       style={{
@@ -152,37 +360,33 @@ export default function HomeScreen() {
         <Header rightIcons={rightIcons} text="Página Inicial" />
       </TouchableOpacity>
 
+      <View style = {{flex: 1}}>
+        <InputText placeholder="Pesquisar" onChangeText={handleSearchChange} textValue={searchText}/>
+      </View>
+
+      <View style={styles.picker}>
+        <Picker
+          selectedValue={selectedView}
+          onValueChange={(itemValue) =>{
+            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+            setSelectedView(itemValue)
+          }
+        }>
+          <Picker.Item label="Data" value={'date'} />
+          <Picker.Item label="Categoria" value={'category'} />
+        </Picker>
+      </View>
+
       <View style={styles.scrollView}>
-        <ScrollView>
-          {groupedArray.map(month => 
-            <View style={styles.list} key={month.monthName}>
-               <View style={styles.textHeadContainer}> 
-                <Text style={styles.text}> {month.monthName} </Text>
-               </View>
-                {month.days.map((day: { daysName: string, data: any[]; }, index: number) => 
-                  <View style={styles.list} key={index}>
-                    <View style={styles.textSubContainer}> 
-                      <Text style={styles.text}> {day.daysName} </Text>
-                    </View>
-                    {day.data.map(anotation => 
-                      <View style={styles.AnotationContainer} key={anotation.id}>
-                        <GroupCard
-                          id={anotation.id}
-                          title={anotation.name}
-                          time={formatToHHMM(anotation.time)}
-                        />
-                    </View>
-                    )}
-                  </View>
-                )}
-            </View>
-          )}
+        <ScrollView ref={scrollViewRef} >
+          {searchedResults ? renderSearchedResults : renderGroupedArray }
+          
         </ScrollView>
       </View>
 
       <View style= {styles.buttonGroup}>
         <Button label="+ Grupo" href="/(tabs)/groupPage" border={true}></Button>
-        {/* <Button label="+ Categoria" border={true}></Button> */}
+        <Button label="+ Categoria" href="/(tabs)/categoryPage"border={true}></Button>
       </View>
     </View>
   );
@@ -197,9 +401,10 @@ const styles = StyleSheet.create({
     marginBottom: "2%"
   },
   picker:{
-    width: "60%",
-    margin: 4,
+    width: "40%",
+    marginRight: 15,
     alignSelf: "flex-end",
+    borderBottomWidth: 1
   },
   textHeadContainer: {
     width: "40%",
@@ -209,10 +414,16 @@ const styles = StyleSheet.create({
 
   },
   textSubContainer: {
-    width: "20%",
+    width: "60%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
-    marginLeft: 25,
+    
+  },
+  monthHeader: {
+    marginLeft: 15,
+  },
+  dayHeader:{
+    marginLeft: 30,
   },
   AnotationContainer: {
     width: "80%",
