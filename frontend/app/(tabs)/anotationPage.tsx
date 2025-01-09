@@ -6,6 +6,8 @@ import Header from "@/components/Header"
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import { noteService } from "@/services/noteService";
+import { Picker } from "@react-native-picker/picker";
+import * as DocumentPicker from 'expo-document-picker';
 
 export default function AnotationPage() {
 
@@ -14,8 +16,12 @@ export default function AnotationPage() {
   var params = useLocalSearchParams<{ noteId: string, groupId: string, fromHome: string }>();
 
   const [id, setId] = useState(params.noteId);
+
+  const [selectedNoteType, setSelectedNoteType] = useState('text');
   
   const [edit, setEdit] = useState(!id);
+
+  const [file, setFile] = useState<any>();
 
   const rightIcons = [
     {
@@ -38,8 +44,8 @@ export default function AnotationPage() {
   const [anotation, setAnotation] = useState<any>();
 
   const saveNote = () => {
-    (!id? noteService.createNote({title: anotationTitle, content: anotationText, groupId: params.groupId })
-      : noteService.updateNote(id ,{title: anotationTitle, content: anotationText, groupId: params.groupId }))
+    (!id? noteService.createNote({title: anotationTitle, text: anotationText, fileUri: selectedNoteType === 'file' ? file.uri : undefined , groupId: params.groupId })
+      : noteService.updateNote(id ,{title: anotationTitle, text: anotationText, fileUri: selectedNoteType === 'file' ? file.uri : undefined , groupId: params.groupId }))
       .then(resp => {
         alert(`Cadastro concluído: \n title: ${resp.title} \n`);
         
@@ -99,6 +105,55 @@ export default function AnotationPage() {
     };
   }, [edit]);
 
+  const renderEditNoteType = (param: string) => {
+    switch(param) {
+      case 'text':
+        return (
+            <TextInput
+              editable
+              multiline
+              numberOfLines={50}
+              onChangeText={text => setAnotationText(text)}
+              value={anotationText}
+              style={styles.inputBox}
+            />
+        );
+      case 'file':
+        const pickFile = async () => {
+          try {
+            const result = await DocumentPicker.getDocumentAsync({
+              type: '*/*', 
+            });
+
+            console.log(result);
+      
+            if (result.canceled) {
+              console.log('File picking cancelled');
+              return;
+            }
+      
+            const fileAsset = result.assets ? result.assets[0] : null;
+            if (fileAsset) {
+              setFile(fileAsset); 
+            } else {
+              console.log('No file selected');
+            }
+          } catch (error) {
+            console.error('Error picking file', error);
+          }
+        };
+      
+        return (
+            <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
+              {file?.name && <Text>File picked: {file?.name}</Text>}
+              <Button label="Escolha o arquivo" onClick={pickFile} />
+            </View>
+        );
+      default:
+        return;
+    }
+  }
+
   return (
     <View
       style={{
@@ -111,7 +166,7 @@ export default function AnotationPage() {
           flex: 1,
           alignItems: "center",
         }}>
-          <Header rightIcons={rightIcons} text={anotation?.title} />
+          <Header rightIcons={rightIcons} text={anotation?.title}/>
           <View style={styles.scrollView}>
             <ScrollView>
               <Text style={styles.text}>{anotation?.content}</Text>
@@ -130,20 +185,24 @@ export default function AnotationPage() {
         <View style={styles.containerTextInput}>
           <View style={styles.containerTitle}>
             <InputText placeholder="Título" textValue={anotationTitle} onChangeText={setAnotationTitle} />
+
+            <Picker
+              selectedValue={selectedNoteType}
+              onValueChange={(itemValue) =>{
+                setSelectedNoteType(itemValue)
+              }
+            }>
+              <Picker.Item label="Texto" value={'text'}/>
+              <Picker.Item label="Arquivo" value={'file'}/>
+            </Picker>
           </View>
 
-          <TextInput
-            editable
-            multiline
-            numberOfLines={50}
-            onChangeText={text => setAnotationText(text)}
-            value={anotationText}
-            style={styles.inputBox}
-          />
+          {renderEditNoteType(selectedNoteType)}
 
           <View style= {styles.buttonGroup}>
             <Button label="Salvar" onClick={saveNote}></Button>
           </View>
+
         </View>
 
       }

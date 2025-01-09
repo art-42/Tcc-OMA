@@ -1,7 +1,8 @@
 export interface Note {
   title?: string;
   groupId?: string;
-  content?: string;
+  text?: string;
+  fileUri?: string;
 }
 
 export interface NoteResponse {
