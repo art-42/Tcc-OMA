@@ -1,35 +1,120 @@
 import { Request, Response } from "express";
 import Note from "../models/Note";
 import Group from "../models/Group";
+import { gridFSBucket,connectDB } from "../config/db";
+import mongoose from "mongoose";
+
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const { groupId, title, content } = req.body;
-    const note = new Note({ title, content, userId, groupId });
+    const { title, type, groupId } = req.body;
+    
+
+    if (!["texto", "arquivo"].includes(type)) {
+      return res.status(400).json({ error: "Tipo de anotação inválido. Deve ser 'text' ou 'file'." });
+    }
+
+    if (!gridFSBucket) {
+      throw new Error("GridFSBucket não foi inicializado.");
+    }
+
+    let content: string | undefined;
+
+    if (type === "text") {
+      content = req.body.content;
+      if (!content) {
+        return res.status(400).json({ error: "Conteúdo textual é obrigatório para anotações do tipo 'text'." });
+      }
+    } else if (type === "arquivo") {
+      const file = (req as any).file;
+
+      if (!file || !file.buffer) {
+        return res.status(400).json({ error: "Arquivo é obrigatório para anotações do tipo 'arquivo'." });
+      }
+
+      // Salvar arquivo no GridFS
+      const uploadStream = gridFSBucket.openUploadStream(file.originalname, {
+        contentType: file.mimetype,
+      });
+
+      // Usar `end` para enviar os dados
+      uploadStream.end(file.buffer);
+
+      // Aguarda o término do salvamento do arquivo
+      const uploadResult = await new Promise<string>((resolve, reject) => {
+        uploadStream.on("finish", () => {
+          resolve(uploadStream.id.toString()); // Retorna o ID do arquivo salvo no GridFS
+        });
+
+        uploadStream.on("error", (err) => {
+          console.error("Erro ao salvar o arquivo no GridFS:", err);
+          reject(new Error("Erro ao salvar o arquivo no GridFS."));
+        });
+      });
+
+      content = uploadResult;
+    }
+
+    if (!content) {
+      return res.status(500).json({ error: "Erro interno ao processar o conteúdo da anotação." });
+    }
+
+    // Salva a anotação no banco de dados
+    const note = new Note({
+      title,
+      content,
+      type,
+      groupId,
+      userId
+      
+    });
+
     await note.save();
-    res.status(201).json(note);
+
+    res.status(201).json({ message: "Anotação adicionada com sucesso.", note });
   } catch (err) {
+    console.error("Erro ao adicionar anotação:", err);
     res.status(500).json({ error: "Erro ao adicionar anotação ao grupo." });
   }
 };
 
-export const createNote = async (req: Request, res: Response) => {
+export const getNoteFile = async (req: Request, res: Response) => {
   try {
-    const { userId, groupId, title, content } = req.body;
+    const { noteId,userId } = req.params; // A nota que você quer recuperar o arquivo
 
-    if (!title) return res.status(400).json({ error: "O título é obrigatório." });
+    // Recupera a nota pelo ID
+    const note = await Note.findById(noteId);
 
-    // Verificar se o grupo existe
-    const group = await Group.findOne({ _id: groupId, userId });
-    if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+    if (!note) {
+      return res.status(404).json({ error: "Nota não encontrada." });
+    }
 
-    const note = new Note({ userId, groupId, title, content });
-    await note.save();
+    if (note.type !== "arquivo") {
+      return res.status(400).json({ error: "Esta nota não contém um arquivo." });
+    }
 
-    res.status(201).json(note);
+    if (note.userId.toString() !== userId) {
+      return res.status(403).json({ error: "Você não tem permissão para acessar esse arquivo." });
+    }
+
+    // Recupera o arquivo do GridFS usando o ObjectId armazenado no campo 'content'
+    const fileId = new mongoose.Types.ObjectId(note.content);
+
+    // Cria um stream de leitura para o arquivo no GridFS
+    const downloadStream = gridFSBucket.openDownloadStream(fileId);
+
+    // Envia o arquivo de volta como resposta
+    res.setHeader("Content-Type", "application/octet-stream"); // Ou o tipo correto baseado no arquivo
+    downloadStream.pipe(res);
+
+    downloadStream.on("error", (err) => {
+      console.error("Erro ao recuperar o arquivo do GridFS:", err);
+      res.status(500).json({ error: "Erro ao recuperar o arquivo." });
+    });
   } catch (err) {
-    res.status(500).json({ error: "Erro ao criar anotação." });
+    console.error("Erro ao recuperar arquivo da nota:", err);
+    res.status(500).json({ error: "Erro ao recuperar arquivo da nota." });
   }
 };
 
