@@ -28,12 +28,14 @@ import {
 } from '../controllers/noteController';
 
 import {
-  createNote,
   getNoteById,
   updateNote,
   deleteNote,
   getAllNotes,
+  getNoteFile,
 } from '../controllers/noteController';
+
+import upload from "../middleware/upload";
 
 const router = express.Router();
 
@@ -58,9 +60,10 @@ router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 router.get("/searchGroups/:userId/:query",searchGroup)
 
 // Rotas para notes
-router.post("/notes/:userId", addNoteToGroup);
+router.post("/notes/:userId",upload.single("content"), addNoteToGroup);
 router.get("/notes/group/:userId/:groupId", getNotesByGroup);
 router.get("/notes/:userId", getAllNotes);
+router.get("/notes/download/:noteId/:userId/file",getNoteFile);
 router.get("/notes/:userId/:noteId", getNoteById);
 router.put("/notes/:userId/:noteId", updateNote); 
 router.delete("/notes/:userId/:noteId", deleteNote);
@@ -72,6 +75,8 @@ router.get("/categories/:userId", getCategories);
 router.delete("/category/:id", deleteCategory);
 router.put("/category/:id", updateCategory);
 router.get("/searchCategories/:userId/:query",searchCategory)
+
+//router.post("/notes/:userId", upload.single("file"), createNote);
 
 
 router.get("/search/:userId/:query",search)//pesquisa o termo em notas, grupos
