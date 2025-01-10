@@ -8,6 +8,7 @@ import InputText from "@/components/InputText";
 import { noteService } from "@/services/noteService";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from 'expo-document-picker';
+import { Note } from "@/interfaces/Note";
 
 export default function AnotationPage() {
 
@@ -17,7 +18,7 @@ export default function AnotationPage() {
 
   const [id, setId] = useState(params.noteId);
 
-  const [selectedNoteType, setSelectedNoteType] = useState('text');
+  const [selectedNoteType, setSelectedNoteType] = useState<string>('text');
   
   const [edit, setEdit] = useState(!id);
 
@@ -43,19 +44,42 @@ export default function AnotationPage() {
 
   const [anotation, setAnotation] = useState<any>();
 
-  const saveNote = () => {
-    (!id? noteService.createNote({title: anotationTitle, text: anotationText, fileUri: selectedNoteType === 'file' ? file.uri : undefined , groupId: params.groupId })
-      : noteService.updateNote(id ,{title: anotationTitle, text: anotationText, fileUri: selectedNoteType === 'file' ? file.uri : undefined , groupId: params.groupId }))
-      .then(resp => {
-        alert(`Cadastro concluído: \n title: ${resp.title} \n`);
-        
-        setAnotation(resp);
-        setEdit(false);
-      })
-      .catch((error) => {
-        alert(`Erro no cadastro`);
-      }); 
-  }
+  const saveNote = async () => {
+    try {
+      // Montar os dados da nota com base no tipo selecionado
+      const noteData: Note = {
+        title: anotationTitle,
+        content: "", // Inicializar vazio; será ajustado abaixo
+        groupId: params.groupId,
+        type: selectedNoteType === "file" ? "arquivo" : "texto",
+      };
+  
+      if (noteData.type === "arquivo" && file?.uri) {
+        noteData.content = { id: file.uri }; // Passa o URI do arquivo como objeto
+      } else if (noteData.type === "texto" && anotationText) {
+        noteData.content = anotationText; // Passa o texto diretamente
+      } else {
+        throw new Error("Dados inválidos para o campo content.");
+      }
+  
+      console.log("Dados enviados ao serviço:", noteData);
+  
+      // Selecionar a função apropriada do serviço
+      const response = !id
+        ? await noteService.createNote(noteData) // Envia os dados ao backend para criação
+        : await noteService.updateNote(id, noteData); // Atualiza a nota existente
+  
+      // Sucesso: notificar o usuário e atualizar estado
+      alert(`Cadastro concluído: \nTítulo: ${response.title}`);
+      setAnotation(response);
+      setEdit(false);
+    } catch (error) {
+      // Falha: notificar o usuário
+      console.error("Erro ao salvar a nota:", error);
+      alert("Erro no cadastro. Por favor, tente novamente.");
+    }
+  };
+  
 
   const deleteNote = () => {
       noteService.deleteNote(id)
@@ -120,12 +144,13 @@ export default function AnotationPage() {
         );
       case 'file':
         const pickFile = async () => {
+          console.log('Arquivo selecionado:', file);
           try {
             const result = await DocumentPicker.getDocumentAsync({
               type: '*/*', 
             });
 
-            console.log(result);
+            console.log('Resultado do DocumentPicker:', result); 
       
             if (result.canceled) {
               console.log('File picking cancelled');
@@ -138,14 +163,23 @@ export default function AnotationPage() {
             } else {
               console.log('No file selected');
             }
+            // if (result.uri) {
+            //   setFile(result); // Armazena o resultado no estado `file`.
+            //   console.log('Arquivo selecionado:', result.uri); // Log para confirmar o URI.
+            // } else {
+            //   console.log('Nenhum arquivo selecionado');
+            // }
+            
           } catch (error) {
             console.error('Error picking file', error);
           }
         };
+        
       
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
               {file?.name && <Text>File picked: {file?.name}</Text>}
+              
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );

@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
+    console.log("Dados recebidos:", req.body);
     const { userId } = req.params;
     const { title, type, groupId } = req.body;
     
@@ -21,7 +22,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
 
     let content: string | undefined;
 
-    if (type === "text") {
+    if (type === "texto") {
       content = req.body.content;
       if (!content) {
         return res.status(400).json({ error: "Conteúdo textual é obrigatório para anotações do tipo 'text'." });
@@ -98,14 +99,13 @@ export const getNoteFile = async (req: Request, res: Response) => {
       return res.status(403).json({ error: "Você não tem permissão para acessar esse arquivo." });
     }
 
-    // Recupera o arquivo do GridFS usando o ObjectId armazenado no campo 'content'
+
     const fileId = new mongoose.Types.ObjectId(note.content);
 
-    // Cria um stream de leitura para o arquivo no GridFS
     const downloadStream = gridFSBucket.openDownloadStream(fileId);
 
-    // Envia o arquivo de volta como resposta
-    res.setHeader("Content-Type", "application/octet-stream"); // Ou o tipo correto baseado no arquivo
+
+    res.setHeader("Content-Type", "application/octet-stream"); 
     downloadStream.pipe(res);
 
     downloadStream.on("error", (err) => {
