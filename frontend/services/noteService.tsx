@@ -4,30 +4,38 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = 'http://192.168.0.14:5001';
 
+const convertBlobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result as string); // Resolve with Base64 string
+    reader.onerror = reject; // Reject in case of error
+    reader.readAsDataURL(blob); // Convert the blob to Base64
+  });
+};
+
 export const noteService = {
 
   createNote: async (note: Note): Promise<any> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
 
-      let formData = undefined
+      let file64 = undefined;
 
       if (note.fileUri) {
         const fetchedFile = await fetch(note.fileUri);
         const blob = await fetchedFile.blob();
 
-        // Create the FormData object
-        formData = new FormData();
+        file64 = convertBlobToBase64(blob);
 
-        // Append the file as a Blob to the FormData object
-        formData.append('file', blob, 'uploaded-file'); // 'uploaded-file' can be replaced by the actual file name
+        console.log(file64);
+
       }
 
       // Create the Note object with the required structure
       const noteValue = {
         title: note.title,
         groupId: note.groupId,
-        content: formData ?? note.text, // Attach the FormData as content
+        content: file64 ?? note.text, // Attach the FormData as content
       };
 
       const response = await fetch(`${API_URL}/notes/${userId}`, {

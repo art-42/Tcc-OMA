@@ -1,8 +1,9 @@
 export interface Note {
   title: string;
-  content: string | { id: string; [key: string]: any }; // String para texto, objeto para arquivos
   type: "texto" | "arquivo";
   groupId: string;
+  text?: string; 
+  fileUri?: string;
 }
 
 export interface NoteResponse {

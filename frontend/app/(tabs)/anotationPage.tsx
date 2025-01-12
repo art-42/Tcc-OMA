@@ -49,15 +49,14 @@ export default function AnotationPage() {
       // Montar os dados da nota com base no tipo selecionado
       const noteData: Note = {
         title: anotationTitle,
-        content: "", // Inicializar vazio; será ajustado abaixo
         groupId: params.groupId,
         type: selectedNoteType === "file" ? "arquivo" : "texto",
       };
   
       if (noteData.type === "arquivo" && file?.uri) {
-        noteData.content = { id: file.uri }; // Passa o URI do arquivo como objeto
+        noteData.fileUri = file?.uri; // Passa o URI do arquivo como objeto
       } else if (noteData.type === "texto" && anotationText) {
-        noteData.content = anotationText; // Passa o texto diretamente
+        noteData.text = anotationText; // Passa o texto diretamente
       } else {
         throw new Error("Dados inválidos para o campo content.");
       }
