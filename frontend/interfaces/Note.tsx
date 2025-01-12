@@ -1,6 +1,6 @@
 export interface Note {
   title: string;
-  type: "texto" | "arquivo";
+  type: "texto" | "arquivo" | "foto";
   groupId: string;
   text?: string; 
   fileUri?: string;

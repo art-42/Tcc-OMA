@@ -27,8 +27,6 @@ export const noteService = {
 
         file64 = convertBlobToBase64(blob);
 
-        console.log(file64);
-
       }
 
       // Create the Note object with the required structure

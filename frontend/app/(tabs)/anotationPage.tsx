@@ -8,7 +8,10 @@ import InputText from "@/components/InputText";
 import { noteService } from "@/services/noteService";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from 'expo-document-picker';
+import * as ImagePicker from 'expo-image-picker'; // Import expo-image-picker for photo functionality
 import { Note } from "@/interfaces/Note";
+import { Image } from 'react-native';
+
 
 export default function AnotationPage() {
 
@@ -18,7 +21,7 @@ export default function AnotationPage() {
 
   const [id, setId] = useState(params.noteId);
 
-  const [selectedNoteType, setSelectedNoteType] = useState<string>('text');
+  const [selectedNoteType, setSelectedNoteType] = useState<"arquivo"|"foto"|"texto">('texto');
   
   const [edit, setEdit] = useState(!id);
 
@@ -44,19 +47,32 @@ export default function AnotationPage() {
 
   const [anotation, setAnotation] = useState<any>();
 
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Request camera permission when the component mounts
+    (async () => {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
+  }, []);
+
   const saveNote = async () => {
     try {
       // Montar os dados da nota com base no tipo selecionado
       const noteData: Note = {
         title: anotationTitle,
         groupId: params.groupId,
-        type: selectedNoteType === "file" ? "arquivo" : "texto",
+        type: selectedNoteType,
       };
   
       if (noteData.type === "arquivo" && file?.uri) {
         noteData.fileUri = file?.uri; // Passa o URI do arquivo como objeto
       } else if (noteData.type === "texto" && anotationText) {
         noteData.text = anotationText; // Passa o texto diretamente
+      } else if (noteData.type === "foto" && photoUri) {
+        noteData.fileUri = photoUri; // Passa o texto diretamente
       } else {
         throw new Error("Dados inválidos para o campo content.");
       }
@@ -130,7 +146,7 @@ export default function AnotationPage() {
 
   const renderEditNoteType = (param: string) => {
     switch(param) {
-      case 'text':
+      case 'texto':
         return (
             <TextInput
               editable
@@ -141,7 +157,7 @@ export default function AnotationPage() {
               style={styles.inputBox}
             />
         );
-      case 'file':
+      case 'arquivo':
         const pickFile = async () => {
           console.log('Arquivo selecionado:', file);
           try {
@@ -162,12 +178,6 @@ export default function AnotationPage() {
             } else {
               console.log('No file selected');
             }
-            // if (result.uri) {
-            //   setFile(result); // Armazena o resultado no estado `file`.
-            //   console.log('Arquivo selecionado:', result.uri); // Log para confirmar o URI.
-            // } else {
-            //   console.log('Nenhum arquivo selecionado');
-            // }
             
           } catch (error) {
             console.error('Error picking file', error);
@@ -182,6 +192,47 @@ export default function AnotationPage() {
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
+
+        case 'foto':
+          const takePhoto = async () => {
+            if (hasPermission) {
+              let result = await ImagePicker.launchCameraAsync({
+                mediaTypes: "images",
+                allowsEditing: true,
+                quality: 1,
+              });
+
+              if (!result.canceled) {
+                setPhotoUri(result.assets[0].uri); // Store the URI of the captured media
+              } else {
+                console.log('User cancelled the action');
+              }
+            } else {
+              alert('Camera permission is required');
+            }
+          };
+
+          return (
+            <View style={{ flex: 20, justifyContent: 'center' }}>
+              {photoUri ? (
+                <View style={styles.imgContainer}>
+                  <Text style={styles.imgText}>Foto ou vídeo capturado:</Text>
+                  <Image source={{ uri: photoUri }} style={{ width: 500, height: 200 }} resizeMode="contain" />
+                  <Button 
+                    label="Tirar Outra" 
+                    onClick={takePhoto} 
+                  />
+                </View>
+              ) : (
+                <>
+                  <Button 
+                    label="Tirar Foto" 
+                    onClick={takePhoto} 
+                  />
+                </>
+              )}
+            </View>
+          );
       default:
         return;
     }
@@ -225,8 +276,9 @@ export default function AnotationPage() {
                 setSelectedNoteType(itemValue)
               }
             }>
-              <Picker.Item label="Texto" value={'text'}/>
-              <Picker.Item label="Arquivo" value={'file'}/>
+              <Picker.Item label="Texto" value={'texto'}/>
+              <Picker.Item label="Arquivo" value={'arquivo'}/>
+              <Picker.Item label="Foto" value={'foto'}/>
             </Picker>
           </View>
 
@@ -275,4 +327,10 @@ const styles = StyleSheet.create({
   containerTitle:{
     marginVertical: "5%",
   },
+  imgContainer:{
+    gap: '5%',
+  },
+  imgText:{
+    textAlign: 'center'
+  }
 });
