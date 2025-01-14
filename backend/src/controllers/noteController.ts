@@ -3,118 +3,109 @@ import Note from "../models/Note";
 import Group from "../models/Group";
 import { gridFSBucket,connectDB } from "../config/db";
 import mongoose from "mongoose";
+import User from "../models/User";
 
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
-    console.log("Dados recebidos:", req.body);
     const { userId } = req.params;
     const { title, type, groupId } = req.body;
-    
+
+    if (!title || !type || !groupId) {
+      return res.status(400).json({ error: "Título, tipo e groupId são obrigatórios." });
+    }
 
     if (!["texto", "arquivo"].includes(type)) {
-      return res.status(400).json({ error: "Tipo de anotação inválido. Deve ser 'text' ou 'file'." });
+      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo'." });
     }
 
-    if (!gridFSBucket) {
-      throw new Error("GridFSBucket não foi inicializado.");
-    }
+    let processedContent;
 
-    let content: string | undefined;
-
-    if (type === "texto") {
-      content = req.body.content;
-      if (!content) {
-        return res.status(400).json({ error: "Conteúdo textual é obrigatório para anotações do tipo 'text'." });
-      }
-    } else if (type === "arquivo") {
-      const file = (req as any).file;
-
-      if (!file || !file.buffer) {
-        return res.status(400).json({ error: "Arquivo é obrigatório para anotações do tipo 'arquivo'." });
+    if (type === "arquivo") {
+      if (!req.file) {
+        return res.status(400).json({ error: "Um arquivo é obrigatório para o tipo 'arquivo'." });
       }
 
-      // Salvar arquivo no GridFS
-      const uploadStream = gridFSBucket.openUploadStream(file.originalname, {
-        contentType: file.mimetype,
-      });
+      // Converte o arquivo recebido para base64
+      processedContent = req.file.buffer.toString("base64");
+    } else {
+      if (!req.body.content) {
+        return res.status(400).json({ error: "O campo 'content' é obrigatório para notas de texto." });
+      }
 
-      // Usar `end` para enviar os dados
-      uploadStream.end(file.buffer);
-
-      // Aguarda o término do salvamento do arquivo
-      const uploadResult = await new Promise<string>((resolve, reject) => {
-        uploadStream.on("finish", () => {
-          resolve(uploadStream.id.toString()); // Retorna o ID do arquivo salvo no GridFS
-        });
-
-        uploadStream.on("error", (err) => {
-          console.error("Erro ao salvar o arquivo no GridFS:", err);
-          reject(new Error("Erro ao salvar o arquivo no GridFS."));
-        });
-      });
-
-      content = uploadResult;
+      processedContent = req.body.content; // Salva diretamente o texto
     }
 
-    if (!content) {
-      return res.status(500).json({ error: "Erro interno ao processar o conteúdo da anotação." });
-    }
-
-    // Salva a anotação no banco de dados
-    const note = new Note({
+    const newNote = new Note({
       title,
-      content,
+      content: processedContent,
       type,
       groupId,
-      userId
-      
+      userId,
+      date: new Date(),
     });
 
-    await note.save();
+    await newNote.save();
 
-    res.status(201).json({ message: "Anotação adicionada com sucesso.", note });
-  } catch (err) {
-    console.error("Erro ao adicionar anotação:", err);
-    res.status(500).json({ error: "Erro ao adicionar anotação ao grupo." });
+    res.status(201).json(newNote);
+  } catch (error) {
+    console.error("Erro ao criar a nota:", error);
+    res.status(500).json({ error: "Erro ao criar a nota" });
   }
 };
 
-export const getNoteFile = async (req: Request, res: Response) => {
+export const getNoteFileDownload = async (req: Request, res: Response) => {
   try {
-    const { noteId,userId } = req.params; // A nota que você quer recuperar o arquivo
+    const { noteId } = req.params;
 
-    // Recupera a nota pelo ID
     const note = await Note.findById(noteId);
 
     if (!note) {
-      return res.status(404).json({ error: "Nota não encontrada." });
+      return res.status(404).json({ error: "Nota não encontrada" });
     }
 
     if (note.type !== "arquivo") {
-      return res.status(400).json({ error: "Esta nota não contém um arquivo." });
+      return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
     }
 
-    if (note.userId.toString() !== userId) {
-      return res.status(403).json({ error: "Você não tem permissão para acessar esse arquivo." });
-    }
+    const fileBuffer = Buffer.from(note.content as string, "base64");
 
-
-    const fileId = new mongoose.Types.ObjectId(note.content);
-
-    const downloadStream = gridFSBucket.openDownloadStream(fileId);
-
-
-    res.setHeader("Content-Type", "application/octet-stream"); 
-    downloadStream.pipe(res);
-
-    downloadStream.on("error", (err) => {
-      console.error("Erro ao recuperar o arquivo do GridFS:", err);
-      res.status(500).json({ error: "Erro ao recuperar o arquivo." });
+    res.set({
+      "Content-Disposition": `attachment; filename="${note.title}"`,
+      "Content-Type": "application/octet-stream",
     });
-  } catch (err) {
-    console.error("Erro ao recuperar arquivo da nota:", err);
-    res.status(500).json({ error: "Erro ao recuperar arquivo da nota." });
+
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error("Erro ao fazer o download da nota:", error);
+    res.status(500).json({ error: "Erro ao fazer o download da nota" });
+  }
+};
+
+export const viewNote = async (req: Request, res: Response) => {
+  try {
+    const { userId, noteId } = req.params;
+
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({ error: "Nota não encontrada" });
+    }
+
+    if (note.type !== "arquivo") {
+      return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
+    }
+
+    const fileBuffer = Buffer.from(note.content as string, "base64");
+
+    res.set({
+      "Content-Type": "application/octet-stream",
+    });
+
+    res.send(fileBuffer);
+  } catch (error) {
+    console.error("Erro ao visualizar a nota:", error);
+    res.status(500).json({ error: "Erro ao visualizar a nota" });
   }
 };
 
@@ -134,24 +125,34 @@ export const getNoteById = async (req: Request, res: Response) => {
 export const updateNote = async (req: Request, res: Response) => {
   try {
     const { userId, noteId } = req.params;
-    const { title, content, groupId } = req.body;
+    const { title, type, content } = req.body; 
 
-    // Verificar se o grupo existe (se foi alterado)
-    if (groupId) {
-      const group = await Group.findOne({ _id: groupId, userId });
-      if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+    const note = await Note.findOne({ _id: noteId, userId });
+    if (!note) {
+      return res.status(404).json({ message: "Nota não encontrada ou não pertence ao usuário" });
     }
 
-    const note = await Note.findOneAndUpdate(
-      { _id: noteId, userId },
-      { title, content, groupId },
-      { new: true }
-    );
-    if (!note) return res.status(404).json({ error: "Anotação não encontrada ou não pertence ao usuário." });
+    if (type && !["texto", "arquivo"].includes(type)) {
+      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo'." });
+    }
+
+    if (title) note.title = title;
+    if (type) note.type = type;
+
+    if (content) {
+      if (note.type === "arquivo") {
+        note.content = Buffer.from(content, "binary").toString("base64");
+      } else {
+        note.content = content;
+      }
+    }
+
+    await note.save(); 
 
     res.status(200).json(note);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao atualizar anotação." });
+  } catch (error) {
+    console.error("Erro ao atualizar a nota:", error);
+    res.status(500).json({ error: "Erro ao atualizar a nota" });
   }
 };
 
@@ -170,15 +171,20 @@ export const deleteNote = async (req: Request, res: Response) => {
 
 export const getNotesByGroup = async (req: Request, res: Response) => {
   try {
-    const { userId, groupId } = req.params;
+    const { userId, groupId } = req.params; 
 
-    const group = await Group.findOne({ _id: groupId, userId });
-    if (!group) return res.status(404).json({ error: "Grupo não encontrado ou não pertence ao usuário." });
+    const notes = await Note.find({ userId, groupId });
 
-    const notes = await Note.find({ userId }).populate("groupId", "name");
+    if (!notes || notes.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "Nenhuma nota encontrada para este grupo ou usuário" });
+    }
+
     res.status(200).json(notes);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao buscar anotações do grupo." });
+  } catch (error) {
+    console.error("Erro ao buscar notas por grupo:", error);
+    res.status(500).json({ error: "Erro ao buscar notas por grupo" });
   }
 };
 
@@ -186,10 +192,16 @@ export const getAllNotes = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
 
-    const notes = await Note.find({ userId }).populate("groupId", "name");
+    const notes = await Note.find({ userId });
+
+    if (!notes || notes.length === 0) {
+      return res.status(404).json({ message: "Nenhuma nota encontrada para este usuário" });
+    }
+
     res.status(200).json(notes);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao listar anotações." });
+  } catch (error) {
+    console.error("Erro ao buscar as notas:", error);
+    res.status(500).json({ error: "Erro ao buscar as notas" });
   }
 };
 
