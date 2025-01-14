@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler } from "react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
 import Header from "@/components/Header"
@@ -8,7 +8,8 @@ import InputText from "@/components/InputText";
 import { noteService } from "@/services/noteService";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker'; // Import expo-image-picker for photo functionality
+import * as ImagePicker from 'expo-image-picker'; 
+import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { Note } from "@/interfaces/Note";
 import { Image } from 'react-native';
 
@@ -50,8 +51,35 @@ export default function AnotationPage() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean>(false);
 
+  //campos de desenho
+  const ref = useRef<SignatureViewRef>(null);
+
+  // Called after ref.current.readSignature() reads a non-empty base64 string
+  const handleOK = (signature: any) => {
+    console.log(signature);
+  };
+
+  // Called after ref.current.readSignature() reads an empty string
+  const handleEmpty = () => {
+    console.log("Empty");
+  };
+
+  // Called after ref.current.clearSignature()
+  const handleClear = () => {
+    console.log("clear success!");
+  };
+
+  // Called after end of stroke
+  const handleEnd = () => {
+    ref.current?.readSignature();
+  };
+
+  // Called after ref.current.getData()
+  const handleData = (data: any) => {
+    console.log(data);
+  };
+
   useEffect(() => {
-    // Request camera permission when the component mounts
     (async () => {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
@@ -233,6 +261,23 @@ export default function AnotationPage() {
               )}
             </View>
           );
+        case 'desenho':        
+          return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Text>Signature Pad</Text>
+              <SignatureScreen
+                style={{width: 300, height: 300}}
+                ref={ref}
+                onEnd={handleEnd}
+                onOK={handleOK}
+                onEmpty={handleEmpty}
+                onClear={handleClear}
+                onGetData={handleData}
+                autoClear={true}
+                descriptionText={'TEST'}
+              />
+            </View>
+          );
       default:
         return;
     }
@@ -279,6 +324,7 @@ export default function AnotationPage() {
               <Picker.Item label="Texto" value={'texto'}/>
               <Picker.Item label="Arquivo" value={'arquivo'}/>
               <Picker.Item label="Foto" value={'foto'}/>
+              <Picker.Item label="desenho" value={'desenho'}/>
             </Picker>
           </View>
 
@@ -332,5 +378,5 @@ const styles = StyleSheet.create({
   },
   imgText:{
     textAlign: 'center'
-  }
+  },
 });
