@@ -9,36 +9,20 @@ import User from "../models/User";
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const { title, type, groupId } = req.body;
+    const { title, type, groupId, content } = req.body;
 
-    if (!title || !type || !groupId) {
-      return res.status(400).json({ error: "Título, tipo e groupId são obrigatórios." });
+    // Validações obrigatórias
+    if (!title || !type || !groupId || !content) {
+      return res.status(400).json({ error: "Título, tipo, groupId e conteúdo são obrigatórios." });
     }
 
     if (!["texto", "arquivo"].includes(type)) {
       return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo'." });
     }
 
-    let processedContent;
-
-    if (type === "arquivo") {
-      if (!req.file) {
-        return res.status(400).json({ error: "Um arquivo é obrigatório para o tipo 'arquivo'." });
-      }
-
-      // Converte o arquivo recebido para base64
-      processedContent = req.file.buffer.toString("base64");
-    } else {
-      if (!req.body.content) {
-        return res.status(400).json({ error: "O campo 'content' é obrigatório para notas de texto." });
-      }
-
-      processedContent = req.body.content; // Salva diretamente o texto
-    }
-
     const newNote = new Note({
       title,
-      content: processedContent,
+      content, // Conteúdo enviado pelo front (já em Base64 para arquivos ou texto simples)
       type,
       groupId,
       userId,

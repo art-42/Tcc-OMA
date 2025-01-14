@@ -61,7 +61,7 @@ router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 router.get("/searchGroups/:userId/:query",searchGroup)
 
 // Rotas para notes
-router.post("/notes/:userId", upload.single("content"),addNoteToGroup);
+router.post("/notes/:userId", addNoteToGroup);
 router.get("/notes/group/:userId/:groupId", getNotesByGroup);
 router.get("/notes/view/:userId/:noteId", viewNote);
 router.get("/notes/:userId", getAllNotes);
