@@ -8,7 +8,7 @@ export interface Note {
 
 export interface NoteResponse {
   title: string;
-  content: string | { id: string; [key: string]: any };
+  content: string;
   type: "texto" | "arquivo";
   groupId: string;
   userId: string;

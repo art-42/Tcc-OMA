@@ -52,14 +52,11 @@ export const getNoteFileDownload = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
     }
 
-    const fileBuffer = Buffer.from(note.content as string, "base64");
-
-    res.set({
-      "Content-Disposition": `attachment; filename="${note.title}"`,
-      "Content-Type": "application/octet-stream",
+    // Directly return the existing Base64 content
+    res.status(200).json({
+      filename: note.title,
+      content: note.content,  // The Base64-encoded content directly from the database
     });
-
-    res.send(fileBuffer);
   } catch (error) {
     console.error("Erro ao fazer o download da nota:", error);
     res.status(500).json({ error: "Erro ao fazer o download da nota" });
@@ -122,14 +119,7 @@ export const updateNote = async (req: Request, res: Response) => {
 
     if (title) note.title = title;
     if (type) note.type = type;
-
-    if (content) {
-      if (note.type === "arquivo") {
-        note.content = Buffer.from(content, "binary").toString("base64");
-      } else {
-        note.content = content;
-      }
-    }
+    if (content) note.content = content;
 
     await note.save(); 
 

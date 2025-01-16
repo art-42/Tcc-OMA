@@ -28,7 +28,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar anotações do grupo`);
+      alert(`Erro ao encontrar categorias`);
     });
   }
 
@@ -37,7 +37,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar anotações do grupo`);
+      alert(`Erro ao encontrar categorias`);
     });
   }
   

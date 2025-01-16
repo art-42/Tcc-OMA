@@ -3436,6 +3436,13 @@ expo-file-system@~18.0.4:
   dependencies:
     web-streams-polyfill "^3.3.2"
 
+expo-file-system@~18.0.7:
+  version "18.0.7"
+  resolved "https://registry.yarnpkg.com/expo-file-system/-/expo-file-system-18.0.7.tgz#218792dc0aeb7e0976a7f8f412a5d7de09b39610"
+  integrity sha512-6PpbQfogMXdzOsJzlJayy5qf40IfIHhudtAOzr32RlRYL4Hkmk3YcR9jG0PWQ0rklJfAhbAdP63yOcN+wDgzaA==
+  dependencies:
+    web-streams-polyfill "^3.3.2"
+
 expo-font@~13.0.1:
   version "13.0.1"
   resolved "https://registry.npmjs.org/expo-font/-/expo-font-13.0.1.tgz"
@@ -3459,6 +3466,11 @@ expo-image-picker@~16.0.4:
   integrity sha512-LeTdQxL+kS8wiFOf+mTxDZmr0Ok3KwcpvCaDnXwCdCQuszVd4sSml7lg+oaJfkWj793u74M+8j0hQaEDHCgkxg==
   dependencies:
     expo-image-loader "~5.0.0"
+
+expo-intent-launcher@~12.0.2:
+  version "12.0.2"
+  resolved "https://registry.yarnpkg.com/expo-intent-launcher/-/expo-intent-launcher-12.0.2.tgz#cb576785a6eac3ef3cb6d4a14231aa52b76b2903"
+  integrity sha512-9JYyuuONE9AxoZgRyztcgfAaIIGvrUQAbFnYOPZcrHSBWhbF1203S3ho1Hk67jWhC72Um8+pJ+rXBxAp3ZZlxA==
 
 expo-keep-awake@~14.0.1:
   version "14.0.1"
@@ -3512,6 +3524,11 @@ expo-router@~4.0.5:
     schema-utils "^4.0.1"
     semver "~7.6.3"
     server-only "^0.0.1"
+
+expo-sharing@~13.0.1:
+  version "13.0.1"
+  resolved "https://registry.yarnpkg.com/expo-sharing/-/expo-sharing-13.0.1.tgz#f5221ce44190a12649a6639e619d83e318c768a1"
+  integrity sha512-qych3Nw65wlFcnzE/gRrsdtvmdV0uF4U4qVMZBJYPG90vYyWh2QM9rp1gVu0KWOBc7N8CC2dSVYn4/BXqJy6Xw==
 
 expo-splash-screen@~0.29.10:
   version "0.29.16"

@@ -113,7 +113,7 @@ export default function GroupPage() {
         setSelectedCategory(resp.group.categoryId);
 
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        alert(`Erro ao encontrar grupo`);
       });
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
@@ -129,7 +129,7 @@ export default function GroupPage() {
       setCategories(resp.categorias);
 
     }).catch(() => {
-      alert(`Erro ao encontrar anotações do grupo`);
+      alert(`Erro ao encontrar categorias`);
     });
   }
 
@@ -168,7 +168,7 @@ export default function GroupPage() {
 
             <View style={styles.scrollView}>
               <ScrollView>
-                {anotations.map(anotation => 
+                {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
                     <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
                   </View>

@@ -28,6 +28,16 @@ export default function AnotationPage() {
 
   const [file, setFile] = useState<any>();
 
+  const [anotationTitle, setAnotationTitle] = useState('');
+  const [anotationText, setAnotationText] = useState('');
+
+  const [anotation, setAnotation] = useState<any>();
+
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [hasPermission, setHasPermission] = useState<boolean>(false);
+
+  const [fileUri, setFileUri] = useState<string | null>(null);
+
   const rightIcons = [
     {
       iconName: "edit",
@@ -42,14 +52,6 @@ export default function AnotationPage() {
       }
     },
   ];
-
-  const [anotationTitle, setAnotationTitle] = useState('');
-  const [anotationText, setAnotationText] = useState('');
-
-  const [anotation, setAnotation] = useState<any>();
-
-  const [photoUri, setPhotoUri] = useState<string | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean>(false);
 
   //campos de desenho
   const ref = useRef<SignatureViewRef>(null);
@@ -122,19 +124,38 @@ export default function AnotationPage() {
       alert("Erro no cadastro. Por favor, tente novamente.");
     }
   };
-  
 
   const deleteNote = () => {
-      noteService.deleteNote(id)
-        .then(resp => {
-          alert(`deletado com sucesso`);
-          router.back();
-          
-        })
-        .catch((error) => {
-          alert(`Erro na deleção`);
-        }); 
-    }
+    noteService.deleteNote(id)
+      .then(resp => {
+        alert(`deletado com sucesso`);
+        router.back();
+        
+      })
+      .catch((error) => {
+        alert(`Erro na deleção`);
+      }); 
+  }
+
+  const downloadNoteFile = () => {
+    noteService.downloadNoteFile(id)
+      .then(resp => {
+        setFileUri(resp);
+      })
+      .catch((error) => {
+        alert(error);
+      }); 
+  }
+
+  const openNoteFile = () => {
+    noteService.downloadNoteFile(id)
+      .then(resp => {
+        setFileUri(resp);
+      })
+      .catch((error) => {
+        alert(error);
+      }); 
+  }
 
   const enterEditMode = () => {
     setAnotationTitle(anotation.title)
@@ -146,9 +167,10 @@ export default function AnotationPage() {
     if(id){
       noteService.getNoteById(id).then(resp => {
         setAnotation(resp);
+        setSelectedNoteType(resp.type);
   
-      }).catch(()=> {
-          alert(`Erro ao buscar anotação`)
+      }).catch((error)=> {
+          alert(error)
       })
     }
   }, []);
@@ -283,6 +305,38 @@ export default function AnotationPage() {
     }
   }
 
+  const renderViewNoteType = (param: string) => {
+    switch(param) {
+      case 'texto':
+        return (
+          <View style={styles.scrollView}>
+            <ScrollView>
+              <Text style={styles.text}>{anotation?.content}</Text>
+            </ScrollView>
+          </View>
+        );
+      case 'arquivo':
+        return (
+            <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
+              <Text>Arquivo adicionado: </Text>              
+              {/* <Text>{{}}</Text>               */}
+              {fileUri ?
+                  <Button label="Baixar" onClick={downloadNoteFile} />
+                :
+                  <Button label="Visualizar" onClick={openNoteFile} />
+              }
+            </View>
+        );
+
+        case 'foto':
+          
+        case 'desenho':        
+          
+      default:
+        return;
+    }
+  }
+
   return (
     <View
       style={{
@@ -296,11 +350,9 @@ export default function AnotationPage() {
           alignItems: "center",
         }}>
           <Header rightIcons={rightIcons} text={anotation?.title}/>
-          <View style={styles.scrollView}>
-            <ScrollView>
-              <Text style={styles.text}>{anotation?.content}</Text>
-            </ScrollView>
-          </View>
+
+          {renderViewNoteType(selectedNoteType)}
+
           {params.fromHome === 'true' && 
             <View style={{flex: 1}}>
               <Button label="Abrir Grupo" onClick={() => router.push({pathname: "/(tabs)/groupPage", params: {id: params.groupId}})}/>

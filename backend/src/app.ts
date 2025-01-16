@@ -17,7 +17,7 @@ const app = express();
 
 // Middlewares
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({limit: '50mb'}));
 
 // Rotas
 app.use('/', userRoutes);

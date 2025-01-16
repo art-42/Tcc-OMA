@@ -246,7 +246,7 @@ export default function HomeScreen() {
         setSearchedResults(resp);
     
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        alert(`Erro ao encontrar resultado de pesquisa`);
       });
   }
 
