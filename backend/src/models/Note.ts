@@ -7,6 +7,8 @@ interface INote extends Document {
   groupId: string;
   userId: string;
   date: Date;
+  fileName?: string;
+  fileUri?: string;
 }
 
 const NoteSchema: Schema = new Schema({
@@ -16,6 +18,9 @@ const NoteSchema: Schema = new Schema({
   groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group", required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   date: { type: Date, default: Date.now },
+  fileName: { type: String },
+  fileUri: { type: String },
 });
 
 export default mongoose.model<INote>("Note", NoteSchema);
+

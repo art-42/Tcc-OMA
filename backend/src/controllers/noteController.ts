@@ -9,7 +9,7 @@ import User from "../models/User";
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    const { title, type, groupId, content } = req.body;
+    const { title, fileName, type, groupId, content } = req.body;
 
     // Validações obrigatórias
     if (!title || !type || !groupId || !content) {
@@ -23,6 +23,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
     const newNote = new Note({
       title,
       content, // Conteúdo enviado pelo front (já em Base64 para arquivos ou texto simples)
+      fileName, // Nome do arquivo
       type,
       groupId,
       userId,
@@ -63,7 +64,9 @@ export const getNoteFileDownload = async (req: Request, res: Response) => {
   }
 };
 
+
 export const viewNote = async (req: Request, res: Response) => {
+  // Atualizar base64 e retornar fileName
   try {
     const { userId, noteId } = req.params;
 
@@ -83,7 +86,8 @@ export const viewNote = async (req: Request, res: Response) => {
       "Content-Type": "application/octet-stream",
     });
 
-    res.send(fileBuffer);
+    // Retornar base64 e fileName
+    res.json({ fileName: note.fileName, content: note.content });
   } catch (error) {
     console.error("Erro ao visualizar a nota:", error);
     res.status(500).json({ error: "Erro ao visualizar a nota" });
@@ -97,9 +101,41 @@ export const getNoteById = async (req: Request, res: Response) => {
     const note = await Note.findOne({ _id: noteId, userId }).populate("groupId", "name");
     if (!note) return res.status(404).json({ error: "Anotação não encontrada ou não pertence ao usuário." });
 
-    res.status(200).json(note);
+    // Verifica se é do tipo 'texto' ou 'imagem' e ajusta o conteúdo
+    if (note.type === "texto") {
+      res.status(200).json(note);  // Retorna a nota completa com o conteúdo
+    } else if (note.type === "arquivo" || note.type === "imagem") {
+      // Para 'arquivo' ou 'imagem', não retorna o conteúdo em base64 aqui
+      const noteData = { 
+        ...note.toObject(),
+        content: undefined, // Não retorna o base64 aqui
+      };
+      res.status(200).json(noteData);
+    }
+
   } catch (err) {
     res.status(500).json({ error: "Erro ao buscar anotação." });
+  }
+};
+
+
+export const saveFileUri = async (req: Request, res: Response) => {
+  try {
+    const { noteId, fileUri } = req.body;
+
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({ error: "Nota não encontrada" });
+    }
+
+    note.fileUri = fileUri;
+    await note.save();
+
+    res.status(200).json({ message: "URI do arquivo salva com sucesso", fileUri });
+  } catch (error) {
+    console.error("Erro ao salvar URI do arquivo:", error);
+    res.status(500).json({ error: "Erro ao salvar URI do arquivo" });
   }
 };
 
@@ -145,22 +181,33 @@ export const deleteNote = async (req: Request, res: Response) => {
 
 export const getNotesByGroup = async (req: Request, res: Response) => {
   try {
-    const { userId, groupId } = req.params; 
+    const { userId, groupId } = req.params;
 
     const notes = await Note.find({ userId, groupId });
 
     if (!notes || notes.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "Nenhuma nota encontrada para este grupo ou usuário" });
+      return res.status(404).json({ message: "Nenhuma nota encontrada para este grupo ou usuário" });
     }
 
-    res.status(200).json(notes);
+    // Ajusta o retorno para não incluir o conteúdo base64 para notas do tipo "imagem" ou "arquivo"
+    const formattedNotes = notes.map(note => {
+      if (note.type === "texto") {
+        return note; // Retorna o conteúdo completo para notas de texto
+      }
+      // Para "arquivo" ou "imagem", não retorna o content
+      return {
+        ...note.toObject(),
+        content: undefined,
+      };
+    });
+
+    res.status(200).json(formattedNotes);
   } catch (error) {
     console.error("Erro ao buscar notas por grupo:", error);
     res.status(500).json({ error: "Erro ao buscar notas por grupo" });
   }
 };
+
 
 export const getAllNotes = async (req: Request, res: Response) => {
   try {
