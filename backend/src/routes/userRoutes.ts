@@ -24,6 +24,7 @@ import {
 import {
   addNoteToGroup,
   getNotesByGroup,
+  saveFileUri,
   searchNote
 } from '../controllers/noteController';
 
@@ -70,6 +71,7 @@ router.get("/notes/:userId/:noteId", getNoteById);
 router.put("/notes/:userId/:noteId", updateNote); 
 router.delete("/notes/:userId/:noteId", deleteNote);
 router.get("/searchNotes/:userId/:query",searchNote)
+router.put("/notes/uri/:userId/:noteId", saveFileUri); 
 
 // Rotas para categories
 router.post("/category", createCategory);

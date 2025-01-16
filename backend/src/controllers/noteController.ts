@@ -8,10 +8,12 @@ import User from "../models/User";
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
-    const { userId } = req.params;
-    const { title, fileName, type, groupId, content } = req.body;
+    console.log(req.body);
 
-    // Validações obrigatórias
+    const { userId } = req.params;
+    const { title, type, groupId, content, fileName } = req.body; 
+    let finalFileName = null;
+
     if (!title || !type || !groupId || !content) {
       return res.status(400).json({ error: "Título, tipo, groupId e conteúdo são obrigatórios." });
     }
@@ -20,10 +22,19 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo'." });
     }
 
+
+    if (type === "arquivo") {
+      if (!fileName) {
+        return res.status(400).json({ error: "Nome do arquivo é obrigatório para o tipo 'arquivo'." });
+      }
+      finalFileName = fileName; 
+    }
+
+
     const newNote = new Note({
       title,
-      content, // Conteúdo enviado pelo front (já em Base64 para arquivos ou texto simples)
-      fileName, // Nome do arquivo
+      content, 
+      fileName: finalFileName,
       type,
       groupId,
       userId,
@@ -53,10 +64,9 @@ export const getNoteFileDownload = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
     }
 
-    // Directly return the existing Base64 content
     res.status(200).json({
       filename: note.title,
-      content: note.content,  // The Base64-encoded content directly from the database
+      content: note.content,  
     });
   } catch (error) {
     console.error("Erro ao fazer o download da nota:", error);
@@ -64,9 +74,7 @@ export const getNoteFileDownload = async (req: Request, res: Response) => {
   }
 };
 
-
 export const viewNote = async (req: Request, res: Response) => {
-  // Atualizar base64 e retornar fileName
   try {
     const { userId, noteId } = req.params;
 
@@ -86,7 +94,6 @@ export const viewNote = async (req: Request, res: Response) => {
       "Content-Type": "application/octet-stream",
     });
 
-    // Retornar base64 e fileName
     res.json({ fileName: note.fileName, content: note.content });
   } catch (error) {
     console.error("Erro ao visualizar a nota:", error);
@@ -101,14 +108,12 @@ export const getNoteById = async (req: Request, res: Response) => {
     const note = await Note.findOne({ _id: noteId, userId }).populate("groupId", "name");
     if (!note) return res.status(404).json({ error: "Anotação não encontrada ou não pertence ao usuário." });
 
-    // Verifica se é do tipo 'texto' ou 'imagem' e ajusta o conteúdo
     if (note.type === "texto") {
-      res.status(200).json(note);  // Retorna a nota completa com o conteúdo
-    } else if (note.type === "arquivo" || note.type === "imagem") {
-      // Para 'arquivo' ou 'imagem', não retorna o conteúdo em base64 aqui
+      res.status(200).json(note);  
+    } else if (note.type === "arquivo") {
       const noteData = { 
         ...note.toObject(),
-        content: undefined, // Não retorna o base64 aqui
+        content: undefined, 
       };
       res.status(200).json(noteData);
     }
@@ -118,10 +123,10 @@ export const getNoteById = async (req: Request, res: Response) => {
   }
 };
 
-
 export const saveFileUri = async (req: Request, res: Response) => {
   try {
-    const { noteId, fileUri } = req.body;
+    const {userId, noteId} = req.params;
+    const { fileUri } = req.body;
 
     const note = await Note.findById(noteId);
 
@@ -157,6 +162,7 @@ export const updateNote = async (req: Request, res: Response) => {
     if (type) note.type = type;
     if (content) note.content = content;
 
+
     await note.save(); 
 
     res.status(200).json(note);
@@ -189,12 +195,10 @@ export const getNotesByGroup = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Nenhuma nota encontrada para este grupo ou usuário" });
     }
 
-    // Ajusta o retorno para não incluir o conteúdo base64 para notas do tipo "imagem" ou "arquivo"
     const formattedNotes = notes.map(note => {
       if (note.type === "texto") {
-        return note; // Retorna o conteúdo completo para notas de texto
+        return note; 
       }
-      // Para "arquivo" ou "imagem", não retorna o content
       return {
         ...note.toObject(),
         content: undefined,
