@@ -203,6 +203,7 @@ export const noteService = {
           'Content-Type': 'application/json',
         },
       });
+
       if (!response.ok) {
         throw new Error('Failed to download file');
       }
@@ -223,7 +224,6 @@ export const noteService = {
         throw new Error('Falha');
 
       }
-
 
       const type = getTypeFromBase64(json.content)
       const extension = getExtensionFromType(type)
@@ -251,9 +251,7 @@ export const noteService = {
     }
   },
 
-  openNoteFile: async (fileUri: string): Promise<void> => {
-    try {
-
+  openNoteFile: (fileUri: string): void => {
       const type = getMimeTypeFromUri(fileUri);
 
       IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
@@ -261,11 +259,5 @@ export const noteService = {
         flags: 1,
         type: type,
       });
-  
-    } catch (error) {
-      console.error('Error downloading the note file:', error);
-      throw error;
-    }
   },
-
 };

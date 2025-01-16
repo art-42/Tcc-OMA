@@ -148,13 +148,9 @@ export default function AnotationPage() {
   }
 
   const openNoteFile = () => {
-    noteService.downloadNoteFile(id)
-      .then(resp => {
-        setFileUri(resp);
-      })
-      .catch((error) => {
-        alert(error);
-      }); 
+    if(fileUri){
+      noteService.openNoteFile(fileUri);
+    }
   }
 
   const enterEditMode = () => {
@@ -319,8 +315,7 @@ export default function AnotationPage() {
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
               <Text>Arquivo adicionado: </Text>              
-              {/* <Text>{{}}</Text>               */}
-              {fileUri ?
+              {!fileUri ?
                   <Button label="Baixar" onClick={downloadNoteFile} />
                 :
                   <Button label="Visualizar" onClick={openNoteFile} />
