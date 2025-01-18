@@ -113,7 +113,6 @@ export const getNoteById = async (req: Request, res: Response) => {
     } else if (note.type === "arquivo") {
       const noteData = { 
         ...note.toObject(),
-        content: undefined, 
       };
       res.status(200).json(noteData);
     }

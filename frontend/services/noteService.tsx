@@ -86,6 +86,7 @@ export const noteService = {
         title: note.title,
         type: note.type,
         groupId: note.groupId,
+        fileName: note.fileName,
         content: file64 ?? note.text, // Attach the FormData as content
       };
 
@@ -189,28 +190,14 @@ export const noteService = {
     }
   },
 
-  downloadNoteFile: async (noteId: string): Promise<string> => {
+  downloadNoteFile: async (base64: string): Promise<string> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
       if (!userId) {
         throw new Error('User not found in AsyncStorage');
       }
-  
-      const fileUrl = `${API_URL}/notes/download/${noteId}/${userId}/file`;
-  
-      const response = await fetch(fileUrl,{
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to download file');
-      }
-
-      const json =  await response.json();
-          
-      const base64Data = json.content.split(',')[1];
+            
+      const base64Data = base64.split(',')[1];
 
       const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
 
@@ -225,7 +212,7 @@ export const noteService = {
 
       }
 
-      const type = getTypeFromBase64(json.content)
+      const type = getTypeFromBase64(base64)
       const extension = getExtensionFromType(type)
 
       const uri = await StorageAccessFramework.createFileAsync(
@@ -245,6 +232,48 @@ export const noteService = {
       });
   
       return uri;
+    } catch (error) {
+      console.error('Error downloading the note file:', error);
+      throw error;
+    }
+  },
+
+  viewNoteFile: async (base64: string): Promise<string> => {
+    try {
+      const base64Data = base64.split(',')[1];
+  
+      // Use the app's document directory
+      const directoryUri = FileSystem.documentDirectory;
+  
+      if (!directoryUri) {
+        throw new Error('Failed to get the document directory');
+      }
+  
+      const type = getTypeFromBase64(base64);
+      const extension = getExtensionFromType(type);
+  
+      const fileUri = `${directoryUri}mockData${extension}`;
+
+      console.log(fileUri);
+  
+      await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      console.log(await FileSystem.getInfoAsync(fileUri));
+
+
+      const contentUri = await FileSystem.getContentUriAsync(fileUri);
+  
+      await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
+        data: contentUri,
+        flags: 1,
+        type: type,
+      });
+
+      await FileSystem.deleteAsync(fileUri).then();
+  
+      return fileUri;
     } catch (error) {
       console.error('Error downloading the note file:', error);
       throw error;

@@ -96,9 +96,12 @@ export default function AnotationPage() {
         groupId: params.groupId,
         type: selectedNoteType,
       };
+
+      console.log(file);
   
       if (noteData.type === "arquivo" && file?.uri) {
-        noteData.fileUri = file?.uri; // Passa o URI do arquivo como objeto
+        noteData.fileUri = file?.uri; 
+        noteData.fileName = file?.name; 
       } else if (noteData.type === "texto" && anotationText) {
         noteData.text = anotationText; // Passa o texto diretamente
       } else if (noteData.type === "foto" && photoUri) {
@@ -138,7 +141,7 @@ export default function AnotationPage() {
   }
 
   const downloadNoteFile = () => {
-    noteService.downloadNoteFile(id)
+    noteService.downloadNoteFile(anotation.content)
       .then(resp => {
         setFileUri(resp);
       })
@@ -148,8 +151,8 @@ export default function AnotationPage() {
   }
 
   const openNoteFile = () => {
-    if(fileUri){
-      noteService.openNoteFile(fileUri);
+    if(anotation.content){
+      noteService.viewNoteFile(anotation.content);
     }
   }
 
@@ -313,13 +316,11 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         return (
-            <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              <Text>Arquivo adicionado: </Text>              
-              {!fileUri ?
-                  <Button label="Baixar" onClick={downloadNoteFile} />
-                :
-                  <Button label="Visualizar" onClick={openNoteFile} />
-              }
+            <View style={{ gap: '5%', flex: 20, justifyContent: 'center' }}>
+              <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
+              <Text>{anotation.fileName}</Text>              
+              <Button label="Visualizar" onClick={openNoteFile} />
+              <Button label="Baixar" onClick={downloadNoteFile} />
             </View>
         );
 

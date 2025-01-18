@@ -4,6 +4,7 @@ export interface Note {
   groupId: string;
   text?: string; 
   fileUri?: string;
+  fileName?: string;
 }
 
 export interface NoteResponse {
