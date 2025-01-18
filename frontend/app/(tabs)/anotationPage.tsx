@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler, Pressable } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -37,6 +37,12 @@ export default function AnotationPage() {
   const [hasPermission, setHasPermission] = useState<boolean>(false);
 
   const [fileUri, setFileUri] = useState<string | null>(null);
+
+  const handlenoteTypeChange = (type: string) => {
+    if(type === 'foto'){
+      
+    }
+  }
 
   const rightIcons = [
     {
@@ -85,6 +91,7 @@ export default function AnotationPage() {
     (async () => {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
+      console.log(hasPermission)
     })();
   }, []);
 
@@ -164,9 +171,13 @@ export default function AnotationPage() {
 
   useEffect(() => {
     if(id){
-      noteService.getNoteById(id).then(resp => {
+      noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
+
+        if(resp.type === 'foto'){
+          setPhotoUri(await noteService.getFileUri(resp.content))
+        }
   
       }).catch((error)=> {
           alert(error)
@@ -262,11 +273,13 @@ export default function AnotationPage() {
           };
 
           return (
-            <View style={{ flex: 20, justifyContent: 'center' }}>
+            <View style={{ flex: 22, justifyContent: 'center' }}>
               {photoUri ? (
-                <View style={styles.imgContainer}>
-                  <Text style={styles.imgText}>Foto ou vídeo capturado:</Text>
-                  <Image source={{ uri: photoUri }} style={{ width: 500, height: 200 }} resizeMode="contain" />
+                <View>
+                    <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
+                    <Pressable onPress={() => noteService.openNoteFile(photoUri, true)}>
+                      <Image source={{ uri: photoUri }} style={{ width: 500, height: 400 }} resizeMode="contain" />
+                    </Pressable>
                   <Button 
                     label="Tirar Outra" 
                     onClick={takePhoto} 
@@ -325,6 +338,14 @@ export default function AnotationPage() {
         );
 
         case 'foto':
+          // return (
+            // <View>
+            //   <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
+            //   <Pressable onPress={() => noteService.openNoteFile(uri)}>
+            //     <Image source={{ uri: uri }} style={{ width: 500, height: 400 }} resizeMode="contain" />
+            //   </Pressable>
+            // </View>
+          // );
           
         case 'desenho':        
           
@@ -420,9 +441,6 @@ const styles = StyleSheet.create({
   },
   containerTitle:{
     marginVertical: "5%",
-  },
-  imgContainer:{
-    gap: '5%',
   },
   imgText:{
     textAlign: 'center'

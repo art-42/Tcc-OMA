@@ -10,7 +10,7 @@ export interface Note {
 export interface NoteResponse {
   title: string;
   content: string;
-  type: "texto" | "arquivo";
+  type: "texto" | "arquivo" | "foto";
   groupId: string;
   userId: string;
   date: string; 

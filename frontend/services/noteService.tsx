@@ -260,9 +260,6 @@ export const noteService = {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      console.log(await FileSystem.getInfoAsync(fileUri));
-
-
       const contentUri = await FileSystem.getContentUriAsync(fileUri);
   
       await IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
@@ -270,8 +267,6 @@ export const noteService = {
         flags: 1,
         type: type,
       });
-
-      await FileSystem.deleteAsync(fileUri).then();
   
       return fileUri;
     } catch (error) {
@@ -280,8 +275,13 @@ export const noteService = {
     }
   },
 
-  openNoteFile: (fileUri: string): void => {
+  openNoteFile: async (fileUri: string, isFileUri?: boolean): Promise<void> => {
+    console.log(fileUri);
       const type = getMimeTypeFromUri(fileUri);
+
+      if(isFileUri){
+        fileUri = await FileSystem.getContentUriAsync(fileUri);
+      }
 
       IntentLauncher.startActivityAsync('android.intent.action.VIEW', {
         data: fileUri,
@@ -289,4 +289,26 @@ export const noteService = {
         type: type,
       });
   },
+
+  getFileUri: async (base64: string): Promise<string> =>{
+    const base64Data = base64.split(',')[1];
+  
+    // Use the app's document directory
+    const directoryUri = FileSystem.documentDirectory;
+
+    if (!directoryUri) {
+      throw new Error('Failed to get the document directory');
+    }
+
+    const type = getTypeFromBase64(base64);
+    const extension = getExtensionFromType(type);
+
+    const fileUri = `${directoryUri}mockData${extension}`;
+
+    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    return fileUri;
+  }
 };
