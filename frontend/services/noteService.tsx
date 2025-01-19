@@ -44,7 +44,6 @@ const getTypeFromBase64 = (base64Data: string): string => {
 };
 
 const getMimeTypeFromUri = (uri: string): string => {
-  // Mapping of common file extensions to MIME types
   const extensionToMimeType: { [key: string]: string } = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -53,16 +52,28 @@ const getMimeTypeFromUri = (uri: string): string => {
     '.pdf': 'application/pdf',
     '.txt': 'text/plain',
     '.zip': 'application/zip',
-    // Add more extensions as needed
   };
 
-  // Extract the file extension from the URI
   const extension = uri.slice(uri.lastIndexOf('.'));
 
-  // Return the corresponding MIME type or 'application/octet-stream' if extension is not found
   return extensionToMimeType[extension] || 'application/octet-stream';
 };
 
+async function createDirectoryIfNotExists(directoryUri: string) {
+  const dirInfo = await FileSystem.getInfoAsync(directoryUri);
+  if (!dirInfo.exists) {
+    await FileSystem.makeDirectoryAsync(directoryUri, { intermediates: true });
+  }
+};
+
+async function clearSavedDirectory(directoryUri: string) {
+  const files = await FileSystem.readDirectoryAsync(directoryUri);
+
+  for (const file of files) {
+    const fileUri = `${directoryUri}${file}`;
+    await FileSystem.deleteAsync(fileUri);
+  }
+}
 
 
 export const noteService = {
@@ -72,6 +83,7 @@ export const noteService = {
       const userId = await AsyncStorage.getItem('idUser');
 
       let file64 = undefined;
+
 
       if (note.fileUri) {
         const fetchedFile = await fetch(note.fileUri);
@@ -97,6 +109,7 @@ export const noteService = {
         },
         body: JSON.stringify(noteValue),
       });
+
       if (!response.ok) {
         throw new Error('Failed to create group');
       }
@@ -124,6 +137,7 @@ export const noteService = {
       const noteValue = {
         title: note.title,
         type: note.type,
+        fileName: note.fileName,
         groupId: note.groupId,
         content: file64 ?? note.text, // Attach the FormData as content
       };
@@ -148,7 +162,9 @@ export const noteService = {
     try {
       const userId = await AsyncStorage.getItem('idUser');
 
+
       const response = await fetch(`${API_URL}/notes/${userId}/${noteId}`);
+
       if (!response.ok) {
         throw new Error('Failed to get user');
       }
@@ -242,19 +258,21 @@ export const noteService = {
     try {
       const base64Data = base64.split(',')[1];
   
-      // Use the app's document directory
-      const directoryUri = FileSystem.documentDirectory;
+      const cacheDirectory = FileSystem.cacheDirectory;
   
-      if (!directoryUri) {
+      if (!cacheDirectory) {
         throw new Error('Failed to get the document directory');
       }
+
+      createDirectoryIfNotExists(`${cacheDirectory}noteFiles`)
+
+      await clearSavedDirectory(`${cacheDirectory}noteFiles/`);
   
       const type = getTypeFromBase64(base64);
       const extension = getExtensionFromType(type);
   
-      const fileUri = `${directoryUri}mockData${extension}`;
-
-      console.log(fileUri);
+      const timestamp = Date.now();
+      const fileUri = `${cacheDirectory}noteFiles/${timestamp}${extension}`;
   
       await FileSystem.writeAsStringAsync(fileUri, base64Data, {
         encoding: FileSystem.EncodingType.Base64,
@@ -267,6 +285,8 @@ export const noteService = {
         flags: 1,
         type: type,
       });
+
+      console.log(await FileSystem.readDirectoryAsync(`${cacheDirectory}noteFiles`));
   
       return fileUri;
     } catch (error) {
@@ -276,7 +296,6 @@ export const noteService = {
   },
 
   openNoteFile: async (fileUri: string, isFileUri?: boolean): Promise<void> => {
-    console.log(fileUri);
       const type = getMimeTypeFromUri(fileUri);
 
       if(isFileUri){
@@ -291,24 +310,32 @@ export const noteService = {
   },
 
   getFileUri: async (base64: string): Promise<string> =>{
-    const base64Data = base64.split(',')[1];
+    const base64Data = base64.split(',')[1]; // Remove data URI part
   
-    // Use the app's document directory
-    const directoryUri = FileSystem.documentDirectory;
+  // Use the app's document directory
+  const cacheDirectory = FileSystem.cacheDirectory;
 
-    if (!directoryUri) {
-      throw new Error('Failed to get the document directory');
-    }
+  if (!cacheDirectory) {
+    throw new Error('Failed to get the document directory');
+  }
 
-    const type = getTypeFromBase64(base64);
-    const extension = getExtensionFromType(type);
+  createDirectoryIfNotExists(`${cacheDirectory}noteFiles`)
 
-    const fileUri = `${directoryUri}mockData${extension}`;
+  await clearSavedDirectory(`${cacheDirectory}noteFiles/`);
 
-    await FileSystem.writeAsStringAsync(fileUri, base64Data, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+  const type = getTypeFromBase64(base64);
+  const extension = getExtensionFromType(type);
 
-    return fileUri;
+  const timestamp = Date.now();
+
+  const fileUri = `${cacheDirectory}noteFiles/${timestamp}${extension}`;
+
+  await FileSystem.writeAsStringAsync(fileUri, base64Data, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  console.log(await FileSystem.readDirectoryAsync(`${cacheDirectory}noteFiles`));
+
+  return fileUri;
   }
 };

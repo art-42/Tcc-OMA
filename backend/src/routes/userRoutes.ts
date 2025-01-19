@@ -33,8 +33,6 @@ import {
   updateNote,
   deleteNote,
   getAllNotes,
-  getNoteFileDownload,
-  viewNote
 } from '../controllers/noteController';
 
 import upload from "../middleware/upload";
@@ -64,9 +62,7 @@ router.get("/searchGroups/:userId/:query",searchGroup)
 // Rotas para notes
 router.post("/notes/:userId", addNoteToGroup);
 router.get("/notes/group/:userId/:groupId", getNotesByGroup);
-router.get("/notes/view/:userId/:noteId", viewNote);
 router.get("/notes/:userId", getAllNotes);
-router.get("/notes/download/:noteId/:userId/file",getNoteFileDownload);
 router.get("/notes/:userId/:noteId", getNoteById);
 router.put("/notes/:userId/:noteId", updateNote); 
 router.delete("/notes/:userId/:noteId", deleteNote);

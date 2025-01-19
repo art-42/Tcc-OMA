@@ -8,10 +8,11 @@ import InputText from "@/components/InputText";
 import { noteService } from "@/services/noteService";
 import { Picker } from "@react-native-picker/picker";
 import * as DocumentPicker from 'expo-document-picker';
-import * as ImagePicker from 'expo-image-picker'; 
+import { Camera, CameraView } from 'expo-camera'; // Importing the Camera component
 import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { Note } from "@/interfaces/Note";
 import { Image } from 'react-native';
+import { utils } from "@/utils/utils";
 
 
 export default function AnotationPage() {
@@ -38,11 +39,7 @@ export default function AnotationPage() {
 
   const [fileUri, setFileUri] = useState<string | null>(null);
 
-  const handlenoteTypeChange = (type: string) => {
-    if(type === 'foto'){
-      
-    }
-  }
+  const cameraRef = useRef<CameraView | null>(null);
 
   const rightIcons = [
     {
@@ -89,9 +86,8 @@ export default function AnotationPage() {
 
   useEffect(() => {
     (async () => {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       setHasPermission(status === 'granted');
-      console.log(hasPermission)
     })();
   }, []);
 
@@ -103,8 +99,6 @@ export default function AnotationPage() {
         groupId: params.groupId,
         type: selectedNoteType,
       };
-
-      console.log(file);
   
       if (noteData.type === "arquivo" && file?.uri) {
         noteData.fileUri = file?.uri; 
@@ -116,17 +110,15 @@ export default function AnotationPage() {
       } else {
         throw new Error("Dados inválidos para o campo content.");
       }
-  
-      console.log("Dados enviados ao serviço:", noteData);
-  
-      // Selecionar a função apropriada do serviço
+
+      console.log(noteData);
+    
       const response = !id
-        ? await noteService.createNote(noteData) // Envia os dados ao backend para criação
-        : await noteService.updateNote(id, noteData); // Atualiza a nota existente
-  
-      // Sucesso: notificar o usuário e atualizar estado
-      alert(`Cadastro concluído: \nTítulo: ${response.title}`);
+        ? await noteService.createNote(noteData)
+        : await noteService.updateNote(id, noteData); 
+
       setAnotation(response);
+      setId(response._id)
       setEdit(false);
     } catch (error) {
       // Falha: notificar o usuário
@@ -171,6 +163,7 @@ export default function AnotationPage() {
 
   useEffect(() => {
     if(id){
+      console.log(id)
       noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
@@ -234,6 +227,7 @@ export default function AnotationPage() {
       
             const fileAsset = result.assets ? result.assets[0] : null;
             if (fileAsset) {
+              console.log(fileAsset)
               setFile(fileAsset); 
             } else {
               console.log('No file selected');
@@ -247,51 +241,46 @@ export default function AnotationPage() {
       
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              {file?.name && <Text>File picked: {file?.name}</Text>}
+              {file?.name && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file?.name}</Text>}
               
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
 
         case 'foto':
-          const takePhoto = async () => {
-            if (hasPermission) {
-              let result = await ImagePicker.launchCameraAsync({
-                mediaTypes: "images",
-                allowsEditing: true,
-                quality: 1,
-              });
 
-              if (!result.canceled) {
-                setPhotoUri(result.assets[0].uri); // Store the URI of the captured media
-              } else {
-                console.log('User cancelled the action');
+          const takePicture = async () => {
+            if (cameraRef.current) {
+              const photo = await cameraRef.current.takePictureAsync();
+              if(photo){
+                setPhotoUri(photo.uri);
+                console.log(photo?.uri);
               }
-            } else {
-              alert('Camera permission is required');
             }
           };
 
           return (
+
             <View style={{ flex: 22, justifyContent: 'center' }}>
               {photoUri ? (
-                <View>
+                <View style={{ gap: '2%'}}>
                     <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
                     <Pressable onPress={() => noteService.openNoteFile(photoUri, true)}>
-                      <Image source={{ uri: photoUri }} style={{ width: 500, height: 400 }} resizeMode="contain" />
+                      <Image source={{ uri: photoUri }} style={{ width: 350, height: 400 }} resizeMode="contain" />
                     </Pressable>
                   <Button 
                     label="Tirar Outra" 
-                    onClick={takePhoto} 
+                    onClick={() => setPhotoUri(null)} 
                   />
                 </View>
               ) : (
-                <>
-                  <Button 
-                    label="Tirar Foto" 
-                    onClick={takePhoto} 
+                <View style={{ gap: '2%'}}>
+                  <CameraView
+                    style={styles.camera}
+                    ref={cameraRef}
                   />
-                </>
+                  <Button label="Tirar Foto" onClick={() => takePicture()} />
+                </View>
               )}
             </View>
           );
@@ -331,21 +320,30 @@ export default function AnotationPage() {
         return (
             <View style={{ gap: '5%', flex: 20, justifyContent: 'center' }}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
-              <Text>{anotation.fileName}</Text>              
+              <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />
               <Button label="Baixar" onClick={downloadNoteFile} />
             </View>
         );
 
         case 'foto':
-          // return (
-            // <View>
-            //   <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
-            //   <Pressable onPress={() => noteService.openNoteFile(uri)}>
-            //     <Image source={{ uri: uri }} style={{ width: 500, height: 400 }} resizeMode="contain" />
-            //   </Pressable>
-            // </View>
-          // );
+          return (
+            <View style={{ flex: 0.8, justifyContent: 'center' }}>
+              {photoUri ? (
+                <View style={{ gap: '2%'}}>
+                    <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
+                    <Pressable onPress={() => noteService.openNoteFile(photoUri, true)}>
+                      <Image source={{ uri: photoUri }} style={{ width: 350, height: 400 }} resizeMode="contain" />
+                    </Pressable>
+                </View>
+              ) : (
+                <Text>
+                  Sem imagem disponível para ser visualizada
+                </Text>
+              )}
+            </View>
+           
+          );
           
         case 'desenho':        
           
@@ -444,5 +442,10 @@ const styles = StyleSheet.create({
   },
   imgText:{
     textAlign: 'center'
+  },
+  camera: {
+    flex: 1,
+    width: 300,
+    height: 400,
   },
 });

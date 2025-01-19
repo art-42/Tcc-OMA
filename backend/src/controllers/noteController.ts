@@ -8,7 +8,6 @@ import User from "../models/User";
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
-    console.log(req.body);
 
     const { userId } = req.params;
     const { title, type, groupId, content, fileName } = req.body; 
@@ -30,7 +29,6 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
       finalFileName = fileName; 
     }
 
-
     const newNote = new Note({
       title,
       content, 
@@ -50,71 +48,17 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
   }
 };
 
-export const getNoteFileDownload = async (req: Request, res: Response) => {
-  try {
-    const { noteId } = req.params;
-
-    const note = await Note.findById(noteId);
-
-    if (!note) {
-      return res.status(404).json({ error: "Nota não encontrada" });
-    }
-
-    if (note.type !== "arquivo") {
-      return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
-    }
-
-    res.status(200).json({
-      filename: note.title,
-      content: note.content,  
-    });
-  } catch (error) {
-    console.error("Erro ao fazer o download da nota:", error);
-    res.status(500).json({ error: "Erro ao fazer o download da nota" });
-  }
-};
-
-export const viewNote = async (req: Request, res: Response) => {
-  try {
-    const { userId, noteId } = req.params;
-
-    const note = await Note.findById(noteId);
-
-    if (!note) {
-      return res.status(404).json({ error: "Nota não encontrada" });
-    }
-
-    if (note.type !== "arquivo") {
-      return res.status(400).json({ error: "Esta nota não é do tipo 'arquivo'." });
-    }
-
-    const fileBuffer = Buffer.from(note.content as string, "base64");
-
-    res.set({
-      "Content-Type": "application/octet-stream",
-    });
-
-    res.json({ fileName: note.fileName, content: note.content });
-  } catch (error) {
-    console.error("Erro ao visualizar a nota:", error);
-    res.status(500).json({ error: "Erro ao visualizar a nota" });
-  }
-};
-
 export const getNoteById = async (req: Request, res: Response) => {
   try {
+
     const { userId, noteId } = req.params;
 
     const note = await Note.findOne({ _id: noteId, userId }).populate("groupId", "name");
     if (!note) return res.status(404).json({ error: "Anotação não encontrada ou não pertence ao usuário." });
 
-    if (note.type === "texto") {
+
+    if (note.type === "texto" || "arquivo" || "foto") {
       res.status(200).json(note);  
-    } else if (note.type === "arquivo") {
-      const noteData = { 
-        ...note.toObject(),
-      };
-      res.status(200).json(noteData);
     }
 
   } catch (err) {
@@ -146,7 +90,7 @@ export const saveFileUri = async (req: Request, res: Response) => {
 export const updateNote = async (req: Request, res: Response) => {
   try {
     const { userId, noteId } = req.params;
-    const { title, type, content } = req.body; 
+    const { title, type, content, fileName } = req.body; 
 
     const note = await Note.findOne({ _id: noteId, userId });
     if (!note) {
@@ -160,7 +104,7 @@ export const updateNote = async (req: Request, res: Response) => {
     if (title) note.title = title;
     if (type) note.type = type;
     if (content) note.content = content;
-
+    if (fileName) note.fileName = fileName;
 
     await note.save(); 
 
