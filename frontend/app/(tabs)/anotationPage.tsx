@@ -41,6 +41,7 @@ export default function AnotationPage() {
 
   const [drawMode, setDrawMode] = useState<"d"|"e">('d');
   const [drawColor, setDrawColor] = useState<string>('black');
+  const [drawWidth, setDrawWidth] = useState<number>(3);
 
   const cameraRef = useRef<CameraView | null>(null);
 
@@ -62,11 +63,17 @@ export default function AnotationPage() {
   //campos de desenho
   const signatureRef = useRef<SignatureViewRef>(null);
 
-  const pickerRef = useRef<Picker<string>|null>(null);
+  const pickerColorRef = useRef<Picker<string>|null>(null);
+  const pickerWidthRef = useRef<Picker<number>|null>(null);
 
   const handleColorChange = (color: string) => {
     signatureRef.current?.changePenColor(color);
     setDrawColor(color);
+  }
+
+  const handleWidthChange = (width: number) => {
+    signatureRef.current?.changePenSize(width - 0.5, width + 0.5);
+    setDrawWidth(width);
   }
 
 
@@ -281,15 +288,8 @@ export default function AnotationPage() {
 
       
           return (
-            <View style={{ flex: 22, justifyContent: 'center', alignItems: 'center' }}>
-              <SignatureScreen
-                style={{width: 350, maxHeight: 400}}
-                ref={signatureRef}
-                onOK={handleOK}
-                webStyle={style}
-                minWidth={5}
-              />
-              <View style={{flexDirection: 'row'}}>
+            <View style={styles.drawContainer}>
+              <View style={styles.drawActions}>
                 <Button 
                   iconName={'rotate-left'}
                   onClick={() => signatureRef.current?.undo()}
@@ -298,13 +298,6 @@ export default function AnotationPage() {
                   iconName={'rotate-right'}
                   onClick={() => signatureRef.current?.redo()}
                 />
-
-                <Button 
-                  iconName={'circle'}
-                  iconColor={drawColor}
-                  onClick={() => pickerRef.current?.focus()}
-                />
-
 
                 <Button 
                   iconName={drawMode === "d" ? "pencil" : "eraser"}
@@ -319,9 +312,22 @@ export default function AnotationPage() {
                     }
                   }}
                 />
+
+                <Button 
+                  iconName={'paint-brush'}
+                  iconColor={drawColor}
+                  onClick={() => pickerColorRef.current?.focus()}
+                />
+
+                <Button 
+                  iconName={'circle'}
+                  iconSize={drawWidth + 5}
+                  onClick={() => pickerWidthRef.current?.focus()}
+                />
+
                 <Picker
                   style={{display: 'none'}}
-                  ref={pickerRef}
+                  ref={pickerColorRef}
                   selectedValue={drawColor}
                   onValueChange={(itemValue) => handleColorChange(itemValue)}
                 >
@@ -330,7 +336,24 @@ export default function AnotationPage() {
                   <Picker.Item label="Vermelho" value="red" color="red"/>
                   <Picker.Item label="Verde" value="green" color="green"/>
                 </Picker>
+                <Picker
+                  style={{display: 'none'}}
+                  ref={pickerWidthRef}
+                  selectedValue={drawWidth}
+                  onValueChange={(itemValue) => handleWidthChange(itemValue)}
+                >
+                  <Picker.Item label="Pequeno" value={3}/>
+                  <Picker.Item label="Médio" value={5}/>
+                  <Picker.Item label="Grande" value={10}/>
+                  <Picker.Item label="Extra grande" value={20}/>
+                </Picker>
               </View>
+              <SignatureScreen
+                ref={signatureRef}
+                onOK={handleOK}
+                webStyle={style}
+                minWidth={3}
+              />
             </View>
           );
       default:
@@ -480,4 +503,16 @@ const styles = StyleSheet.create({
     width: 300,
     height: 400,
   },
+  drawContainer: {
+    flex: 30,
+     justifyContent: 'center',
+    alignItems: 'center', 
+    width: '95%'
+  },
+  drawActions: {
+    flexDirection: 'row', 
+    columnGap: '5%', 
+    alignSelf: 'flex-end',
+    marginBottom: '2%'
+  }
 });

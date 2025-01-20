@@ -6,20 +6,22 @@ import { Pressable, View, Text, StyleSheet } from "react-native";
 export type ButtonProps = {
     label?: string;
     iconName?: any;
-    iconColor?: any;
+    iconColor?: string;
+    iconSize?: number;
     border?: boolean;
     onClick?: () => void;
     href?: any;
 }
 
-export default function Button({label, iconName, iconColor, border, onClick, href} : ButtonProps) {
+export default function Button({label, iconName, iconColor, iconSize, border, onClick, href} : ButtonProps) {
   const content = (
     <Pressable
+      style={!iconName ? [styles.pressableContainer, styles.containerText] : [styles.pressableContainer]}
       onPress={ onClick ? () => onClick() : null}
     >
       {iconName && 
         <FontAwesome
-          size={30}
+          size={iconSize ?? 30}
           name={iconName}
           color={iconColor}
         />
@@ -29,14 +31,14 @@ export default function Button({label, iconName, iconColor, border, onClick, hre
               <Text style={styles.label}>{label}</Text>
           </Link>
           :
-          <Text style={styles.label}>{label}</Text> 
+          label && <Text style={styles.label}>{label}</Text>  
       }
         
       </Pressable>  
   )
 
   return (
-    <View style={!iconName ? [styles.container, styles.containerBorder] : [styles.container]}>
+    <View >
       {href ?
         <Link href={href} asChild>
             {content}
@@ -50,12 +52,8 @@ export default function Button({label, iconName, iconColor, border, onClick, hre
 }
 
 const styles = StyleSheet.create({
-  container:{
+  containerText:{
     width: "auto",
-    paddingHorizontal: "5%",
-    justifyContent:"center",
-  },
-  containerBorder:{
     alignSelf:"center",
     borderColor: '#000000',
     borderWidth: 2,
@@ -63,6 +61,13 @@ const styles = StyleSheet.create({
   },
   label:{
     textAlign: "center",
+    paddingHorizontal: "3%",
     margin: 6
+  },
+  pressableContainer:{
+    minWidth: 30, 
+    minHeight: 30, 
+    justifyContent: 'center', 
+    alignItems: 'center'
   }
 });
