@@ -349,6 +349,7 @@ export default function AnotationPage() {
                 </Picker>
               </View>
               <SignatureScreen
+                style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
                 ref={signatureRef}
                 onOK={handleOK}
                 webStyle={style}
