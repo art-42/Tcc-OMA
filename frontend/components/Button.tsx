@@ -16,7 +16,7 @@ export type ButtonProps = {
 export default function Button({label, iconName, iconColor, iconSize, border, onClick, href} : ButtonProps) {
   const content = (
     <Pressable
-      style={!iconName ? [styles.pressableContainer, styles.containerText] : [styles.pressableContainer]}
+      style={!iconName ? styles.containerText : styles.pressableContainer}
       onPress={ onClick ? () => onClick() : null}
     >
       {iconName && 
@@ -38,7 +38,7 @@ export default function Button({label, iconName, iconColor, iconSize, border, on
   )
 
   return (
-    <View >
+    <View>
       {href ?
         <Link href={href} asChild>
             {content}

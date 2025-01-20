@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 interface INote extends Document {
   title: string;
   content: string; 
-  type: "texto" | "arquivo";
+  type: "texto" | "arquivo" | "foto" | "desenho";
   groupId: string;
   userId: string;
   date: Date;
@@ -14,7 +14,7 @@ interface INote extends Document {
 const NoteSchema: Schema = new Schema({
   title: { type: String, required: true },
   content: { type: String, required: true }, 
-  type: { type: String, enum: ["texto", "arquivo", "foto"], required: true },
+  type: { type: String, enum: ["texto", "arquivo", "foto", "desenho"], required: true },
   groupId: { type: mongoose.Schema.Types.ObjectId, ref: "Group", required: true },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   date: { type: Date, default: Date.now },

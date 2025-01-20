@@ -82,25 +82,7 @@ export const noteService = {
     try {
       const userId = await AsyncStorage.getItem('idUser');
 
-      let file64 = undefined;
-
-
-      if (note.fileUri) {
-        const fetchedFile = await fetch(note.fileUri);
-        const blob = await fetchedFile.blob();
-
-        file64 = await convertBlobToBase64(blob);
-
-      }
-
-      // Create the Note object with the required structure
-      const noteValue = {
-        title: note.title,
-        type: note.type,
-        groupId: note.groupId,
-        fileName: note.fileName,
-        content: file64 ?? note.text, // Attach the FormData as content
-      };
+      const noteValue = await getConstructedNote(note);
 
       const response = await fetch(`${API_URL}/notes/${userId}`, {
         method: 'POST',
@@ -123,24 +105,7 @@ export const noteService = {
     try {
       const userId = await AsyncStorage.getItem('idUser');
 
-      let file64 = undefined;
-
-      if (note.fileUri) {
-        const fetchedFile = await fetch(note.fileUri);
-        const blob = await fetchedFile.blob();
-
-        file64 = await convertBlobToBase64(blob);
-
-      }
-
-      // Create the Note object with the required structure
-      const noteValue = {
-        title: note.title,
-        type: note.type,
-        fileName: note.fileName,
-        groupId: note.groupId,
-        content: file64 ?? note.text, // Attach the FormData as content
-      };
+      const noteValue = await getConstructedNote(note);
 
       const response = await fetch(`${API_URL}/notes/${userId}/${id}`, {
         method: 'PUT',
@@ -339,3 +304,26 @@ export const noteService = {
   return fileUri;
   }
 };
+
+async function getConstructedNote(note: Note) {
+  let file64 = note.base64 ?? undefined;
+
+  if (!file64 && note.fileUri) {
+    const fetchedFile = await fetch(note.fileUri);
+    const blob = await fetchedFile.blob();
+
+    file64 = await convertBlobToBase64(blob);
+
+  }
+
+  // Create the Note object with the required structure
+  const noteValue = {
+    title: note.title,
+    type: note.type,
+    fileName: note.fileName,
+    groupId: note.groupId,
+    content: file64 ?? note.text, // Attach the FormData as content
+  };
+  return noteValue;
+}
+

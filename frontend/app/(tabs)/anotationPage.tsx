@@ -23,7 +23,7 @@ export default function AnotationPage() {
 
   const [id, setId] = useState(params.noteId);
 
-  const [selectedNoteType, setSelectedNoteType] = useState<"arquivo"|"foto"|"texto">('texto');
+  const [selectedNoteType, setSelectedNoteType] = useState<"arquivo"|"foto"|"texto"|"desenho">('texto');
   
   const [edit, setEdit] = useState(!id);
 
@@ -42,6 +42,8 @@ export default function AnotationPage() {
   const [drawMode, setDrawMode] = useState<"d"|"e">('d');
   const [drawColor, setDrawColor] = useState<string>('black');
   const [drawWidth, setDrawWidth] = useState<number>(3);
+
+  const [drawBase64, setDrawBase64] = useState<string|null>(null);
 
   const cameraRef = useRef<CameraView | null>(null);
 
@@ -77,9 +79,14 @@ export default function AnotationPage() {
   }
 
 
-  // Called after ref.current.readSignature() reads a non-empty base64 string
   const handleOK = (signature: any) => {
-    console.log(signature);
+    console.log("leu assinatura")
+    setDrawBase64(signature);
+  };
+
+  const handleEnd = () => {
+    console.log("acabou stroke")
+    signatureRef.current?.readSignature();
   };
 
   useEffect(() => {
@@ -102,14 +109,14 @@ export default function AnotationPage() {
         noteData.fileUri = file?.uri; 
         noteData.fileName = file?.name; 
       } else if (noteData.type === "texto" && anotationText) {
-        noteData.text = anotationText; // Passa o texto diretamente
+        noteData.text = anotationText; 
       } else if (noteData.type === "foto" && photoUri) {
-        noteData.fileUri = photoUri; // Passa o texto diretamente
+        noteData.fileUri = photoUri; 
+      } else if (noteData.type === "desenho" && drawBase64) {
+        noteData.base64 = drawBase64; 
       } else {
         throw new Error("Dados inválidos para o campo content.");
       }
-
-      console.log(noteData);
     
       const response = !id
         ? await noteService.createNote(noteData)
@@ -117,6 +124,9 @@ export default function AnotationPage() {
 
       setAnotation(response);
       setId(response._id)
+
+      setPhotoUri(await noteService.getFileUri(response.content))
+
       setEdit(false);
     } catch (error) {
       // Falha: notificar o usuário
@@ -166,7 +176,7 @@ export default function AnotationPage() {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
 
-        if(resp.type === 'foto'){
+        if(['foto', 'desenho'].includes(resp.type)){
           setPhotoUri(await noteService.getFileUri(resp.content))
         }
   
@@ -352,6 +362,7 @@ export default function AnotationPage() {
                 style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
                 ref={signatureRef}
                 onOK={handleOK}
+                onEnd={handleEnd}
                 webStyle={style}
                 minWidth={3}
               />
@@ -383,6 +394,7 @@ export default function AnotationPage() {
         );
 
         case 'foto':
+        case 'desenho':
           return (
             <View style={{ flex: 0.8, justifyContent: 'center' }}>
               {photoUri ? (
@@ -400,9 +412,7 @@ export default function AnotationPage() {
             </View>
            
           );
-          
-        case 'desenho':        
-          
+                    
       default:
         return;
     }

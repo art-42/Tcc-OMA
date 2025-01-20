@@ -17,8 +17,8 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Título, tipo, groupId e conteúdo são obrigatórios." });
     }
 
-    if (!["texto", "arquivo", "foto"].includes(type)) {
-      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo' ou 'foto'." });
+    if (!["texto", "arquivo", "foto", "desenho"].includes(type)) {
+      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto', 'arquivo', 'foto' ou 'desenho." });
     }
 
 
@@ -97,8 +97,8 @@ export const updateNote = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Nota não encontrada ou não pertence ao usuário" });
     }
 
-    if (type && !["texto", "arquivo","foto"].includes(type)) {
-      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto' ou 'arquivo' ou 'foto." });
+    if (type && !["texto", "arquivo", "foto", "desenho"].includes(type)) {
+      return res.status(400).json({ error: "Tipo inválido. Deve ser 'texto', 'arquivo', 'foto' ou desenho." });
     }
 
     if (title) note.title = title;
