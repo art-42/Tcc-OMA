@@ -39,6 +39,9 @@ export default function AnotationPage() {
 
   const [fileUri, setFileUri] = useState<string | null>(null);
 
+  const [drawMode, setDrawMode] = useState<"d"|"e">('d');
+  const [drawColor, setDrawColor] = useState<string>('black');
+
   const cameraRef = useRef<CameraView | null>(null);
 
   const rightIcons = [
@@ -57,31 +60,19 @@ export default function AnotationPage() {
   ];
 
   //campos de desenho
-  const ref = useRef<SignatureViewRef>(null);
+  const signatureRef = useRef<SignatureViewRef>(null);
+
+  const pickerRef = useRef<Picker<string>|null>(null);
+
+  const handleColorChange = (color: string) => {
+    signatureRef.current?.changePenColor(color);
+    setDrawColor(color);
+  }
+
 
   // Called after ref.current.readSignature() reads a non-empty base64 string
   const handleOK = (signature: any) => {
     console.log(signature);
-  };
-
-  // Called after ref.current.readSignature() reads an empty string
-  const handleEmpty = () => {
-    console.log("Empty");
-  };
-
-  // Called after ref.current.clearSignature()
-  const handleClear = () => {
-    console.log("clear success!");
-  };
-
-  // Called after end of stroke
-  const handleEnd = () => {
-    ref.current?.readSignature();
-  };
-
-  // Called after ref.current.getData()
-  const handleData = (data: any) => {
-    console.log(data);
   };
 
   useEffect(() => {
@@ -284,21 +275,62 @@ export default function AnotationPage() {
               )}
             </View>
           );
-        case 'desenho':        
+        case 'desenho':  
+
+          const style = `.m-signature-pad--footer {displau: none} .m-signature-pad {height: 100vh}`;
+
+      
           return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <Text>Signature Pad</Text>
+            <View style={{ flex: 22, justifyContent: 'center', alignItems: 'center' }}>
               <SignatureScreen
-                style={{width: 300, height: 300}}
-                ref={ref}
-                onEnd={handleEnd}
+                style={{width: 350, maxHeight: 400}}
+                ref={signatureRef}
                 onOK={handleOK}
-                onEmpty={handleEmpty}
-                onClear={handleClear}
-                onGetData={handleData}
-                autoClear={true}
-                descriptionText={'TEST'}
+                webStyle={style}
+                minWidth={5}
               />
+              <View style={{flexDirection: 'row'}}>
+                <Button 
+                  iconName={'rotate-left'}
+                  onClick={() => signatureRef.current?.undo()}
+                />
+                <Button 
+                  iconName={'rotate-right'}
+                  onClick={() => signatureRef.current?.redo()}
+                />
+
+                <Button 
+                  iconName={'circle'}
+                  iconColor={drawColor}
+                  onClick={() => pickerRef.current?.focus()}
+                />
+
+
+                <Button 
+                  iconName={drawMode === "d" ? "pencil" : "eraser"}
+                  onClick={() => {
+                    if(drawMode === "d"){
+                      setDrawMode("e")
+                      signatureRef.current?.erase()
+
+                    } else {
+                      setDrawMode("d")
+                      signatureRef.current?.draw()
+                    }
+                  }}
+                />
+                <Picker
+                  style={{display: 'none'}}
+                  ref={pickerRef}
+                  selectedValue={drawColor}
+                  onValueChange={(itemValue) => handleColorChange(itemValue)}
+                >
+                  <Picker.Item label="Preto" value="black"  color="black" />
+                  <Picker.Item label="Azul" value="blue" color="blue"/>
+                  <Picker.Item label="Vermelho" value="red" color="red"/>
+                  <Picker.Item label="Verde" value="green" color="green"/>
+                </Picker>
+              </View>
             </View>
           );
       default:

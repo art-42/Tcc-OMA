@@ -6,12 +6,13 @@ import { Pressable, View, Text, StyleSheet } from "react-native";
 export type ButtonProps = {
     label?: string;
     iconName?: any;
+    iconColor?: any;
     border?: boolean;
     onClick?: () => void;
     href?: any;
 }
 
-export default function Button({label, iconName, border, onClick, href} : ButtonProps) {
+export default function Button({label, iconName, iconColor, border, onClick, href} : ButtonProps) {
   const content = (
     <Pressable
       onPress={ onClick ? () => onClick() : null}
@@ -20,6 +21,7 @@ export default function Button({label, iconName, border, onClick, href} : Button
         <FontAwesome
           size={30}
           name={iconName}
+          color={iconColor}
         />
       }
       {href ?
