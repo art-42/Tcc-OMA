@@ -171,7 +171,7 @@ export const noteService = {
     }
   },
 
-  downloadNoteFile: async (base64: string): Promise<string> => {
+  downloadNoteFile: async (base64: string, fileName: string): Promise<string> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
       if (!userId) {
@@ -194,11 +194,10 @@ export const noteService = {
       }
 
       const type = getTypeFromBase64(base64)
-      const extension = getExtensionFromType(type)
 
       const uri = await StorageAccessFramework.createFileAsync(
         directoryUri, 
-        `teste${extension}`, 
+        `${fileName}`, 
         type
       );
 
@@ -251,7 +250,6 @@ export const noteService = {
         type: type,
       });
 
-      console.log(await FileSystem.readDirectoryAsync(`${cacheDirectory}noteFiles`));
   
       return fileUri;
     } catch (error) {
@@ -298,8 +296,6 @@ export const noteService = {
   await FileSystem.writeAsStringAsync(fileUri, base64Data, {
     encoding: FileSystem.EncodingType.Base64,
   });
-
-  console.log(await FileSystem.readDirectoryAsync(`${cacheDirectory}noteFiles`));
 
   return fileUri;
   }

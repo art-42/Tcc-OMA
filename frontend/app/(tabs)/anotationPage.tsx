@@ -35,6 +35,7 @@ export default function AnotationPage() {
   const [anotation, setAnotation] = useState<any>();
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [drawUri, setDrawUri] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean>(false);
 
   const [fileUri, setFileUri] = useState<string | null>(null);
@@ -80,12 +81,10 @@ export default function AnotationPage() {
 
 
   const handleOK = (signature: any) => {
-    console.log("leu assinatura")
     setDrawBase64(signature);
   };
 
   const handleEnd = () => {
-    console.log("acabou stroke")
     signatureRef.current?.readSignature();
   };
 
@@ -123,9 +122,14 @@ export default function AnotationPage() {
         : await noteService.updateNote(id, noteData); 
 
       setAnotation(response);
+      setSelectedNoteType(response.type);
       setId(response._id)
 
-      setPhotoUri(await noteService.getFileUri(response.content))
+      if(response.type === "foto"){
+        setPhotoUri(await noteService.getFileUri(response.content))
+      } else if(response.type === "desenho"){
+        setDrawUri(await noteService.getFileUri(response.content))
+      }
 
       setEdit(false);
     } catch (error) {
@@ -148,7 +152,7 @@ export default function AnotationPage() {
   }
 
   const downloadNoteFile = () => {
-    noteService.downloadNoteFile(anotation.content)
+    noteService.downloadNoteFile(anotation.content, anotation.fileName)
       .then(resp => {
         setFileUri(resp);
       })
@@ -164,20 +168,26 @@ export default function AnotationPage() {
   }
 
   const enterEditMode = () => {
-    setAnotationTitle(anotation.title)
-    setAnotationText(anotation.content)
     setEdit(true);
+    setAnotationTitle(anotation.title)
+    setAnotationText(anotation.type === "texto" ? anotation.content : "")
+    if(selectedNoteType === "desenho"){
+      setDrawMode("d");
+      setDrawColor("black");
+      setDrawWidth(3);
+    }
   }
 
   useEffect(() => {
     if(id){
-      console.log(id)
       noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
 
-        if(['foto', 'desenho'].includes(resp.type)){
+        if(resp.type === "foto"){
           setPhotoUri(await noteService.getFileUri(resp.content))
+        } else if(resp.type === "desenho"){
+          setDrawUri(await noteService.getFileUri(resp.content))
         }
   
       }).catch((error)=> {
@@ -220,22 +230,18 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         const pickFile = async () => {
-          console.log('Arquivo selecionado:', file);
           try {
             const result = await DocumentPicker.getDocumentAsync({
               type: '*/*', 
             });
 
-            console.log('Resultado do DocumentPicker:', result); 
       
             if (result.canceled) {
-              console.log('File picking cancelled');
               return;
             }
       
             const fileAsset = result.assets ? result.assets[0] : null;
             if (fileAsset) {
-              console.log(fileAsset)
               setFile(fileAsset); 
             } else {
               console.log('No file selected');
@@ -262,7 +268,6 @@ export default function AnotationPage() {
               const photo = await cameraRef.current.takePictureAsync();
               if(photo){
                 setPhotoUri(photo.uri);
-                console.log(photo?.uri);
               }
             }
           };
@@ -314,11 +319,11 @@ export default function AnotationPage() {
                   onClick={() => {
                     if(drawMode === "d"){
                       setDrawMode("e")
-                      signatureRef.current?.erase()
+                      signatureRef.current?.changePenColor("white")
 
                     } else {
                       setDrawMode("d")
-                      signatureRef.current?.draw()
+                      signatureRef.current?.changePenColor(drawColor)
                     }
                   }}
                 />
@@ -360,6 +365,8 @@ export default function AnotationPage() {
               </View>
               <SignatureScreen
                 style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
+                backgroundColor="white"
+                dataURL={anotation?.content}
                 ref={signatureRef}
                 onOK={handleOK}
                 onEnd={handleEnd}
@@ -395,13 +402,14 @@ export default function AnotationPage() {
 
         case 'foto':
         case 'desenho':
+          const uri = param === 'foto' ? photoUri : drawUri;
           return (
             <View style={{ flex: 0.8, justifyContent: 'center' }}>
-              {photoUri ? (
+              {uri ? (
                 <View style={{ gap: '2%'}}>
                     <Text style={styles.imgText}>(Clique na imagem para expandir)</Text>
-                    <Pressable onPress={() => noteService.openNoteFile(photoUri, true)}>
-                      <Image source={{ uri: photoUri }} style={{ width: 350, height: 400 }} resizeMode="contain" />
+                    <Pressable onPress={() => noteService.openNoteFile(uri, true)}>
+                      <Image source={{ uri }} style={{ width: 350, height: 400 }} resizeMode="contain" />
                     </Pressable>
                 </View>
               ) : (
@@ -431,6 +439,20 @@ export default function AnotationPage() {
           alignItems: "center",
         }}>
           <Header rightIcons={rightIcons} text={anotation?.title}/>
+
+          <Picker
+            style={{width: "40%"}}
+            enabled={false}
+            selectedValue={selectedNoteType}
+            onValueChange={(itemValue) =>{
+              setSelectedNoteType(itemValue)
+            }
+          }>
+            <Picker.Item label="Texto" value={'texto'}/>
+            <Picker.Item label="Arquivo" value={'arquivo'}/>
+            <Picker.Item label="Foto" value={'foto'}/>
+            <Picker.Item label="desenho" value={'desenho'}/>
+          </Picker>
 
           {renderViewNoteType(selectedNoteType)}
 
@@ -481,7 +503,9 @@ const styles = StyleSheet.create({
     flex: 10,
   },
   text: {
+    width: "100%",
     fontSize: 20,
+    textAlign: 'justify',
     marginLeft: "auto",
     marginRight: "auto",
   },

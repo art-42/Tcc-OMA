@@ -10,7 +10,6 @@ export const utils = {
           const fileUri = cacheDirectory + file;
           await FileSystem.deleteAsync(fileUri, { idempotent: true });
         }
-        console.log(await FileSystem.readDirectoryAsync(cacheDirectory));
       } catch (error) {
         console.error('Error clearing cache:', error);
       }

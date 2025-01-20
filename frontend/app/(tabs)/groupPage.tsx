@@ -20,7 +20,9 @@ export default function GroupPage() {
 
   var groupInfo = useLocalSearchParams<{ id: string}>();
 
-  const [id, setId] = useState(groupInfo.id);
+
+  const [id, setId] = useState(groupInfo.id ?? '');
+  
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [edit, setEdit] = useState(false);
@@ -36,7 +38,7 @@ export default function GroupPage() {
   useFocusEffect(
     React.useCallback(() => {
       fetchGroupData();
-    }, [])
+    }, [id])
   );
 
   const saveGroup = () => {
