@@ -53,6 +53,7 @@ const styles = StyleSheet.create({
   },
   icons: {
     width: "20%",
+    gap: "10%",
     flexDirection: "row",
   },
   leftIcons: {

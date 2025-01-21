@@ -246,7 +246,7 @@ export default function HomeScreen() {
         setSearchedResults(resp);
     
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        alert(`Erro ao encontrar resultado de pesquisa`);
       });
   }
 
@@ -385,8 +385,8 @@ export default function HomeScreen() {
       </View>
 
       <View style= {styles.buttonGroup}>
-        <Button label="+ Grupo" href="/(tabs)/groupPage" border={true}></Button>
-        <Button label="+ Categoria" href="/(tabs)/categoryPage"border={true}></Button>
+        <Button label="+ Grupo" href="/(tabs)/groupPage" />
+        <Button label="+ Categoria" href="/(tabs)/categoryPage"/>
       </View>
     </View>
   );

@@ -1,12 +1,18 @@
 export interface Note {
-  title?: string;
-  groupId?: string;
-  content?: string;
+  title: string;
+  type: "texto" | "arquivo" | "foto" | "desenho";
+  groupId: string;
+  text?: string; 
+  fileUri?: string;
+  fileName?: string;
+  base64?: string;
 }
 
 export interface NoteResponse {
-    title: string;
+  title: string;
+  content: string;
+  type: "texto" | "arquivo" | "foto" | "desenho";
+  groupId: string;
+  userId: string;
+  date: string; 
 }
-
-    
-  

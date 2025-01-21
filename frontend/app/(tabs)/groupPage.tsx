@@ -20,7 +20,9 @@ export default function GroupPage() {
 
   var groupInfo = useLocalSearchParams<{ id: string}>();
 
-  const [id, setId] = useState(groupInfo.id);
+
+  const [id, setId] = useState(groupInfo.id ?? '');
+  
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [edit, setEdit] = useState(false);
@@ -36,7 +38,7 @@ export default function GroupPage() {
   useFocusEffect(
     React.useCallback(() => {
       fetchGroupData();
-    }, [])
+    }, [id])
   );
 
   const saveGroup = () => {
@@ -113,7 +115,7 @@ export default function GroupPage() {
         setSelectedCategory(resp.group.categoryId);
 
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        alert(`Erro ao encontrar grupo`);
       });
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
@@ -129,7 +131,7 @@ export default function GroupPage() {
       setCategories(resp.categorias);
 
     }).catch(() => {
-      alert(`Erro ao encontrar anotações do grupo`);
+      alert(`Erro ao encontrar categorias`);
     });
   }
 
@@ -168,7 +170,7 @@ export default function GroupPage() {
 
             <View style={styles.scrollView}>
               <ScrollView>
-                {anotations.map(anotation => 
+                {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
                     <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
                   </View>
