@@ -164,64 +164,22 @@ export const getAllNotes = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Nenhuma nota encontrada para este usuário" });
     }
 
-    res.status(200).json(notes);
+    const formattedNotes = notes.map(note => {
+      if (note.type === "texto") {
+        return note; 
+      }
+      return {
+        ...note.toObject(),
+        content: undefined,
+      };
+    });
+
+    res.status(200).json(formattedNotes);
   } catch (error) {
     console.error("Erro ao buscar as notas:", error);
     res.status(500).json({ error: "Erro ao buscar as notas" });
   }
 };
-
-export const searchNote = async (req: Request, res: Response) => {
-  try {
-    const { userId, query } = req.params;
-
-    if (!userId) {
-      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
-    }
-
-    if (!query || query.trim() === "") {
-      return res.status(400).json({ error: "O termo de busca é obrigatório." });
-    }
-
-    // Inicializa um array de resultados
-    let notes: any[] = [];
-
-    // Busca para notas do tipo "texto" (no title e content)
-    const textNotes = await Note.find({
-      userId,
-      type: "texto",
-      $or: [
-        { title: { $regex: query, $options: "i" } },
-        { content: { $regex: query, $options: "i" } }
-      ]
-    });
-
-    // Busca para notas de outros tipos (no title e tag)
-    const otherNotes = await Note.find({
-      userId,
-      type: { $ne: "texto" },  // Notas que não sejam do tipo "texto"
-      $or: [
-        { title: { $regex: query, $options: "i" } },
-        { tag: { $regex: query, $options: "i" } }
-      ]
-    });
-
-    // Juntando os resultados
-    notes = [...textNotes, ...otherNotes];
-
-    // Resultado
-    const result = {
-      notes
-    };
-
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Erro ao realizar a busca geral:", err);
-    res.status(500).json({ error: "Erro ao realizar a busca." });
-  }
-};
-
-
 
 export const addTagNote = async (req: Request, res: Response) => {
   try {

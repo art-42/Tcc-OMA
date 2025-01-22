@@ -230,48 +230,57 @@ export const deleteGroup = async (req: Request, res: Response) => {
 
 export const search = async (req: Request, res: Response) => {
   try {
-    const { userId, query } = req.params;
+      const { userId, query } = req.params;
+  
+      if (!userId) {
+        return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+      }
+  
+      if (!query || query.trim() === "") {
+        return res.status(400).json({ error: "O termo de busca é obrigatório." });
+      }
+  
+      let notes: any[] = [];
+  
+      const textNotes = await Note.find({
+        userId,
+        type: "texto",
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { content: { $regex: query, $options: "i" } }
+        ]
+      });
+  
+      const otherNotes = await Note.find({
+        userId,
+        type: { $ne: "texto" },
+        $or: [
+          { title: { $regex: query, $options: "i" } },
+          { tag: { $regex: query, $options: "i" } }
+        ]
+      });
+  
+      notes = [...textNotes, ...otherNotes];
 
-    if (!userId) {
-      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
-    }
-
-    if (!query || query.trim() === "") {
-      return res.status(400).json({ error: "O termo de busca é obrigatório." });
-    }
-
-    const notes = await Note.find({
-      userId,
-      $or: [
-        { title: { $regex: query, $options: "i" } },
-        { content: { $regex: query, $options: "i" } }
-      ]
-    });
-
-    const groups = await Group.find({ userId, name: { $regex: query, $options: "i" } }).lean();
-
-    const groupsWithCategory = await Promise.all(
-      groups.map(async (group) => {
-        const category = await Category.findById(group.categoryId);
-        const categoryName = category ? category.name : "Sem categoria";
-
+      const formattedNotes = notes.map(note => {
+        if (note.type === "texto") {
+          return note; 
+        }
         return {
-          ...group,
-          categoryName,
+          ...note.toObject(),
+          content: undefined,
         };
-      })
-    );
-
-    const result = {
-      notes,
-      groups: groupsWithCategory,
-    };
-
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Erro ao realizar a busca geral:", err);
-    res.status(500).json({ error: "Erro ao realizar a busca." });
-  }
+      });
+  
+      const result = {
+        formattedNotes
+      };
+  
+      res.status(200).json(result);
+    } catch (err) {
+      console.error("Erro ao realizar a busca geral:", err);
+      res.status(500).json({ error: "Erro ao realizar a busca." });
+    }
 };
 
 export const searchGroup = async (req: Request, res: Response) => {
