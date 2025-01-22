@@ -10,7 +10,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
 
     const { userId } = req.params;
-    const { title, type, groupId, content, fileName } = req.body; 
+    const { title, type, groupId, content, fileName, tag } = req.body; 
     let finalFileName = null;
 
     if (!title || !type || !groupId || !content) {
@@ -36,6 +36,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
       type,
       groupId,
       userId,
+      tag,
       date: new Date(),
     });
 

@@ -316,6 +316,7 @@ async function getConstructedNote(note: Note) {
   const noteValue = {
     title: note.title,
     type: note.type,
+    tag: note.tag,
     fileName: note.fileName,
     groupId: note.groupId,
     content: file64 ?? note.text, // Attach the FormData as content
