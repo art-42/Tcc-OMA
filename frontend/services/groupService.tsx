@@ -3,6 +3,7 @@ import { User, UserResponse } from "@/interfaces/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = 'http://192.168.0.14:5001';
+// const API_URL = 'http://10.0.0.16:5001';
 
 export const groupService = {
 
@@ -67,13 +68,25 @@ export const groupService = {
     }
   },
 
-  // Create a new user (POST)
-  getGroups: async (): Promise<GroupsResponse> => {
+  getGroups: async (): Promise<any> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');
-      const response = await fetch(`${API_URL}/groups/date/${userId}`);
+      const response = await fetch(`${API_URL}/grupos/get/allGroups/${userId}`);
       if (!response.ok) {
-        throw new Error('Failed to get user');
+        throw new Error('Failed to get groups');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getGroupById: async (id: string): Promise<GroupResponse> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/groups/${id}/${userId}`);
+      if (!response.ok) {
+        throw new Error('Failed to get group');
       }
       return await response.json();
     } catch (error) {

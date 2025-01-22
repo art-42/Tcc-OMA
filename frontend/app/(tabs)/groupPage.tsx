@@ -11,33 +11,38 @@ import GroupCard from "@/components/GroupCard";
 import AnotationCard from "@/components/AnotationCard";
 import { groupService } from "@/services/groupService";
 import { noteService } from "@/services/noteService";
+import { Picker } from "@react-native-picker/picker";
+import { categoryService } from "@/services/categoryService";
 
 export default function GroupPage() {
 
   const router = useRouter();
 
+  var groupInfo = useLocalSearchParams<{ id: string}>();
 
-  var groupInfo = useLocalSearchParams<{ id: string, name: string }>();
 
-  const [id, setId] = useState(groupInfo.id);
-  const [name, setName] = useState(groupInfo.name);
+  const [id, setId] = useState(groupInfo.id ?? '');
+  
+  const [name, setName] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [edit, setEdit] = useState(false);
-  const [date, setDate] = useState('');
 
   const [anotations, setAnotation] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchGoupData();
-  }, [id]);
+    fetchGroupData();
+    fetchCategoryData();
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchGoupData();
-    }, [])
+      fetchGroupData();
+    }, [id])
   );
 
   const saveGroup = () => {
-    groupService.createGroup({name})
+    groupService.createGroup({name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;
         alert(`Cadastro concluído: \n nome: ${group.name} \n`);
@@ -51,7 +56,7 @@ export default function GroupPage() {
   }
 
   const updateGroup = () => {
-    groupService.updateGroup(id, {name})
+    groupService.updateGroup(id, {name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;
         alert(`Cadastro concluído: \n nome: ${group.name} \n`);
@@ -103,6 +108,33 @@ export default function GroupPage() {
     },
   ];
 
+  function fetchGroupData() {
+    if (id) {
+      groupService.getGroupById(id).then(resp => {
+        setName(resp.group.name);
+        setSelectedCategory(resp.group.categoryId);
+
+      }).catch(() => {
+        alert(`Erro ao encontrar grupo`);
+      });
+      noteService.getNotesByGroup(id).then(resp => {
+        setAnotation(resp);
+
+      }).catch(() => {
+        alert(`Erro ao encontrar anotações do grupo`);
+      });
+    }
+  }
+
+  function fetchCategoryData() {
+    categoryService.getCategories().then(resp => {
+      setCategories(resp.categorias);
+
+    }).catch(() => {
+      alert(`Erro ao encontrar categorias`);
+    });
+  }
+
   return (
     <View
       style={{
@@ -119,12 +151,26 @@ export default function GroupPage() {
 
             <View style={styles.inputInfoContainer}>
               <InputText placeholder="Título" disabled={!edit} textValue={name} onChangeText={setName} />
-              {/* <InputText placeholder="Data" textValue={date} onChangeText={setDate} /> */}
+              <View style={[styles.categoryPicker, edit && styles.border]}>
+                <Picker
+                  selectedValue={selectedCategory}
+                  enabled={edit}
+                  onValueChange={(itemValue) =>
+                    setSelectedCategory(itemValue)
+                }>
+                  <Picker.Item label="Sem categoria" value={''} style={{ color: '#707070' }} />
+                  {
+                    categories.map(category =>
+                      <Picker.Item label={category.name} value={category._id} key={category._id}/>
+                    )
+                  }
+                </Picker>
+              </View>
             </View>
 
             <View style={styles.scrollView}>
               <ScrollView>
-                {anotations.map(anotation => 
+                {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
                     <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
                   </View>
@@ -146,7 +192,20 @@ export default function GroupPage() {
 
             <View style= {styles.inputInfoContainer}>
               <InputText placeholder="Título" textValue={name} onChangeText={setName} />
-              {/* <InputText placeholder="Data" textValue={date} onChangeText={setDate} /> */}
+              <View style={[styles.categoryPicker, styles.border]}>
+                <Picker
+                  selectedValue={selectedCategory}
+                  onValueChange={(itemValue) =>
+                    setSelectedCategory(itemValue)
+                }>
+                  <Picker.Item label="Sem categoria" value={undefined}/>
+                  {
+                    categories.map(category =>
+                      <Picker.Item label={category.name} value={category._id} key={category._id}/>
+                    )
+                  }
+                </Picker>
+              </View>
             </View>
 
             <View style= {styles.buttonGroup}>
@@ -157,17 +216,6 @@ export default function GroupPage() {
       }      
     </View>
   );
-
-  function fetchGoupData() {
-    if (id) {
-      noteService.getNotesByGroup(id).then(resp => {
-        setAnotation(resp);
-
-      }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
-      });
-    }
-  }
 }
 
 const styles = StyleSheet.create({
@@ -184,8 +232,18 @@ const styles = StyleSheet.create({
   },
   inputInfoContainer: {
     justifyContent: "center",
+    alignContent: "center",
     flex: 5,
-    gap: '5%',
+  },
+  categoryPicker: {
+    width: 200,
+    marginTop: '5%',
+    marginHorizontal: 'auto',
+    borderBottomWidth: 1,
+  },
+  border: {
+    borderWidth: 1,
+    borderRadius:15
   },
   headerCreateText: {
     flex: 2,
