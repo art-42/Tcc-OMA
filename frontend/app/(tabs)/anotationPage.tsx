@@ -516,7 +516,7 @@ export default function AnotationPage() {
           {renderViewNoteType(selectedNoteType)}
 
           {params.fromHome === 'true' && 
-            <View style={{flex: 1}}>
+            <View style={styles.buttonGroup}>
               <Button label="Abrir Grupo" onClick={() => router.push({pathname: "/(tabs)/groupPage", params: {id: params.groupId}})}/>
             </View>
           }
@@ -561,7 +561,7 @@ export default function AnotationPage() {
 const styles = StyleSheet.create({
   scrollView:{
     width: "90%",
-    flex: 0.9,
+    height: "70%",
     padding:10,
     boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"
   },
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup:{
     marginTop: "10%",
-    flex: 4,
+    height: "10%",
     width: "100%",
   },
   containerTitle:{

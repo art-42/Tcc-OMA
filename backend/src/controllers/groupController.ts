@@ -271,9 +271,15 @@ export const search = async (req: Request, res: Response) => {
           content: undefined,
         };
       });
+
+      const groups = await Group.find({
+        userId,
+        name: { $regex: query, $options: "i" }
+      });  
   
       const result = {
-        formattedNotes
+        notes: formattedNotes,
+        groups
       };
   
       res.status(200).json(result);
