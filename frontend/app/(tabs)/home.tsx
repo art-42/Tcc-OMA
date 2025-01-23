@@ -379,7 +379,7 @@ export default function HomeScreen() {
 
       <View style={styles.scrollView}>
         <ScrollView ref={scrollViewRef} >
-          {searchedResults ? renderSearchedResults : renderGroupedArray }
+          {searchedResults && searchText ? renderSearchedResults : renderGroupedArray }
           
         </ScrollView>
       </View>
@@ -395,6 +395,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scrollView:{
     flex: 10,
+    width: "90%"
   },
   list:{
     width: "100%",
@@ -407,7 +408,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1
   },
   textHeadContainer: {
-    width: "40%",
+    width: "50%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
     margin: 10,

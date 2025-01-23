@@ -190,7 +190,7 @@ export default function AnotationPage() {
       noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
-        setTags(resp.tag?.split("|") ?? [])
+        setTags(resp.tag ? resp.tag?.split("|") : [])
 
         if(resp.type === "foto"){
           setPhotoUri(await noteService.getFileUri(resp.content))
@@ -478,10 +478,12 @@ export default function AnotationPage() {
                       <Text style={styles.cardText}>
                         {tag}
                       </Text>
-                      <Button iconName='trash-o' onClick={() => {
-                        const updatedTags = tags.filter((_, i) => i !== index);
-                        setTags(updatedTags); 
-                      }}/>
+                      {edit && 
+                        <Button iconName='trash-o' onClick={() => {
+                          const updatedTags = tags.filter((_, i) => i !== index);
+                          setTags(updatedTags); 
+                        }}/>
+                      }
                   </View>
                 </View>
               )}

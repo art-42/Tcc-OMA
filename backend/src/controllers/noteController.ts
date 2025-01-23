@@ -106,7 +106,8 @@ export const updateNote = async (req: Request, res: Response) => {
     if (type) note.type = type;
     if (content) note.content = content;
     if (fileName) note.fileName = fileName;
-    if (tag) note.tag = tag;
+    
+    note.tag = tag;
 
     await note.save(); 
 
