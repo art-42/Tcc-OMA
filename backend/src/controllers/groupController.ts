@@ -220,12 +220,16 @@ export const deleteGroup = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Grupo não encontrado." });
     }
 
-    res.status(200).json({ message: "Grupo excluído com sucesso!" });
+    // Apagar todas as notas associadas ao grupo
+    await Note.deleteMany({ userId, groupId });
+
+    res.status(200).json({ message: "Grupo e suas notas excluídos com sucesso!" });
   } catch (err) {
     console.error("Erro ao excluir grupo:", err);
     res.status(500).json({ error: "Erro ao excluir grupo." });
   }
 };
+
 
 
 export const search = async (req: Request, res: Response) => {
@@ -247,7 +251,8 @@ export const search = async (req: Request, res: Response) => {
         type: "texto",
         $or: [
           { title: { $regex: query, $options: "i" } },
-          { content: { $regex: query, $options: "i" } }
+          { content: { $regex: query, $options: "i" } },
+          { tag: { $regex: query, $options: "i" } }
         ]
       });
   
