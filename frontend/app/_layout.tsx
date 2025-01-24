@@ -21,7 +21,7 @@ function RootLayoutContent() {
     } else {
       router.replace("/(tabs)/home");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
   return (
     <Stack>

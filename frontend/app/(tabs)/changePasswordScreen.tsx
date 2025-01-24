@@ -1,7 +1,6 @@
 import Button from "@/components/Button";
-import InputText from "@/components/InputText";
 import Header from "@/components/Header";
-import { Text, View, StyleSheet } from "react-native";
+import { View, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import { userService } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";  // Importando o hook useAuth
@@ -11,7 +10,7 @@ import { useRouter } from "expo-router";
 export default function ChangePasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
   const router = useRouter();
   const { user } = useAuth();  // Pegando o usuário autenticado do contexto

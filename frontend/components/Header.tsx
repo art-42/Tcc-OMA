@@ -7,7 +7,7 @@ type HeaderProps = {
   text?: string;
 };
 
-export default function HeaderProps({ leftIcons, rightIcons, text }: HeaderProps) {
+export default function Header({ leftIcons, rightIcons, text }: HeaderProps) {
   return (
     <View style={styles.container}>
       <View style={[styles.icons, styles.leftIcons]}>

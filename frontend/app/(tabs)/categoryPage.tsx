@@ -1,6 +1,5 @@
 import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text } from "react-native";
 import { useEffect, useState } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
 import React from 'react';
 import Header from "@/components/Header"
 import InputText from "@/components/InputText";
@@ -9,7 +8,6 @@ import { categoryService } from "@/services/categoryService";
 
 export default function CategoryPage() {
 
-  const router = useRouter();
 
   const [categories, setCategories] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);

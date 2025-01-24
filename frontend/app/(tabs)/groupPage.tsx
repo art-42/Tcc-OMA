@@ -1,13 +1,10 @@
-import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { useEffect, useState } from "react";
-import { router, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
 import Header from "@/components/Header"
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
-import GroupCard from "@/components/GroupCard";
 import AnotationCard from "@/components/AnotationCard";
 import { groupService } from "@/services/groupService";
 import { noteService } from "@/services/noteService";
@@ -29,17 +26,6 @@ export default function GroupPage() {
 
   const [anotations, setAnotation] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
-
-  useEffect(() => {
-    fetchGroupData();
-    fetchCategoryData();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchGroupData();
-    }, [id])
-  );
 
   const saveGroup = () => {
     groupService.createGroup({name, categoryId: selectedCategory})
@@ -72,7 +58,6 @@ export default function GroupPage() {
   const deleteGroup = () => {
     groupService.deleteGroup(id)
       .then(resp => {
-        const group = resp.group;
         alert(`deletado com sucesso`);
         router.push('/(tabs)/home');
         
@@ -108,23 +93,22 @@ export default function GroupPage() {
     },
   ];
 
-  function fetchGroupData() {
+  const fetchGroupData = useCallback(() => {
     if (id) {
       groupService.getGroupById(id).then(resp => {
         setName(resp.group.name);
         setSelectedCategory(resp.group.categoryId);
-
       }).catch(() => {
         alert(`Erro ao encontrar grupo`);
       });
+  
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
-
       }).catch(() => {
         alert(`Erro ao encontrar anotações do grupo`);
       });
     }
-  }
+  }, [id, setName, setSelectedCategory, setAnotation]);
 
   function fetchCategoryData() {
     categoryService.getCategories().then(resp => {
@@ -134,6 +118,18 @@ export default function GroupPage() {
       alert(`Erro ao encontrar categorias`);
     });
   }
+
+  useEffect(() => {
+    fetchGroupData();
+    fetchCategoryData();
+  }, [fetchGroupData]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchGroupData();
+    }, [fetchGroupData])
+  );
+
 
   return (
     <View

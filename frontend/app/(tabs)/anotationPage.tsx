@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler, Pressable, Modal } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -12,8 +12,6 @@ import { Camera, CameraView } from 'expo-camera'; // Importing the Camera compon
 import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { Note } from "@/interfaces/Note";
 import { Image } from 'react-native';
-import { utils } from "@/utils/utils";
-
 
 export default function AnotationPage() {
 
@@ -42,9 +40,9 @@ export default function AnotationPage() {
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [drawUri, setDrawUri] = useState<string | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean>(false);
+  const [, setHasPermission] = useState<boolean>(false);
 
-  const [fileUri, setFileUri] = useState<string | null>(null);
+  const [, setFileUri] = useState<string | null>(null);
 
   const [drawMode, setDrawMode] = useState<"d"|"e">('d');
   const [drawColor, setDrawColor] = useState<string>('black');
@@ -120,8 +118,6 @@ export default function AnotationPage() {
         noteData.fileUri = photoUri; 
       } else if (noteData.type === "desenho" && drawBase64) {
         noteData.base64 = drawBase64; 
-      } else {
-        throw new Error("Dados inválidos para o campo content.");
       }
     
       const response = !id
@@ -183,6 +179,9 @@ export default function AnotationPage() {
       setDrawColor("black");
       setDrawWidth(3);
     }
+    if(selectedNoteType === "arquivo"){
+      setFile(anotation.content);
+    }
   }
 
   useEffect(() => {
@@ -202,7 +201,7 @@ export default function AnotationPage() {
           alert(error)
       })
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -221,7 +220,7 @@ export default function AnotationPage() {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     };
-  }, [edit]);
+  }, [edit, id]);
 
   const renderEditNoteType = (param: string) => {
     switch(param) {
@@ -263,8 +262,7 @@ export default function AnotationPage() {
       
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              {file?.name && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file?.name}</Text>}
-              
+              {anotation?.fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {anotation.fileName}</Text>}
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
@@ -436,9 +434,9 @@ export default function AnotationPage() {
 
   const tagsList = 
     (edit || tags.length > 0) && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
-      {tags.length == 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
-      {tags.map((val, index) => index < 5 && <View style={styles.tag}>
-        <Text key={`opt-${index}`}>{val}</Text>
+      {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
+      {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
+        <Text>{val}</Text>
       </View>
       )}
       {tags.length > 5 && <Text style={{ fontSize: 20 }}>...</Text>}
@@ -464,7 +462,7 @@ export default function AnotationPage() {
               <Button 
                 iconName="plus-circle" 
                 onClick={() => {
-                  if(addTagText != ''){
+                  if(addTagText !== ''){
                     setTags([ addTagText ,...tags]);
                     setAddTagText('')
                   }
