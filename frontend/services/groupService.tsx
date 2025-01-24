@@ -1,5 +1,6 @@
 import { Group, GroupResponse } from "@/interfaces/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { noteService } from "./noteService";
 
 const API_URL = 'http://192.168.0.14:5001';
 // const API_URL = 'http://10.0.0.16:5001';
@@ -88,6 +89,22 @@ export const groupService = {
         throw new Error('Failed to get group');
       }
       return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  exportGroupById: async (id: string): Promise<string> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+      const response = await fetch(`${API_URL}/notes/export/${userId}/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to get group');
+      }
+
+      const pdf = await response.json();
+
+      return noteService.downloadNoteFile(pdf.pdfBase64, `group-${id}`)
     } catch (error) {
       throw error;
     }

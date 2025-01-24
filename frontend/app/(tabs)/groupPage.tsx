@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -53,15 +53,26 @@ export default function GroupPage() {
   }
 
   const deleteGroup = () => {
-    groupService.deleteGroup(id)
-      .then(resp => {
-        alert(`Deletado com sucesso`);
-        router.push('/(tabs)/home');
-        
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar o grupo?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {text: 'Sim', onPress: () => {
+            groupService.deleteGroup(id)
+            .then(() => {
+              alert(`Deletado com sucesso`);
+              router.push('/(tabs)/home');
+              
+            })
+            .catch((error) => {
+              alert(`Erro na deleção`);
+            }); 
+    
+          }
+        },
+      ]
+    );
   }
 
   const addAnotation = () => {
@@ -72,13 +83,33 @@ export default function GroupPage() {
   const rightIcons = !edit ? 
   [
     {
+      iconName: "file-pdf-o",
+      onClick: () => {
+        Alert.alert('Exportação em Pdf', 'Deseja exportar o grupo de anotações em pdf?', [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {text: 'Sim', onPress: () => {
+            groupService.exportGroupById(id).then(uri => {
+              uri && Alert.alert('Sucesso', `Arquivo salvo com sucesso na pasta selecionada.`)
+            }).catch(error => {
+              console.log(error)
+              alert(`Erro ao exportar grupo`);
+            });
+          }},
+        ]);
+
+      }
+    },
+    {
       iconName: "edit",
       onClick: () => {
         setEdit(true);
       }
     },
     {
-      iconName: "trash",
+      iconName: "trash-o",
       onClick: deleteGroup
     },
   ] : [

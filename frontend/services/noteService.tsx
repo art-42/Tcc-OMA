@@ -176,14 +176,14 @@ export const noteService = {
         throw new Error('User not found in AsyncStorage');
       }
             
-      const base64Data = base64.split(',')[1];
-
       const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
 
       if (!permissions.granted) {
-        throw new Error('Sem permissão');
+        return '';
 
       }
+
+      const base64Data = base64.split(',')[1];
 
       const directoryUri = permissions.directoryUri;
       if (!directoryUri) {

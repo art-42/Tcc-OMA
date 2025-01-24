@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -60,7 +60,7 @@ export default function AnotationPage() {
       }
     },
     {
-      iconName: "trash",
+      iconName: "trash-o",
       onClick: () => {
         deleteNote();
       }
@@ -143,15 +143,27 @@ export default function AnotationPage() {
   };
 
   const deleteNote = () => {
-    noteService.deleteNote(id)
-      .then(resp => {
-        alert(`Deletado com sucesso`);
-        router.back();
-        
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar a anotação?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sim', 
+          onPress: () => {
+            noteService.deleteNote(id)
+            .then(resp => {
+              alert(`Deletado com sucesso`);
+              router.back();
+              
+            })
+            .catch((error) => {
+              alert(`Erro na deleção`);
+            }); 
+          }
+        },
+      ]
+    );
   }
 
   const downloadNoteFile = () => {
@@ -249,7 +261,7 @@ export default function AnotationPage() {
       
             const fileAsset = result.assets ? result.assets[0] : null;
             if (fileAsset) {
-              setFile(fileAsset); 
+              setFile(fileAsset);
             } else {
               console.log('No file selected');
             }
@@ -263,6 +275,7 @@ export default function AnotationPage() {
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
               {anotation?.fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {anotation.fileName}</Text>}
+              {file && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file.name}</Text>}
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );

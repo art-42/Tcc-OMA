@@ -210,15 +210,34 @@ export const addTagNote = async (req: Request, res: Response) => {
 
 
 export const generatePdfMock = (req: Request, res: Response) => {
-
   const pdfPath = path.resolve(__dirname, "../mock/mock.pdf");
-  const pdfBase64 = fs.readFileSync(pdfPath, { encoding: "base64" });
 
-  console.log(pdfBase64);
+  if (!fs.existsSync(pdfPath)) {
+    return res.status(404).json({
+      success: false,
+      message: "PDF file not found",
+    });
+  }
 
-  res.status(200).json({
-    success: true,
-    message: "PDF gerado com sucesso (mock)",
-    pdfBase64: pdfBase64,
-  });
+  try {
+    const pdfBase64 = fs.readFileSync(pdfPath, { encoding: "base64" });
+
+    // Add the 'data:' URI prefix and MIME type (application/pdf)
+    const pdfBase64WithPrefix = `data:application/pdf;base64,${pdfBase64}`;
+
+    // Optionally log the full base64 with the prefix (be cautious with large base64 strings)
+    console.log(pdfBase64WithPrefix);
+
+    res.status(200).json({
+      success: true,
+      message: "PDF gerado com sucesso (mock)",
+      pdfBase64: pdfBase64WithPrefix,  // Return the full data URI format
+    });
+  } catch (error) {
+    console.error("Error reading the PDF file:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error generating PDF",
+    });
+  }
 };

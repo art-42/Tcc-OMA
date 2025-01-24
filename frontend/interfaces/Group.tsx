@@ -1,3 +1,5 @@
+import { ExternalPathString } from "expo-router";
+
 export interface Group {
   userId?: string;
   categoryId?: string;
@@ -17,6 +19,12 @@ export interface GroupsResponse {
     name: string;
     createdAt: string;
   }[];
+}
+
+export interface ExportResponse {
+  success: boolean;
+  message: ExternalPathString;
+  pdfBase64: string;
 }
 
     
