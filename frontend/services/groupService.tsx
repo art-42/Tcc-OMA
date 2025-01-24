@@ -1,5 +1,4 @@
-import { Group, GroupResponse, GroupsResponse } from "@/interfaces/Group";
-import { User, UserResponse } from "@/interfaces/User";
+import { Group, GroupResponse } from "@/interfaces/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = 'http://192.168.0.14:5001';
