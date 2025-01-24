@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface INote extends Document {
+export interface INote extends Document {
   title: string;
   content: string; 
   type: "texto" | "arquivo" | "foto" | "desenho";

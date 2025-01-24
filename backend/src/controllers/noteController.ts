@@ -1,10 +1,9 @@
 import { Request, Response } from "express";
-import Note from "../models/Note";
-import Group from "../models/Group";
-import { gridFSBucket,connectDB } from "../config/db";
-import mongoose from "mongoose";
-import User from "../models/User";
+import Note, { INote } from "../models/Note";
+import path from "path";
 
+
+const fs = require("fs");
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
@@ -154,7 +153,6 @@ export const getNotesByGroup = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getAllNotes = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -208,4 +206,19 @@ export const addTagNote = async (req: Request, res: Response) => {
     console.error("Erro ao atualizar a nota:", error);
     res.status(500).json({ error: "Erro ao atualizar a nota." });
   }
+};
+
+
+export const generatePdfMock = (req: Request, res: Response) => {
+
+  const pdfPath = path.resolve(__dirname, "../mock/mock.pdf");
+  const pdfBase64 = fs.readFileSync(pdfPath, { encoding: "base64" });
+
+  console.log(pdfBase64);
+
+  res.status(200).json({
+    success: true,
+    message: "PDF gerado com sucesso (mock)",
+    pdfBase64: pdfBase64,
+  });
 };
