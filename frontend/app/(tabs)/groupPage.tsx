@@ -196,7 +196,7 @@ export default function GroupPage() {
               <ScrollView>
                 {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
-                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
+                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title} type={anotation.type}/>
                   </View>
                 )}
               </ScrollView>
