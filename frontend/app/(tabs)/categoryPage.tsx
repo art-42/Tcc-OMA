@@ -1,7 +1,7 @@
 import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text } from "react-native";
 import { useEffect, useState } from "react";
 import React from 'react';
-import Header from "@/components/Header"
+import Header from '@/components/Header';
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
 import { categoryService } from "@/services/categoryService";
@@ -55,7 +55,7 @@ export default function CategoryPage() {
   const deleteGroup = () => {
     categoryService.deleteCategory(currentCategoryId)
       .then(resp => {
-        alert(`deletado com sucesso`);  
+        alert(`Deletado com sucesso`);  
         setModalVisible(false);
         fetchCategoryData();     
       })
@@ -77,8 +77,6 @@ export default function CategoryPage() {
     (!edit ? categoryService.createCategory({name: currentCategoryName}) : 
              categoryService.updateCategory(currentCategoryId , {name: currentCategoryName}))
       .then(resp => {
-        const category = resp.category;
-        alert(`Cadastro concluído: \n nome: ${category.name} \n`);
         fetchCategoryData();
         setModalVisible(false)
       })

@@ -31,7 +31,6 @@ export default function GroupPage() {
     groupService.createGroup({name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;
-        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         
         setId(group._id);
       })
@@ -44,8 +43,6 @@ export default function GroupPage() {
   const updateGroup = () => {
     groupService.updateGroup(id, {name, categoryId: selectedCategory})
       .then(resp => {
-        const group = resp.group;
-        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         setEdit(false);
         
       })
@@ -58,7 +55,7 @@ export default function GroupPage() {
   const deleteGroup = () => {
     groupService.deleteGroup(id)
       .then(resp => {
-        alert(`deletado com sucesso`);
+        alert(`Deletado com sucesso`);
         router.push('/(tabs)/home');
         
       })

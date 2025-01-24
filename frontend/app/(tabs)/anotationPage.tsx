@@ -145,7 +145,7 @@ export default function AnotationPage() {
   const deleteNote = () => {
     noteService.deleteNote(id)
       .then(resp => {
-        alert(`deletado com sucesso`);
+        alert(`Deletado com sucesso`);
         router.back();
         
       })
@@ -160,7 +160,7 @@ export default function AnotationPage() {
         setFileUri(resp);
       })
       .catch((error) => {
-        alert(error);
+        alert("Erro Ao fazer download");
       }); 
   }
 
@@ -198,7 +198,7 @@ export default function AnotationPage() {
         }
   
       }).catch((error)=> {
-          alert(error)
+          alert("Erro ao buscar nota.")
       })
     }
   }, [id]);
