@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import Note, { INote } from "../models/Note";
 import path from "path";
-
+import PDFDocument from "pdfkit";
+import sharp from "sharp";
 
 const fs = require("fs");
 
@@ -209,35 +210,140 @@ export const addTagNote = async (req: Request, res: Response) => {
 };
 
 
-export const generatePdfMock = (req: Request, res: Response) => {
-  const pdfPath = path.resolve(__dirname, "../mock/mock.pdf");
-
-  if (!fs.existsSync(pdfPath)) {
-    return res.status(404).json({
-      success: false,
-      message: "PDF file not found",
-    });
-  }
+export const generatePdfEndpoint = async (req: Request, res: Response) => {
+  const { userId, groupId } = req.params;
+  const { download } = req.query;
 
   try {
-    const pdfBase64 = fs.readFileSync(pdfPath, { encoding: "base64" });
+    
+    const notes = await Note.find({ userId, groupId });
 
-    // Add the 'data:' URI prefix and MIME type (application/pdf)
-    const pdfBase64WithPrefix = `data:application/pdf;base64,${pdfBase64}`;
+    if (!notes || notes.length === 0) {
+      return res.status(404).json({ message: "Nenhuma nota encontrada." });
+    }
 
-    // Optionally log the full base64 with the prefix (be cautious with large base64 strings)
-    console.log(pdfBase64WithPrefix);
+    const doc = new PDFDocument({ autoFirstPage: false });
 
-    res.status(200).json({
-      success: true,
-      message: "PDF gerado com sucesso (mock)",
-      pdfBase64: pdfBase64WithPrefix,  // Return the full data URI format
-    });
+    const exportsDir = path.resolve(__dirname, "../exports");
+    const filePath = path.join(exportsDir, `group_${groupId}.pdf`);
+
+    if (!fs.existsSync(exportsDir)) {
+      fs.mkdirSync(exportsDir, { recursive: true });
+    }
+
+    if (download === "true") {
+      const writeStream = fs.createWriteStream(filePath);
+      doc.pipe(writeStream);
+
+      await addNotesToPdf(doc, notes);
+
+      doc.end();
+
+      writeStream.on("finish", () => {
+        res.download(filePath, `group_${groupId}.pdf`, () => {
+          fs.unlinkSync(filePath);
+        });
+      });
+    } else {
+      res.setHeader("Content-Type", "application/pdf");
+      doc.pipe(res);
+
+      await addNotesToPdf(doc, notes);
+
+      doc.end();
+    }
   } catch (error) {
-    console.error("Error reading the PDF file:", error);
-    res.status(500).json({
-      success: false,
-      message: "Error generating PDF",
-    });
+    console.error("Erro ao gerar PDF:", error);
+    res.status(500).json({ message: "Erro ao gerar PDF das notas." });
+  }
+};
+
+const addDownloadLink = (doc: PDFKit.PDFDocument, note: any) => {
+  const downloadLink = `http://localhost:5001/notes/download/${note._id}`;
+  doc.fontSize(12).fillColor("blue").text("Clique aqui para baixar o conteúdo", {
+    link: downloadLink,
+    underline: true,
+  });
+};
+
+const addNotesToPdf = async (doc: PDFKit.PDFDocument, notes: any[]) => {
+  for (const note of notes) {
+
+    doc.addPage();
+    doc.fontSize(16).text(`Título: ${note.title}`, { underline: true });
+    doc.moveDown();
+    
+    if (note.type === "texto") {
+      doc.fontSize(12).text(note.content);
+    } else if (note.type === "foto" || note.type === "desenho" || note.type === "arquivo") {
+      try {
+        
+        let imageBuffer: Buffer;
+        
+
+        if (note.content instanceof Buffer) {
+          imageBuffer = note.content;
+        } else if (typeof note.content === "string") {
+          imageBuffer = Buffer.from(note.content, "base64");
+        } else {
+          throw new Error("Formato de imagem não suportado.");
+        }
+
+        const convertedBuffer = await convertToSupportedImage(imageBuffer);
+
+        doc.image(convertedBuffer, {
+          fit: [500, 400],
+          align: "center",
+          valign: "center",
+        });
+      } catch (err) {
+        console.error(`Erro ao adicionar imagem no PDF: ${err}`);
+        addDownloadLink(doc, note);
+      }
+    } 
+  }
+};
+
+
+
+export const downloadNote = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const note = await Note.findById(id);
+    if (!note) {
+      return res.status(404).json({ message: "Nota não encontrada." });
+    }
+
+    const contentBuffer = Buffer.from(note.content, "base64");
+    const fileName = note.fileName || "download";
+
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    res.setHeader("Content-Type", "application/octet-stream");
+    res.send(contentBuffer);
+  } catch (error) {
+    console.error("Erro ao baixar nota:", error);
+    res.status(500).json({ message: "Erro ao baixar a nota." });
+  }
+};
+
+
+const convertToSupportedImage = async (input: Buffer | string): Promise<Buffer> => {
+  try {
+    let imageBuffer: Buffer;
+
+    if (typeof input === "string") {
+      if (input.startsWith("data:image")) {
+        const base64Data = input.split(",")[1]; 
+        imageBuffer = Buffer.from(base64Data, "base64");
+      } else {
+        imageBuffer = Buffer.from(input, "base64");
+      }
+    } else {
+      imageBuffer = input;
+    }
+    return await sharp(imageBuffer).png().toBuffer();
+  } catch (err) {
+    throw new Error("Erro ao converter imagem para formato suportado.");
   }
 };

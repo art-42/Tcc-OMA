@@ -30,7 +30,8 @@ import {
   updateNote,
   deleteNote,
   getAllNotes,
-  generatePdfMock,
+  generatePdfEndpoint,
+  downloadNote,
 } from '../controllers/noteController';
 
 
@@ -55,7 +56,8 @@ router.put("/groups/:groupId/:userId",  updateGroup);
 router.delete("/groups/:groupId/:userId",  deleteGroup);
 router.get("/grupos/get/allGroups/:userId",getAllGroupsByUser);
 router.get("/searchGroups/:userId/:query",searchGroup);
-router.get("/notes/export/:userId/:groupId",generatePdfMock);
+router.get("/notes/export/:userId/:groupId",generatePdfEndpoint);
+router.get("/notes/download/:id", downloadNote);
 
 // Rotas para notes
 router.post("/notes/:userId", addNoteToGroup);
