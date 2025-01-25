@@ -279,15 +279,20 @@ const addNotesToPdf = async (doc: PDFKit.PDFDocument, notes: any[]) => {
       try {
         
         let imageBuffer: Buffer;
-        
-
-        if (note.content instanceof Buffer) {
-          imageBuffer = note.content;
-        } else if (typeof note.content === "string") {
-          imageBuffer = Buffer.from(note.content, "base64");
+        if (note.content.startsWith("data:image")) {
+          const base64Data = note.content.split(",")[1]; 
+          imageBuffer = Buffer.from(base64Data, "base64");
         } else {
-          throw new Error("Formato de imagem não suportado.");
+          imageBuffer = Buffer.from(note.content, "base64");
         }
+
+        // if (note.content instanceof Buffer) {
+        //   imageBuffer = note.content;
+        // } else if (typeof note.content === "string") {
+        //   imageBuffer = Buffer.from(note.content, "base64");
+        // } else {
+        //   throw new Error("Formato de imagem não suportado.");
+        // }
 
         const convertedBuffer = await convertToSupportedImage(imageBuffer);
 
