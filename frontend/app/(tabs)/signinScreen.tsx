@@ -44,8 +44,6 @@ export default function SigninScreen() {
     if (handleSubmit()){
       userService.createUser({ email, name, password })
         .then(resp => {
-          const user = resp.user;
-          alert(`Cadastro concluído: \n nome: ${user.name} \n email: ${user.email}`);
           
           router.push('/'); 
 

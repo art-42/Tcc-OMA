@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -12,10 +12,14 @@ import { Camera, CameraView } from 'expo-camera'; // Importing the Camera compon
 import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { Note } from "@/interfaces/Note";
 import { Image } from 'react-native';
-import { utils } from "@/utils/utils";
-
 
 export default function AnotationPage() {
+
+  const [tags, setTags] = useState<string[]>([]);
+
+  const [modalTagVisible, setModalTagVisible] = useState(false);
+
+  const [addTagText, setAddTagText] = useState('');
 
   const router = useRouter();
 
@@ -36,9 +40,9 @@ export default function AnotationPage() {
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [drawUri, setDrawUri] = useState<string | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean>(false);
+  const [, setHasPermission] = useState<boolean>(false);
 
-  const [fileUri, setFileUri] = useState<string | null>(null);
+  const [, setFileUri] = useState<string | null>(null);
 
   const [drawMode, setDrawMode] = useState<"d"|"e">('d');
   const [drawColor, setDrawColor] = useState<string>('black');
@@ -100,6 +104,7 @@ export default function AnotationPage() {
       // Montar os dados da nota com base no tipo selecionado
       const noteData: Note = {
         title: anotationTitle,
+        tag: tags.join("|"),
         groupId: params.groupId,
         type: selectedNoteType,
       };
@@ -113,8 +118,6 @@ export default function AnotationPage() {
         noteData.fileUri = photoUri; 
       } else if (noteData.type === "desenho" && drawBase64) {
         noteData.base64 = drawBase64; 
-      } else {
-        throw new Error("Dados inválidos para o campo content.");
       }
     
       const response = !id
@@ -142,7 +145,7 @@ export default function AnotationPage() {
   const deleteNote = () => {
     noteService.deleteNote(id)
       .then(resp => {
-        alert(`deletado com sucesso`);
+        alert(`Deletado com sucesso`);
         router.back();
         
       })
@@ -157,7 +160,7 @@ export default function AnotationPage() {
         setFileUri(resp);
       })
       .catch((error) => {
-        alert(error);
+        alert("Erro Ao fazer download");
       }); 
   }
 
@@ -176,6 +179,9 @@ export default function AnotationPage() {
       setDrawColor("black");
       setDrawWidth(3);
     }
+    if(selectedNoteType === "arquivo"){
+      setFile(anotation.content);
+    }
   }
 
   useEffect(() => {
@@ -183,6 +189,7 @@ export default function AnotationPage() {
       noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
+        setTags(resp.tag ? resp.tag?.split("|") : [])
 
         if(resp.type === "foto"){
           setPhotoUri(await noteService.getFileUri(resp.content))
@@ -191,10 +198,10 @@ export default function AnotationPage() {
         }
   
       }).catch((error)=> {
-          alert(error)
+          alert("Erro ao buscar nota.")
       })
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -213,7 +220,7 @@ export default function AnotationPage() {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     };
-  }, [edit]);
+  }, [edit, id]);
 
   const renderEditNoteType = (param: string) => {
     switch(param) {
@@ -255,8 +262,7 @@ export default function AnotationPage() {
       
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              {file?.name && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file?.name}</Text>}
-              
+              {anotation?.fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {anotation.fileName}</Text>}
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
@@ -426,12 +432,63 @@ export default function AnotationPage() {
     }
   }
 
+  const tagsList = 
+    (edit || tags.length > 0) && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
+      {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
+      {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
+        <Text>{val}</Text>
+      </View>
+      )}
+      {tags.length > 5 && <Text style={{ fontSize: 20 }}>...</Text>}
+    </Pressable>
+
   return (
     <View
       style={{
         flex: 1,
       }}
     >
+      <Modal
+        animationType="fade"
+        visible={modalTagVisible}
+        transparent={true}
+        onRequestClose={() => {
+          setModalTagVisible(!modalTagVisible);
+        }}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modal}>
+            {edit && <View style={styles.addTag}>
+              <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
+              <Button 
+                iconName="plus-circle" 
+                onClick={() => {
+                  if(addTagText !== ''){
+                    setTags([ addTagText ,...tags]);
+                    setAddTagText('')
+                  }
+                }}
+              />
+            </View>}
+            <ScrollView>
+              {tags.map((tag, index) => 
+                <View style={styles.card} key={`card-${index}`}>
+                  <View style={{flexDirection: 'row', alignItems:'center'}}>
+                      <Text style={styles.cardText}>
+                        {tag}
+                      </Text>
+                      {edit && 
+                        <Button iconName='trash-o' onClick={() => {
+                          const updatedTags = tags.filter((_, i) => i !== index);
+                          setTags(updatedTags); 
+                        }}/>
+                      }
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {!edit ? 
         <View style={{
@@ -454,10 +511,12 @@ export default function AnotationPage() {
             <Picker.Item label="desenho" value={'desenho'}/>
           </Picker>
 
+          {tagsList}
+
           {renderViewNoteType(selectedNoteType)}
 
           {params.fromHome === 'true' && 
-            <View style={{flex: 1}}>
+            <View style={styles.buttonGroup}>
               <Button label="Abrir Grupo" onClick={() => router.push({pathname: "/(tabs)/groupPage", params: {id: params.groupId}})}/>
             </View>
           }
@@ -483,6 +542,8 @@ export default function AnotationPage() {
             </Picker>
           </View>
 
+          {tagsList}
+
           {renderEditNoteType(selectedNoteType)}
 
           <View style= {styles.buttonGroup}>
@@ -500,7 +561,9 @@ export default function AnotationPage() {
 const styles = StyleSheet.create({
   scrollView:{
     width: "90%",
-    flex: 10,
+    height: "70%",
+    padding:10,
+    boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"
   },
   text: {
     width: "100%",
@@ -524,7 +587,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup:{
     marginTop: "10%",
-    flex: 4,
+    height: "10%",
     width: "100%",
   },
   containerTitle:{
@@ -549,5 +612,47 @@ const styles = StyleSheet.create({
     columnGap: '5%', 
     alignSelf: 'flex-end',
     marginBottom: '2%'
-  }
+  },
+  containerTags:{
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '90%',
+    gap: 5,
+    marginBottom: '5%'
+  },
+  tag:{
+    padding: 5,
+    borderWidth: 1,
+    borderRadius: 10
+  },
+  modalBackground:{
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modal:{
+    flex: 1,
+    minWidth: '80%',
+    maxHeight: '60%',
+    margin: 'auto',
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    padding: 20
+  },
+  card:{
+    marginBottom: "4%",
+    padding: 5,
+    borderWidth: 1,
+  },
+  cardText:{
+    textAlign:"center",
+    fontSize:25,
+    margin: 'auto',
+    width: '65%',
+  },
+  addTag: {
+    flexDirection: 'row', 
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "2%",
+    marginBottom:"5%"}
 });

@@ -1,8 +1,6 @@
-import { Octicons } from "@expo/vector-icons";
 import { Text, View, StyleSheet, TouchableOpacity, ScrollView, BackHandler, Alert } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Picker} from '@react-native-picker/picker';
 import React from 'react';
 import Header from "@/components/Header"
@@ -17,7 +15,7 @@ import AnotationCard from "@/components/AnotationCard";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isAuthenticated, user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   const [groups, setGroups] = useState<any[]>([]);
   const [searchedResults, setSearchedResults] = useState<any | undefined>(undefined);
@@ -379,7 +377,7 @@ export default function HomeScreen() {
 
       <View style={styles.scrollView}>
         <ScrollView ref={scrollViewRef} >
-          {searchedResults ? renderSearchedResults : renderGroupedArray }
+          {searchedResults && searchText ? renderSearchedResults : renderGroupedArray }
           
         </ScrollView>
       </View>
@@ -395,6 +393,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   scrollView:{
     flex: 10,
+    width: "90%"
   },
   list:{
     width: "100%",
@@ -407,7 +406,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1
   },
   textHeadContainer: {
-    width: "40%",
+    width: "50%",
     alignSelf: "flex-start",
     borderBottomWidth: 2,
     margin: 10,

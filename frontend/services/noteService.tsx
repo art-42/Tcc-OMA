@@ -1,10 +1,8 @@
 import { Note, NoteResponse } from "@/interfaces/Note";
-import { User, UserResponse } from "@/interfaces/User";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from 'expo-file-system';
 import { StorageAccessFramework } from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
-import * as Sharing from 'expo-sharing';
 
 
 const API_URL = 'http://192.168.0.14:5001';
@@ -316,6 +314,7 @@ async function getConstructedNote(note: Note) {
   const noteValue = {
     title: note.title,
     type: note.type,
+    tag: note.tag,
     fileName: note.fileName,
     groupId: note.groupId,
     content: file64 ?? note.text, // Attach the FormData as content

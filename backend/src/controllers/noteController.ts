@@ -10,7 +10,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
 
     const { userId } = req.params;
-    const { title, type, groupId, content, fileName } = req.body; 
+    const { title, type, groupId, content, fileName, tag } = req.body; 
     let finalFileName = null;
 
     if (!title || !type || !groupId || !content) {
@@ -36,6 +36,7 @@ export const addNoteToGroup = async (req: Request, res: Response) => {
       type,
       groupId,
       userId,
+      tag,
       date: new Date(),
     });
 
@@ -90,7 +91,7 @@ export const saveFileUri = async (req: Request, res: Response) => {
 export const updateNote = async (req: Request, res: Response) => {
   try {
     const { userId, noteId } = req.params;
-    const { title, type, content, fileName } = req.body; 
+    const { title, type, content, fileName, tag} = req.body; 
 
     const note = await Note.findOne({ _id: noteId, userId });
     if (!note) {
@@ -105,6 +106,8 @@ export const updateNote = async (req: Request, res: Response) => {
     if (type) note.type = type;
     if (content) note.content = content;
     if (fileName) note.fileName = fileName;
+    
+    note.tag = tag;
 
     await note.save(); 
 
@@ -162,40 +165,47 @@ export const getAllNotes = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Nenhuma nota encontrada para este usuário" });
     }
 
-    res.status(200).json(notes);
+    const formattedNotes = notes.map(note => {
+      if (note.type === "texto") {
+        return note; 
+      }
+      return {
+        ...note.toObject(),
+        content: undefined,
+      };
+    });
+
+    res.status(200).json(formattedNotes);
   } catch (error) {
     console.error("Erro ao buscar as notas:", error);
     res.status(500).json({ error: "Erro ao buscar as notas" });
   }
 };
 
-export const searchNote = async (req: Request, res: Response) => {
+export const addTagNote = async (req: Request, res: Response) => {
   try {
-    const { userId, query } = req.params;
+    const { userId, noteId } = req.params;
+    const { tag } = req.body;
 
-    if (!userId) {
-      return res.status(400).json({ error: "O ID do usuário é obrigatório." });
+    const note = await Note.findOne({ _id: noteId, userId });
+    if (!note) {
+      return res.status(404).json({ message: "Nota não encontrada ou não pertence ao usuário." });
     }
 
-    if (!query || query.trim() === "") {
-      return res.status(400).json({ error: "O termo de busca é obrigatório." });
+    if (tag && tag.trim() !== "") {
+      note.tag = tag;
+    } else if (!tag) {
+      return res.status(400).json({ message: "A tag não pode ser vazia." });
     }
 
-    const notes = await Note.find({
-      userId,
-      $or: [
-        { title: { $regex: query, $options: "i" } },
-        { content: { $regex: query, $options: "i" } }
-      ]
+    await note.save();
+
+    res.status(200).json({
+      message: "Tag adicionada com sucesso.",
+      note,
     });
-   
-    const result = {
-      notes
-    };
-
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Erro ao realizar a busca geral:", err);
-    res.status(500).json({ error: "Erro ao realizar a busca." });
+  } catch (error) {
+    console.error("Erro ao atualizar a nota:", error);
+    res.status(500).json({ error: "Erro ao atualizar a nota." });
   }
 };

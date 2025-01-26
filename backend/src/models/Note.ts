@@ -9,6 +9,7 @@ interface INote extends Document {
   date: Date;
   fileName?: string;
   fileUri?: string;
+  tag?:string
 }
 
 const NoteSchema: Schema = new Schema({
@@ -20,6 +21,7 @@ const NoteSchema: Schema = new Schema({
   date: { type: Date, default: Date.now },
   fileName: { type: String },
   fileUri: { type: String },
+  tag: { type: String },
 });
 
 export default mongoose.model<INote>("Note", NoteSchema);

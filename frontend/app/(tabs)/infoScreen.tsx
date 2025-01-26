@@ -1,7 +1,7 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import Header from "@/components/Header";
-import { Text, View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { userService } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";
@@ -51,7 +51,6 @@ export default function InfoScreen() {
     if (user) {
       userService.updateUser({ id: user.id, name, email })
         .then(resp => {
-          const updatedUser = resp.user;
           Alert.alert(
             "Sucesso",
             `Dados atualizados com sucesso`
