@@ -499,6 +499,9 @@ export default function AnotationPage() {
                 }}
               />
             </View>}
+            {!edit && 
+              <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
+            }
             <ScrollView>
               {tags.map((tag, index) => 
                 <View style={styles.card} key={`card-${index}`}>
