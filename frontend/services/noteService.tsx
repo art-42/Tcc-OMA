@@ -201,7 +201,7 @@ export const noteService = {
   
       return uri;
     } catch (error) {
-      console.error('Error downloading the note file:', error);
+      console.log('Error downloading the note file:', error);
       throw error;
     }
   },
@@ -241,7 +241,7 @@ export const noteService = {
   
       return fileUri;
     } catch (error) {
-      console.error('Error downloading the note file:', error);
+      console.log('Error downloading the note file:', error);
       throw error;
     }
   },

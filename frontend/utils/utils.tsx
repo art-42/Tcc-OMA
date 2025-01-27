@@ -11,7 +11,7 @@ export const utils = {
           await FileSystem.deleteAsync(fileUri, { idempotent: true });
         }
       } catch (error) {
-        console.error('Error clearing cache:', error);
+        console.log('Error clearing cache:', error);
       }
     } 
   },

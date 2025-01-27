@@ -15,7 +15,7 @@ export default function InfoScreen() {
 
   useEffect(() => {
     if (!user) {
-      Alert.alert("Erro", "Usuário não autenticado");
+      Alert.alert("Erro", "Usuário não autenticado.");
       return;
     }
 
@@ -26,7 +26,7 @@ export default function InfoScreen() {
         setEmail(fetchedUser.email);
       })
       .catch(() => {
-        Alert.alert("Erro", "Não foi possível carregar as informações do usuário");
+        Alert.alert("Erro", "Não foi possível carregar as informações do usuário.");
       });
   }, [user]);
 
@@ -39,12 +39,12 @@ export default function InfoScreen() {
   // Salva as alterações no banco de dados
   const save = () => {
     if (name === '' || email === '') {
-      Alert.alert("Erro", "Todos os campos precisam estar preenchidos");
+      Alert.alert("Erro", "Todos os campos precisam estar preenchidos.");
       return;
     }
 
     if (!isEmailValid(email)) {
-      Alert.alert("Erro", "Por favor, insira um email válido");
+      Alert.alert("Erro", "Por favor, insira um email válido.");
       return;
     }
 
@@ -53,11 +53,11 @@ export default function InfoScreen() {
         .then(resp => {
           Alert.alert(
             "Sucesso",
-            `Dados atualizados com sucesso`
+            `Dados atualizados com sucesso.`
           );
         })
         .catch(() => {
-          Alert.alert("Erro", "Não foi possível atualizar as informações do usuário");
+          Alert.alert("Erro", "Não foi possível atualizar as informações do usuário.");
         });
     }
   };

@@ -17,7 +17,7 @@ export default function Index() {
 
   const loginUser = async () => {
     if (email === '' || password === '') {
-      Alert.alert('Erro','Preencha todos os campos');
+      Alert.alert('Erro','Preencha todos os campos.');
       return;
     }
 
@@ -34,7 +34,6 @@ export default function Index() {
         Alert.alert('Erro','Erro ao obter o token. Tente novamente.');
       }
     } catch (error) {
-      console.error(error);
       Alert.alert('Erro','Erro ao fazer login. Tente novamente.');
     }
   };

@@ -39,7 +39,7 @@ export default function HomeScreen() {
     groupService.getGroups().then(resp => {
       setGroups(resp);
     }).catch(() => {
-      Alert.alert('Erro',`Erro no cadastro de pessoa`);
+      Alert.alert('Erro',`Erro no cadastro de pessoa.`);
     });
   }
 
@@ -244,7 +244,7 @@ export default function HomeScreen() {
         setSearchedResults(resp);
     
       }).catch(() => {
-        Alert.alert('Erro',`Erro ao encontrar resultado de pesquisa`);
+        Alert.alert('Erro',`Erro ao encontrar resultado de pesquisa.`);
       });
   }
 

@@ -19,11 +19,11 @@ export default function SigninScreen() {
 
   const handleSubmit = () => {
     if (name === '' || email === '' || password === '' || confirmPassword === '') {
-      Alert.alert('Erro','Preencha todos os campos');
+      Alert.alert('Erro','Preencha todos os campos.');
       return false;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Erro','As senhas precisam ser iguais');
+      Alert.alert('Erro','As senhas precisam ser iguais.');
       return false;
     }
     if (!validateEmail(email)) {

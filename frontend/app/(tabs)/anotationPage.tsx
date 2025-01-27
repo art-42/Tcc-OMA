@@ -100,6 +100,10 @@ export default function AnotationPage() {
   }, []);
 
   const saveNote = async () => {
+    if(!anotationTitle){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
     try {
       const noteData: Note = {
         title: anotationTitle,
@@ -107,6 +111,20 @@ export default function AnotationPage() {
         groupId: params.groupId,
         type: selectedNoteType,
       };
+
+      if (noteData.type === "arquivo" && !file?.uri) {
+        Alert.alert('Erro',`Arquivo deve ser selecionado.`);
+        return;
+      } else if (noteData.type === "texto" && !anotationText) {
+        Alert.alert('Erro',`Descrição de anotação deve estar preenchida.`);
+        return;
+      } else if (noteData.type === "foto" && !photoUri) {
+        Alert.alert('Erro',`Foto não foi tirada.`);
+        return;
+      } else if (noteData.type === "desenho" && !drawBase64) {
+        Alert.alert('Erro',`Desenho em branco.`);
+        return;
+      }
   
       if (noteData.type === "arquivo" && file?.uri) {
         noteData.fileUri = file?.uri; 
@@ -135,6 +153,7 @@ export default function AnotationPage() {
 
       setEdit(false);
     } catch (error) {
+      console.log(error);
       Alert.alert('Erro',"Erro no cadastro. Por favor, tente novamente.");
     }
   };
@@ -150,12 +169,12 @@ export default function AnotationPage() {
           onPress: () => {
             noteService.deleteNote(id)
             .then(resp => {
-              Alert.alert('Sucesso',`Deletado com sucesso`);
+              Alert.alert('Sucesso',`Deletado com sucesso.`);
               router.back();
               
             })
             .catch((error) => {
-              Alert.alert('Erro',`Erro na deleção`);
+              Alert.alert('Erro',`Erro na deleção.`);
             }); 
           }
         },
@@ -169,7 +188,7 @@ export default function AnotationPage() {
         setFileUri(resp);
       })
       .catch((error) => {
-        Alert.alert('Erro',"Erro Ao fazer download");
+        Alert.alert('Erro',"Erro Ao fazer download.");
       }); 
   }
 
@@ -264,7 +283,7 @@ export default function AnotationPage() {
             }
             
           } catch (error) {
-            console.error('Error picking file', error);
+            console.log('Error picking file', error);
           }
         };
 
@@ -384,6 +403,7 @@ export default function AnotationPage() {
                 backgroundColor="white"
                 dataURL={anotation?.content}
                 ref={signatureRef}
+                onLoadEnd={handleEnd}
                 onOK={handleOK}
                 onEnd={handleEnd}
                 webStyle={style}

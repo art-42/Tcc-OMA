@@ -18,7 +18,7 @@ export default function ChangePasswordScreen() {
   const handleSubmit = () => {
    
     if (password !== confirmPassword) {
-      Alert.alert('Erro','As senhas precisam ser iguais');
+      Alert.alert('Erro','As senhas precisam ser iguais.');
       return false;
     }
 
@@ -39,7 +39,7 @@ export default function ChangePasswordScreen() {
 
 
     if (!user?.id) {
-      Alert.alert('Erro','Usuário não encontrado');
+      Alert.alert('Erro','Usuário não encontrado.');
       return;
     }
 
@@ -52,15 +52,15 @@ export default function ChangePasswordScreen() {
       });
 
       if (response.user) {
-        Alert.alert('Sucesso',`Senha trocada com sucesso`);
+        Alert.alert('Sucesso',`Senha trocada com sucesso.`);
         router.push('/(tabs)/home'); 
       } else {
-        Alert.alert('Erro','Erro ao alterar a senha');
+        Alert.alert('Erro','Erro ao alterar a senha.');
       }
 
     } catch (error) {
       Alert.alert('Erro','Erro ao alterar a senha. Tente novamente.');
-      console.error(error);
+      console.log(error);
     } finally {
       setLoading(false);
     }

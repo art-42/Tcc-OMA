@@ -1,4 +1,5 @@
 import { User, UserResponse } from "@/interfaces/User";
+import { Alert } from "react-native";
 
 const API_URL = 'http://192.168.0.14:5001';
 
@@ -18,7 +19,7 @@ export const userService = {
       }
       return await response.json();
     } catch (error) {
-      throw error;
+      console.log(error)
     }
   },
 
