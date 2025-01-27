@@ -19,7 +19,7 @@ export const userService = {
       }
       return await response.json();
     } catch (error) {
-      console.log(error)
+      console.log('Error on login', error)
     }
   },
 

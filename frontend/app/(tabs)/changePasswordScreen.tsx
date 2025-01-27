@@ -60,7 +60,6 @@ export default function ChangePasswordScreen() {
 
     } catch (error) {
       Alert.alert('Erro','Erro ao alterar a senha. Tente novamente.');
-      console.log(error);
     } finally {
       setLoading(false);
     }

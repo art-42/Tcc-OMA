@@ -153,7 +153,6 @@ export default function AnotationPage() {
 
       setEdit(false);
     } catch (error) {
-      console.log(error);
       Alert.alert('Erro',"Erro no cadastro. Por favor, tente novamente.");
     }
   };
@@ -278,10 +277,7 @@ export default function AnotationPage() {
             const fileAsset = result.assets ? result.assets[0] : null;
             if (fileAsset) {
               setFile(fileAsset);
-            } else {
-              console.log('No file selected');
-            }
-            
+            } 
           } catch (error) {
             console.log('Error picking file', error);
           }

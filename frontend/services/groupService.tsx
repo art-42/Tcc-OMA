@@ -105,8 +105,6 @@ export const groupService = {
 
       const file64 = await utils.convertBlobToBase64(await response.blob())
 
-      console.log(file64);
-
       return noteService.downloadNoteFile(file64, `group-${id}.pdf`)
     } catch (error) {
       throw error;
