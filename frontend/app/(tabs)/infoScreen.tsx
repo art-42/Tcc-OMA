@@ -62,17 +62,10 @@ export default function InfoScreen() {
     }
   };
 
-  const leftIcons = [
-    {
-      iconName: "arrow-left",
-      href: "/home"
-    }
-  ];
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header leftIcons={leftIcons} text="Informações de Cadastro" />
+        <Header text="Informações de Cadastro" />
       </View>
       <View style={styles.inputInfoContainer}>
         <InputText label="Nome" textValue={name} onChangeText={setName} />

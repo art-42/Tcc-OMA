@@ -220,15 +220,19 @@ export default function HomeScreen() {
       return () => backHandler.remove();
     }, [logout, router])
   );
-  const rightIcons = [
-    {
-      iconName: "user-circle",
-    },
-  ];
 
   const navigateToInfoScreen = () => {
     router.push("/infoScreen");
   };
+
+  const rightIcons = [
+    {
+      iconName: "user-circle",
+      onClick: () => {
+        navigateToInfoScreen();
+      }
+    },
+  ];
 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
