@@ -1,6 +1,7 @@
 import { Group, GroupResponse } from "@/interfaces/Group";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { noteService } from "./noteService";
+import { utils } from "@/utils/utils";
 
 const API_URL = 'http://192.168.0.14:5001';
 // const API_URL = 'http://10.0.0.16:5001';
@@ -102,9 +103,11 @@ export const groupService = {
         throw new Error('Failed to get group');
       }
 
-      const pdf = await response.json();
+      const file64 = await utils.convertBlobToBase64(await response.blob())
 
-      return noteService.downloadNoteFile(pdf.pdfBase64, `group-${id}`)
+      console.log(file64);
+
+      return noteService.downloadNoteFile(file64, `group-${id}.pdf`)
     } catch (error) {
       throw error;
     }

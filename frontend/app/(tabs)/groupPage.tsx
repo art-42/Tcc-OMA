@@ -36,7 +36,7 @@ export default function GroupPage() {
       })
       .catch((error) => {
 
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro`);
       }); 
   }
 
@@ -48,7 +48,7 @@ export default function GroupPage() {
       })
       .catch((error) => {
 
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro`);
       }); 
   }
 
@@ -61,12 +61,12 @@ export default function GroupPage() {
         {text: 'Sim', onPress: () => {
             groupService.deleteGroup(id)
             .then(() => {
-              alert(`Deletado com sucesso`);
+              Alert.alert('Sucesso',`Deletado com sucesso`);
               router.push('/(tabs)/home');
               
             })
             .catch((error) => {
-              alert(`Erro na deleção`);
+              Alert.alert('Erro',`Erro na deleção`);
             }); 
     
           }
@@ -95,7 +95,7 @@ export default function GroupPage() {
               uri && Alert.alert('Sucesso', `Arquivo salvo com sucesso na pasta selecionada.`)
             }).catch(error => {
               console.log(error)
-              alert(`Erro ao exportar grupo`);
+              Alert.alert('Erro',`Erro ao exportar grupo`);
             });
           }},
         ]);
@@ -127,13 +127,13 @@ export default function GroupPage() {
         setName(resp.group.name);
         setSelectedCategory(resp.group.categoryId);
       }).catch(() => {
-        alert(`Erro ao encontrar grupo`);
+        Alert.alert('Erro',`Erro ao encontrar grupo`);
       });
   
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        Alert.alert('Erro',`Erro ao encontrar anotações do grupo`);
       });
     }
   }, [id, setName, setSelectedCategory, setAnotation]);
@@ -143,7 +143,7 @@ export default function GroupPage() {
       setCategories(resp.categorias);
 
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias`);
     });
   }
 

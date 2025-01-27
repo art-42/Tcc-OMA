@@ -101,7 +101,6 @@ export default function AnotationPage() {
 
   const saveNote = async () => {
     try {
-      // Montar os dados da nota com base no tipo selecionado
       const noteData: Note = {
         title: anotationTitle,
         tag: tags.join("|"),
@@ -136,9 +135,7 @@ export default function AnotationPage() {
 
       setEdit(false);
     } catch (error) {
-      // Falha: notificar o usuário
-      console.error("Erro ao salvar a nota:", error);
-      alert("Erro no cadastro. Por favor, tente novamente.");
+      Alert.alert('Erro',"Erro no cadastro. Por favor, tente novamente.");
     }
   };
 
@@ -153,12 +150,12 @@ export default function AnotationPage() {
           onPress: () => {
             noteService.deleteNote(id)
             .then(resp => {
-              alert(`Deletado com sucesso`);
+              Alert.alert('Sucesso',`Deletado com sucesso`);
               router.back();
               
             })
             .catch((error) => {
-              alert(`Erro na deleção`);
+              Alert.alert('Erro',`Erro na deleção`);
             }); 
           }
         },
@@ -172,7 +169,7 @@ export default function AnotationPage() {
         setFileUri(resp);
       })
       .catch((error) => {
-        alert("Erro Ao fazer download");
+        Alert.alert('Erro',"Erro Ao fazer download");
       }); 
   }
 
@@ -210,7 +207,7 @@ export default function AnotationPage() {
         }
   
       }).catch((error)=> {
-          alert("Erro ao buscar nota.")
+          Alert.alert('Erro',"Erro ao buscar nota.")
       })
     }
   }, [id]);
@@ -270,12 +267,12 @@ export default function AnotationPage() {
             console.error('Error picking file', error);
           }
         };
+
+        const fileName = file?.name ?? anotation?.fileName;
         
-      
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              {anotation?.fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {anotation.fileName}</Text>}
-              {file && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file.name}</Text>}
+              {fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {fileName}</Text>}
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
@@ -411,7 +408,7 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         return (
-            <View style={{ gap: '5%', flex: 20, justifyContent: 'center' }}>
+            <View style={{ gap: '5%', flex: 20, justifyContent: 'center', width: '90%' }}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
               <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />

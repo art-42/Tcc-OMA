@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import React from 'react';
 import Header from '@/components/Header';
@@ -26,7 +26,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias`);
     });
   }
 
@@ -35,7 +35,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias`);
     });
   }
   
@@ -55,12 +55,12 @@ export default function CategoryPage() {
   const deleteGroup = () => {
     categoryService.deleteCategory(currentCategoryId)
       .then(resp => {
-        alert(`Deletado com sucesso`);  
+        Alert.alert('Sucesso',`Deletado com sucesso`);  
         setModalVisible(false);
         fetchCategoryData();     
       })
       .catch((error) => {
-        alert(`Erro na deleção`);
+        Alert.alert('Erro',`Erro na deleção`);
       }); 
   }
 
@@ -81,7 +81,7 @@ export default function CategoryPage() {
         setModalVisible(false)
       })
       .catch((error) => {
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro`);
       }); 
   }
 

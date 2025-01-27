@@ -2,7 +2,7 @@ import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import { userService } from "@/services/userService";
 import { useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function SigninScreen() {
@@ -19,20 +19,20 @@ export default function SigninScreen() {
 
   const handleSubmit = () => {
     if (name === '' || email === '' || password === '' || confirmPassword === '') {
-      alert('Preencha todos os campos');
+      Alert.alert('Erro','Preencha todos os campos');
       return false;
     }
     if (password !== confirmPassword) {
-      alert('As senhas precisam ser iguais');
+      Alert.alert('Erro','As senhas precisam ser iguais');
       return false;
     }
     if (!validateEmail(email)) {
-      alert("Por favor, insira um email válido.");
+      Alert.alert('Erro',"Por favor, insira um email válido.");
       return false;
     }
 
     if (password.length < 6) {
-      alert("A senha deve ter no mínimo 6 caracteres.");
+      Alert.alert('Erro',"A senha deve ter no mínimo 6 caracteres.");
       return false;
     }
     return true;
@@ -50,7 +50,7 @@ export default function SigninScreen() {
         })
         .catch((error) => {
 
-          alert(`Erro no cadastro: Email já cadastrado!`);
+          Alert.alert('Erro',`Erro no cadastro: Email já cadastrado!`);
         });
         
     }

@@ -1,6 +1,6 @@
 import Button from "@/components/Button";
 import Header from "@/components/Header";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import React, { useState } from "react";
 import { userService } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";  // Importando o hook useAuth
@@ -18,12 +18,12 @@ export default function ChangePasswordScreen() {
   const handleSubmit = () => {
    
     if (password !== confirmPassword) {
-      alert('As senhas precisam ser iguais');
+      Alert.alert('Erro','As senhas precisam ser iguais');
       return false;
     }
 
     if (password.length < 6) {
-      alert("A senha deve ter no mínimo 6 caracteres.");
+      Alert.alert('Erro',"A senha deve ter no mínimo 6 caracteres.");
       return false;
     }
     return true;
@@ -39,7 +39,7 @@ export default function ChangePasswordScreen() {
 
 
     if (!user?.id) {
-      alert('Usuário não encontrado');
+      Alert.alert('Erro','Usuário não encontrado');
       return;
     }
 
@@ -52,14 +52,14 @@ export default function ChangePasswordScreen() {
       });
 
       if (response.user) {
-        alert(`Senha trocada com sucesso`);
+        Alert.alert('Sucesso',`Senha trocada com sucesso`);
         router.push('/(tabs)/home'); 
       } else {
-        alert('Erro ao alterar a senha');
+        Alert.alert('Erro','Erro ao alterar a senha');
       }
 
     } catch (error) {
-      alert('Erro ao alterar a senha. Tente novamente.');
+      Alert.alert('Erro','Erro ao alterar a senha. Tente novamente.');
       console.error(error);
     } finally {
       setLoading(false);

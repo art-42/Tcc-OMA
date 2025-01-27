@@ -2,7 +2,7 @@ import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import { userService } from "@/services/userService";
 import { useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Alert } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useAuth } from "../context/AuthContext";
@@ -17,7 +17,7 @@ export default function Index() {
 
   const loginUser = async () => {
     if (email === '' || password === '') {
-      alert('Preencha todos os campos');
+      Alert.alert('Erro','Preencha todos os campos');
       return;
     }
 
@@ -31,11 +31,11 @@ export default function Index() {
         login(token, user);
         router.push('/(tabs)/home');
       } else {
-        alert('Erro ao obter o token. Tente novamente.');
+        Alert.alert('Erro','Erro ao obter o token. Tente novamente.');
       }
     } catch (error) {
       console.error(error);
-      alert('Erro ao fazer login. Tente novamente.');
+      Alert.alert('Erro','Erro ao fazer login. Tente novamente.');
     }
   };
 
