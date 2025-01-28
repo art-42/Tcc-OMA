@@ -4,6 +4,7 @@ import path from "path";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
 import { format } from "date-fns";
+import Group, { GroupDocument } from "../models/Group";
 const fs = require("fs");
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
@@ -209,6 +210,30 @@ export const addTagNote = async (req: Request, res: Response) => {
   }
 };
 
+export const getContent = async (req: Request, res: Response) => {
+  const { noteId } = req.params;
+
+  try {
+    const note = await Note.findById(noteId);
+
+    if (!note) {
+      return res.status(404).json({ message: "Nota não encontrada." });
+    }
+
+    const contentBuffer = Buffer.from(note.content, "base64"); // Supondo que o conteúdo esteja armazenado em Base64
+    const fileName = note.fileName || `note_${noteId}`; // Nome do arquivo a ser baixado
+
+    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
+    const mimeType = (note as any).mimeType || "application/octet-stream";
+    res.setHeader("Content-Type", mimeType);
+
+    res.send(contentBuffer);
+  } catch (error) {
+    console.error("Erro ao servir o conteúdo da nota:", error);
+    res.status(500).json({ message: "Erro ao acessar o conteúdo da nota." });
+  }
+};
+
 
 export const generatePdfEndpoint = async (req: Request, res: Response) => {
   const { userId, groupId } = req.params;
@@ -216,13 +241,17 @@ export const generatePdfEndpoint = async (req: Request, res: Response) => {
 
   try {
     const notes = await Note.find({ userId, groupId });
+    const group = await Group.findOne({ _id: groupId, userId });
+
+    if (!group) {
+      return res.status(404).json({ message: "Grupo não encontrado." });
+    }
 
     if (!notes || notes.length === 0) {
       return res.status(404).json({ message: "Nenhuma nota encontrada." });
     }
 
     const doc = new PDFDocument({ autoFirstPage: false });
-
     const exportsDir = path.resolve(__dirname, "../exports");
     const filePath = path.join(exportsDir, `group_${groupId}.pdf`);
 
@@ -234,20 +263,25 @@ export const generatePdfEndpoint = async (req: Request, res: Response) => {
       const writeStream = fs.createWriteStream(filePath);
       doc.pipe(writeStream);
 
-      await addNotesToPdf(doc, notes);
+      await addNotesToPdf(doc, notes, group);
 
       doc.end();
 
       writeStream.on("finish", () => {
         res.download(filePath, `group_${groupId}.pdf`, () => {
-          fs.unlinkSync(filePath);
+          fs.unlinkSync(filePath); // Remove o arquivo temporário
         });
+      });
+
+      writeStream.on("error", (err:Error) => {
+        console.error("Erro ao escrever o arquivo PDF:", err);
+        res.status(500).json({ message: "Erro ao gerar o PDF." });
       });
     } else {
       res.setHeader("Content-Type", "application/pdf");
       doc.pipe(res);
 
-      await addNotesToPdf(doc, notes);
+      await addNotesToPdf(doc, notes, group);
 
       doc.end();
     }
@@ -257,87 +291,58 @@ export const generatePdfEndpoint = async (req: Request, res: Response) => {
   }
 };
 
-const addDownloadLink = (doc: PDFKit.PDFDocument, note: any) => {
-  const downloadLink = `http://localhost:5001/notes/download/${note._id}`;
-  doc.fontSize(12).fillColor("blue").text("Clique aqui para baixar o conteúdo", {
-    link: downloadLink,
-    underline: true,
-  });
-};
+const addNotesToPdf = async (
+  doc: PDFKit.PDFDocument,
+  notes: any[],
+  group: GroupDocument
+) => {
+  const formattedDate = format(new Date(group.createdAt), "dd/MM/yyyy");
+  let isFirstPage = true; 
 
-const addNotesToPdf = async (doc: PDFKit.PDFDocument, notes: any[]) => {
   for (const note of notes) {
-    const formattedDate = format(new Date(note.date), "dd/MM/yyyy");
-    doc.addPage();
-    doc.fontSize(16).text(`Título: ${note.title} - Data: ${formattedDate}`, { underline: true });
+    if (isFirstPage) {
+      doc.addPage(); 
+      doc.fontSize(12)
+        .font("Helvetica-Bold")
+        .text(`Grupo: ${group.name} - Data: ${formattedDate}`, 50, 30, {
+          align: "center",
+        });
+      doc.moveDown();
+
+      isFirstPage = false; 
+    } else {
+      doc.addPage(); 
+    }
+
+    doc.fontSize(16).text(`Título: ${note.title} - Tipo da anotação: ${note.type}`, { underline: true });
     doc.moveDown();
 
     if (note.type === "texto") {
       doc.fontSize(12).text(note.content);
     } else if (note.type === "foto" || note.type === "desenho" || note.type === "arquivo") {
       try {
-        let imageBuffer: Buffer;
-
-        if (note.content.startsWith("data:image")) {
-          const base64Data = note.content.split(",")[1];
-          imageBuffer = Buffer.from(base64Data, "base64");
-        } else {
-          imageBuffer = Buffer.from(note.content, "base64");
-        }
-
-        const convertedBuffer = await convertToSupportedImage(imageBuffer);
-
-        doc.image(convertedBuffer, {
+        const imageBuffer = await convertToSupportedImage(note.content);
+        doc.image(imageBuffer, {
           fit: [500, 400],
           align: "center",
           valign: "center",
         });
-
-        doc.moveDown();
-        addDownloadLink(doc, note);
       } catch (err) {
-        console.error(`Erro ao adicionar imagem no PDF: ${err}`);
-        addDownloadLink(doc, note);
+        console.error(`Erro ao adicionar imagem ao PDF: ${err}`);
+        doc.fontSize(12).fillColor("red").text("Erro ao processar imagem.");
       }
     }
   }
 };
 
-export const downloadNote = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
+const convertToSupportedImage = async (input: string): Promise<Buffer> => {
   try {
-    const note = await Note.findById(id);
-    if (!note) {
-      return res.status(404).json({ message: "Nota não encontrada." });
+    const base64Data = input.split(",")[1];
+    if (!base64Data) {
+      throw new Error("Imagem inválida.");
     }
 
-    const contentBuffer = Buffer.from(note.content, "base64");
-    const fileName = note.fileName || "download";
-
-    res.setHeader("Content-Disposition", `attachment; filename="${fileName}"`);
-    res.setHeader("Content-Type", "application/octet-stream");
-    res.send(contentBuffer);
-  } catch (error) {
-    console.error("Erro ao baixar nota:", error);
-    res.status(500).json({ message: "Erro ao baixar a nota." });
-  }
-};
-
-const convertToSupportedImage = async (input: Buffer | string): Promise<Buffer> => {
-  try {
-    let imageBuffer: Buffer;
-
-    if (typeof input === "string") {
-      if (input.startsWith("data:image")) {
-        const base64Data = input.split(",")[1];
-        imageBuffer = Buffer.from(base64Data, "base64");
-      } else {
-        imageBuffer = Buffer.from(input, "base64");
-      }
-    } else {
-      imageBuffer = input;
-    }
+    const imageBuffer = Buffer.from(base64Data, "base64");
     return await sharp(imageBuffer).png().toBuffer();
   } catch (err) {
     throw new Error("Erro ao converter imagem para formato suportado.");
