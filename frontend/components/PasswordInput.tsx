@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 15,
     width: 200,
+    height: 40,
     paddingRight: 40, // Espaço para o ícone
   },
   iconButton: {
