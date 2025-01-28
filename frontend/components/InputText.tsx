@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
   inputBox:{
     borderRadius: 15,
     borderBottomWidth: 1,
-    width:200
+    width:200,
+    height: 40
   },
   border:{
     borderWidth: 1

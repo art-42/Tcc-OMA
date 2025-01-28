@@ -13,7 +13,8 @@
     },
     "android": {
       "permissions": [
-        "CAMERA"
+        "CAMERA",
+        "INTERNET"
       ],
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
@@ -37,6 +38,14 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
       ]
     ],
     "experiments": {
@@ -46,6 +55,7 @@
       "eas": {
         "projectId": "963fad38-6a47-4c4b-a98a-a118f49941f2"
       }
-    }
+    },
+    "owner": "art42"
   }
 }
