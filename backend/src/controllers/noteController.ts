@@ -3,7 +3,7 @@ import Note, { INote } from "../models/Note";
 import path from "path";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
-
+import { format } from "date-fns";
 const fs = require("fs");
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
@@ -215,7 +215,6 @@ export const generatePdfEndpoint = async (req: Request, res: Response) => {
   const { download } = req.query;
 
   try {
-    
     const notes = await Note.find({ userId, groupId });
 
     if (!notes || notes.length === 0) {
@@ -268,31 +267,23 @@ const addDownloadLink = (doc: PDFKit.PDFDocument, note: any) => {
 
 const addNotesToPdf = async (doc: PDFKit.PDFDocument, notes: any[]) => {
   for (const note of notes) {
-
+    const formattedDate = format(new Date(note.date), "dd/MM/yyyy");
     doc.addPage();
-    doc.fontSize(16).text(`Título: ${note.title}`, { underline: true });
+    doc.fontSize(16).text(`Título: ${note.title} - Data: ${formattedDate}`, { underline: true });
     doc.moveDown();
-    
+
     if (note.type === "texto") {
       doc.fontSize(12).text(note.content);
     } else if (note.type === "foto" || note.type === "desenho" || note.type === "arquivo") {
       try {
-        
         let imageBuffer: Buffer;
+
         if (note.content.startsWith("data:image")) {
-          const base64Data = note.content.split(",")[1]; 
+          const base64Data = note.content.split(",")[1];
           imageBuffer = Buffer.from(base64Data, "base64");
         } else {
           imageBuffer = Buffer.from(note.content, "base64");
         }
-
-        // if (note.content instanceof Buffer) {
-        //   imageBuffer = note.content;
-        // } else if (typeof note.content === "string") {
-        //   imageBuffer = Buffer.from(note.content, "base64");
-        // } else {
-        //   throw new Error("Formato de imagem não suportado.");
-        // }
 
         const convertedBuffer = await convertToSupportedImage(imageBuffer);
 
@@ -301,15 +292,16 @@ const addNotesToPdf = async (doc: PDFKit.PDFDocument, notes: any[]) => {
           align: "center",
           valign: "center",
         });
+
+        doc.moveDown();
+        addDownloadLink(doc, note);
       } catch (err) {
         console.error(`Erro ao adicionar imagem no PDF: ${err}`);
         addDownloadLink(doc, note);
       }
-    } 
+    }
   }
 };
-
-
 
 export const downloadNote = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -332,14 +324,13 @@ export const downloadNote = async (req: Request, res: Response) => {
   }
 };
 
-
 const convertToSupportedImage = async (input: Buffer | string): Promise<Buffer> => {
   try {
     let imageBuffer: Buffer;
 
     if (typeof input === "string") {
       if (input.startsWith("data:image")) {
-        const base64Data = input.split(",")[1]; 
+        const base64Data = input.split(",")[1];
         imageBuffer = Buffer.from(base64Data, "base64");
       } else {
         imageBuffer = Buffer.from(input, "base64");
