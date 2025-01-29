@@ -539,7 +539,7 @@ export default function AnotationPage() {
             <Picker.Item label="Texto" value={'texto'}/>
             <Picker.Item label="Arquivo" value={'arquivo'}/>
             <Picker.Item label="Foto" value={'foto'}/>
-            <Picker.Item label="desenho" value={'desenho'}/>
+            <Picker.Item label="Desenho" value={'desenho'}/>
           </Picker>
 
           {tagsList}
@@ -569,7 +569,7 @@ export default function AnotationPage() {
               <Picker.Item label="Texto" value={'texto'}/>
               <Picker.Item label="Arquivo" value={'arquivo'}/>
               <Picker.Item label="Foto" value={'foto'}/>
-              <Picker.Item label="desenho" value={'desenho'}/>
+              <Picker.Item label="Desenho" value={'desenho'}/>
             </Picker>
           </View>
 

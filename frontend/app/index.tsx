@@ -63,7 +63,7 @@ export default function Index() {
           togglePasswordVisibility={togglePasswordVisibility}
         />
 
-        <Button label="entrar" onClick={loginUser} />
+        <Button label="Entrar" onClick={loginUser} />
       </View>
 
       <Button label="Criar Nova Conta" href={'/signinScreen'} />
