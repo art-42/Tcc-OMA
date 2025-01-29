@@ -42,7 +42,7 @@ export default function AnotationPage() {
   const [drawUri, setDrawUri] = useState<string | null>(null);
   const [, setHasPermission] = useState<boolean>(false);
 
-  const [, setFileUri] = useState<string | null>(null);
+  const [fileUri, setFileUri] = useState<string | null>(null);
 
   const [drawMode, setDrawMode] = useState<"d"|"e">('d');
   const [drawColor, setDrawColor] = useState<string>('black');
@@ -112,7 +112,7 @@ export default function AnotationPage() {
         type: selectedNoteType,
       };
 
-      if (noteData.type === "arquivo" && !file?.uri) {
+      if (noteData.type === "arquivo" && !file?.uri && !fileUri) {
         Alert.alert('Erro',`Arquivo deve ser selecionado.`);
         return;
       } else if (noteData.type === "texto" && !anotationText) {
@@ -218,7 +218,9 @@ export default function AnotationPage() {
         setSelectedNoteType(resp.type);
         setTags(resp.tag ? resp.tag?.split("|") : [])
 
-        if(resp.type === "foto"){
+        if(resp.type === "arquivo"){
+          setFileUri(await noteService.getFileUri(resp.content))
+        } else if(resp.type === "foto"){
           setPhotoUri(await noteService.getFileUri(resp.content))
         } else if(resp.type === "desenho"){
           setDrawUri(await noteService.getFileUri(resp.content))
@@ -607,6 +609,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   inputBox:{
+    padding:10,
     flex:20,
     borderWidth: 1,
     borderRadius: 15,
