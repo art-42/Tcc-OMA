@@ -300,6 +300,7 @@ const addNotesToPdf = async (
   let isFirstPage = true; 
 
   for (const note of notes) {
+    if ((note.type==="arquivo" && note.content.startsWith("data:image"))|| note.type!="arquivo") {
     if (isFirstPage) {
       doc.addPage(); 
       doc.fontSize(12)
@@ -320,18 +321,21 @@ const addNotesToPdf = async (
     if (note.type === "texto") {
       doc.fontSize(12).text(note.content);
     } else if (note.type === "foto" || note.type === "desenho" || note.type === "arquivo") {
-      try {
-        const imageBuffer = await convertToSupportedImage(note.content);
-        doc.image(imageBuffer, {
-          fit: [500, 400],
-          align: "center",
-          valign: "center",
-        });
-      } catch (err) {
-        console.error(`Erro ao adicionar imagem ao PDF: ${err}`);
-        doc.fontSize(12).fillColor("red").text("Erro ao processar imagem.");
-      }
+      if (note.content.startsWith("data:image")) {
+        try {
+          const imageBuffer = await convertToSupportedImage(note.content);
+          doc.image(imageBuffer, {
+            fit: [500, 400],
+            align: "center",
+            valign: "center",
+          });
+        } catch (err) {
+          console.error(`Erro ao adicionar imagem ao PDF: ${err}`);
+          //doc.fontSize(12).fillColor("red").text("Erro ao processar imagem.");
+        }
     }
+    }
+  }
   }
 };
 
