@@ -1,10 +1,5 @@
 import { Request, Response } from "express";
 import Note from "../models/Note";
-import Group from "../models/Group";
-import { gridFSBucket,connectDB } from "../config/db";
-import mongoose from "mongoose";
-import User from "../models/User";
-
 
 export const addNoteToGroup = async (req: Request, res: Response) => {
   try {
