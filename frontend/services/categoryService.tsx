@@ -1,6 +1,5 @@
 import { CategoriesResponse, Category } from "@/interfaces/Category";
-import { Note, NoteResponse } from "@/interfaces/Note";
-import { User, UserResponse } from "@/interfaces/User";
+import { NoteResponse } from "@/interfaces/Note";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const API_URL = 'http://192.168.0.14:5001';

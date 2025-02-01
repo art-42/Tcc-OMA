@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
+import { View, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { FontAwesome } from '@expo/vector-icons';
 
 type PasswordInputProps = {
@@ -36,6 +36,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 15,
     width: 200,
+    height: 40,
     paddingRight: 40, // Espaço para o ícone
   },
   iconButton: {

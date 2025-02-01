@@ -1,13 +1,10 @@
-import { Octicons } from "@expo/vector-icons";
-import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { useEffect, useState } from "react";
-import { router, useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Text, View, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
 import Header from "@/components/Header"
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
-import GroupCard from "@/components/GroupCard";
 import AnotationCard from "@/components/AnotationCard";
 import { groupService } from "@/services/groupService";
 import { noteService } from "@/services/noteService";
@@ -30,56 +27,62 @@ export default function GroupPage() {
   const [anotations, setAnotation] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetchGroupData();
-    fetchCategoryData();
-  }, []);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      fetchGroupData();
-    }, [id])
-  );
-
   const saveGroup = () => {
+    if(!name){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
+
     groupService.createGroup({name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;
-        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         
         setId(group._id);
       })
       .catch((error) => {
-
-        alert(`Erro no cadastro`);
+        console.log(error)
+        Alert.alert('Erro',`Erro no cadastro.`);
       }); 
   }
 
   const updateGroup = () => {
+    if(!name){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
+    
     groupService.updateGroup(id, {name, categoryId: selectedCategory})
       .then(resp => {
-        const group = resp.group;
-        alert(`Cadastro concluído: \n nome: ${group.name} \n`);
         setEdit(false);
         
       })
       .catch((error) => {
 
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro.`);
       }); 
   }
 
   const deleteGroup = () => {
-    groupService.deleteGroup(id)
-      .then(resp => {
-        const group = resp.group;
-        alert(`deletado com sucesso`);
-        router.push('/(tabs)/home');
-        
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar o grupo?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {text: 'Sim', onPress: () => {
+            groupService.deleteGroup(id)
+            .then(() => {
+              Alert.alert('Sucesso',`Deletado com sucesso.`);
+              router.push('/(tabs)/home');
+              
+            })
+            .catch((error) => {
+              Alert.alert('Erro',`Erro na deleção.`);
+            }); 
+    
+          }
+        },
+      ]
+    );
   }
 
   const addAnotation = () => {
@@ -90,13 +93,33 @@ export default function GroupPage() {
   const rightIcons = !edit ? 
   [
     {
+      iconName: "file-pdf-o",
+      onClick: () => {
+        Alert.alert('Exportação em Pdf', 'Deseja exportar o grupo de anotações em pdf?', [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {text: 'Sim', onPress: () => {
+            groupService.exportGroupById(id).then(uri => {
+              uri && Alert.alert('Sucesso', `Arquivo salvo com sucesso na pasta selecionada.`)
+            }).catch(error => {
+              console.log(error)
+              Alert.alert('Erro',`Erro ao exportar grupo.`);
+            });
+          }},
+        ]);
+
+      }
+    },
+    {
       iconName: "edit",
       onClick: () => {
         setEdit(true);
       }
     },
     {
-      iconName: "trash",
+      iconName: "trash-o",
       onClick: deleteGroup
     },
   ] : [
@@ -108,32 +131,43 @@ export default function GroupPage() {
     },
   ];
 
-  function fetchGroupData() {
+  const fetchGroupData = useCallback(() => {
     if (id) {
       groupService.getGroupById(id).then(resp => {
         setName(resp.group.name);
         setSelectedCategory(resp.group.categoryId);
-
       }).catch(() => {
-        alert(`Erro ao encontrar grupo`);
+        Alert.alert('Erro',`Erro ao encontrar grupo.`);
       });
+  
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
-
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        Alert.alert('Erro',`Erro ao encontrar anotações do grupo.`);
       });
     }
-  }
+  }, [id, setName, setSelectedCategory, setAnotation]);
 
   function fetchCategoryData() {
     categoryService.getCategories().then(resp => {
       setCategories(resp.categorias);
 
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias.`);
     });
   }
+
+  useEffect(() => {
+    fetchGroupData();
+    fetchCategoryData();
+  }, [fetchGroupData]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchGroupData();
+    }, [fetchGroupData])
+  );
+
 
   return (
     <View
@@ -172,7 +206,7 @@ export default function GroupPage() {
               <ScrollView>
                 {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
-                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
+                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title} type={anotation.type}/>
                   </View>
                 )}
               </ScrollView>

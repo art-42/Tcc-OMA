@@ -1,24 +1,12 @@
 import { Note, NoteResponse } from "@/interfaces/Note";
-import { User, UserResponse } from "@/interfaces/User";
+import { utils } from "@/utils/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from 'expo-file-system';
 import { StorageAccessFramework } from 'expo-file-system';
 import * as IntentLauncher from 'expo-intent-launcher';
-import * as Sharing from 'expo-sharing';
 
 
 const API_URL = 'http://192.168.0.14:5001';
-
-const convertBlobToBase64 = async (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob); // This will return a base64-encoded string
-  });
-};
 
 const getExtensionFromType= (type: string): string => {
 
@@ -178,14 +166,14 @@ export const noteService = {
         throw new Error('User not found in AsyncStorage');
       }
             
-      const base64Data = base64.split(',')[1];
-
       const permissions = await StorageAccessFramework.requestDirectoryPermissionsAsync();
 
       if (!permissions.granted) {
-        throw new Error('Sem permissão');
+        return '';
 
       }
+
+      const base64Data = base64.split(',')[1];
 
       const directoryUri = permissions.directoryUri;
       if (!directoryUri) {
@@ -193,7 +181,7 @@ export const noteService = {
 
       }
 
-      const type = getTypeFromBase64(base64)
+      const type = fileName.endsWith(".pdf") ? 'application/pdf' :  getTypeFromBase64(base64)
 
       const uri = await StorageAccessFramework.createFileAsync(
         directoryUri, 
@@ -213,7 +201,7 @@ export const noteService = {
   
       return uri;
     } catch (error) {
-      console.error('Error downloading the note file:', error);
+      console.log('Error downloading the note file:', error);
       throw error;
     }
   },
@@ -253,7 +241,7 @@ export const noteService = {
   
       return fileUri;
     } catch (error) {
-      console.error('Error downloading the note file:', error);
+      console.log('Error downloading the note file:', error);
       throw error;
     }
   },
@@ -308,7 +296,7 @@ async function getConstructedNote(note: Note) {
     const fetchedFile = await fetch(note.fileUri);
     const blob = await fetchedFile.blob();
 
-    file64 = await convertBlobToBase64(blob);
+    file64 = await utils.convertBlobToBase64(blob);
 
   }
 
@@ -316,6 +304,7 @@ async function getConstructedNote(note: Note) {
   const noteValue = {
     title: note.title,
     type: note.type,
+    tag: note.tag,
     fileName: note.fileName,
     groupId: note.groupId,
     content: file64 ?? note.text, // Attach the FormData as content

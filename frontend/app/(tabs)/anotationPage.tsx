@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, BackHandler, Pressable } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -12,10 +12,14 @@ import { Camera, CameraView } from 'expo-camera'; // Importing the Camera compon
 import SignatureScreen, { SignatureViewRef } from 'react-native-signature-canvas';
 import { Note } from "@/interfaces/Note";
 import { Image } from 'react-native';
-import { utils } from "@/utils/utils";
-
 
 export default function AnotationPage() {
+
+  const [tags, setTags] = useState<string[]>([]);
+
+  const [modalTagVisible, setModalTagVisible] = useState(false);
+
+  const [addTagText, setAddTagText] = useState('');
 
   const router = useRouter();
 
@@ -36,7 +40,7 @@ export default function AnotationPage() {
 
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [drawUri, setDrawUri] = useState<string | null>(null);
-  const [hasPermission, setHasPermission] = useState<boolean>(false);
+  const [, setHasPermission] = useState<boolean>(false);
 
   const [fileUri, setFileUri] = useState<string | null>(null);
 
@@ -56,7 +60,7 @@ export default function AnotationPage() {
       }
     },
     {
-      iconName: "trash",
+      iconName: "trash-o",
       onClick: () => {
         deleteNote();
       }
@@ -96,13 +100,31 @@ export default function AnotationPage() {
   }, []);
 
   const saveNote = async () => {
+    if(!anotationTitle){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
     try {
-      // Montar os dados da nota com base no tipo selecionado
       const noteData: Note = {
         title: anotationTitle,
+        tag: tags.join("|"),
         groupId: params.groupId,
         type: selectedNoteType,
       };
+
+      if (noteData.type === "arquivo" && !file?.uri && !fileUri) {
+        Alert.alert('Erro',`Arquivo deve ser selecionado.`);
+        return;
+      } else if (noteData.type === "texto" && !anotationText) {
+        Alert.alert('Erro',`Descrição de anotação deve estar preenchida.`);
+        return;
+      } else if (noteData.type === "foto" && !photoUri) {
+        Alert.alert('Erro',`Foto não foi tirada.`);
+        return;
+      } else if (noteData.type === "desenho" && !drawBase64) {
+        Alert.alert('Erro',`Desenho em branco.`);
+        return;
+      }
   
       if (noteData.type === "arquivo" && file?.uri) {
         noteData.fileUri = file?.uri; 
@@ -113,8 +135,6 @@ export default function AnotationPage() {
         noteData.fileUri = photoUri; 
       } else if (noteData.type === "desenho" && drawBase64) {
         noteData.base64 = drawBase64; 
-      } else {
-        throw new Error("Dados inválidos para o campo content.");
       }
     
       const response = !id
@@ -133,22 +153,32 @@ export default function AnotationPage() {
 
       setEdit(false);
     } catch (error) {
-      // Falha: notificar o usuário
-      console.error("Erro ao salvar a nota:", error);
-      alert("Erro no cadastro. Por favor, tente novamente.");
+      Alert.alert('Erro',"Erro no cadastro. Por favor, tente novamente.");
     }
   };
 
   const deleteNote = () => {
-    noteService.deleteNote(id)
-      .then(resp => {
-        alert(`deletado com sucesso`);
-        router.back();
-        
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar a anotação?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sim', 
+          onPress: () => {
+            noteService.deleteNote(id)
+            .then(resp => {
+              Alert.alert('Sucesso',`Deletado com sucesso.`);
+              router.back();
+              
+            })
+            .catch((error) => {
+              Alert.alert('Erro',`Erro na deleção.`);
+            }); 
+          }
+        },
+      ]
+    );
   }
 
   const downloadNoteFile = () => {
@@ -157,7 +187,7 @@ export default function AnotationPage() {
         setFileUri(resp);
       })
       .catch((error) => {
-        alert(error);
+        Alert.alert('Erro',"Erro Ao fazer download.");
       }); 
   }
 
@@ -176,6 +206,9 @@ export default function AnotationPage() {
       setDrawColor("black");
       setDrawWidth(3);
     }
+    if(selectedNoteType === "arquivo"){
+      setFile(anotation.content);
+    }
   }
 
   useEffect(() => {
@@ -183,18 +216,21 @@ export default function AnotationPage() {
       noteService.getNoteById(id).then(async resp => {
         setAnotation(resp);
         setSelectedNoteType(resp.type);
+        setTags(resp.tag ? resp.tag?.split("|") : [])
 
-        if(resp.type === "foto"){
+        if(resp.type === "arquivo"){
+          setFileUri(await noteService.getFileUri(resp.content))
+        } else if(resp.type === "foto"){
           setPhotoUri(await noteService.getFileUri(resp.content))
         } else if(resp.type === "desenho"){
           setDrawUri(await noteService.getFileUri(resp.content))
         }
   
       }).catch((error)=> {
-          alert(error)
+          Alert.alert('Erro',"Erro ao buscar nota.")
       })
     }
-  }, []);
+  }, [id]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -213,7 +249,7 @@ export default function AnotationPage() {
     return () => {
       BackHandler.removeEventListener('hardwareBackPress', handleBackPress);
     };
-  }, [edit]);
+  }, [edit, id]);
 
   const renderEditNoteType = (param: string) => {
     switch(param) {
@@ -242,21 +278,18 @@ export default function AnotationPage() {
       
             const fileAsset = result.assets ? result.assets[0] : null;
             if (fileAsset) {
-              setFile(fileAsset); 
-            } else {
-              console.log('No file selected');
-            }
-            
+              setFile(fileAsset);
+            } 
           } catch (error) {
-            console.error('Error picking file', error);
+            console.log('Error picking file', error);
           }
         };
+
+        const fileName = file?.name ?? anotation?.fileName;
         
-      
         return (
             <View style={{ gap: '10%', flex: 20, justifyContent: 'center' }}>
-              {file?.name && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {file?.name}</Text>}
-              
+              {fileName && <Text style={{textAlign:'center'}}>Arquivo Selecionado: {fileName}</Text>}
               <Button label="Escolha o arquivo" onClick={pickFile} />
             </View>
         );
@@ -368,6 +401,7 @@ export default function AnotationPage() {
                 backgroundColor="white"
                 dataURL={anotation?.content}
                 ref={signatureRef}
+                onLoadEnd={handleEnd}
                 onOK={handleOK}
                 onEnd={handleEnd}
                 webStyle={style}
@@ -392,7 +426,7 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         return (
-            <View style={{ gap: '5%', flex: 20, justifyContent: 'center' }}>
+            <View style={{ gap: '5%', flex: 20, justifyContent: 'center', width: '90%' }}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
               <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />
@@ -426,12 +460,66 @@ export default function AnotationPage() {
     }
   }
 
+  const tagsList = 
+    (edit || tags.length > 0) && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
+      {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
+      {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
+        <Text>{val}</Text>
+      </View>
+      )}
+      {tags.length > 5 && <Text style={{ fontSize: 20 }}>...</Text>}
+    </Pressable>
+
   return (
     <View
       style={{
         flex: 1,
       }}
     >
+      <Modal
+        animationType="fade"
+        visible={modalTagVisible}
+        transparent={true}
+        onRequestClose={() => {
+          setModalTagVisible(!modalTagVisible);
+        }}>
+        <View style={styles.modalBackground}>
+          <View style={styles.modal}>
+            {edit && <View style={styles.addTag}>
+              <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
+              <Button 
+                iconName="plus-circle" 
+                onClick={() => {
+                  if(addTagText !== ''){
+                    setTags([ addTagText ,...tags]);
+                    setAddTagText('')
+                  }
+                }}
+              />
+            </View>}
+            {!edit && 
+              <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
+            }
+            <ScrollView>
+              {tags.map((tag, index) => 
+                <View style={styles.card} key={`card-${index}`}>
+                  <View style={{flexDirection: 'row', alignItems:'center'}}>
+                      <Text style={styles.cardText}>
+                        {tag}
+                      </Text>
+                      {edit && 
+                        <Button iconName='trash-o' onClick={() => {
+                          const updatedTags = tags.filter((_, i) => i !== index);
+                          setTags(updatedTags); 
+                        }}/>
+                      }
+                  </View>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       {!edit ? 
         <View style={{
@@ -451,13 +539,15 @@ export default function AnotationPage() {
             <Picker.Item label="Texto" value={'texto'}/>
             <Picker.Item label="Arquivo" value={'arquivo'}/>
             <Picker.Item label="Foto" value={'foto'}/>
-            <Picker.Item label="desenho" value={'desenho'}/>
+            <Picker.Item label="Desenho" value={'desenho'}/>
           </Picker>
+
+          {tagsList}
 
           {renderViewNoteType(selectedNoteType)}
 
           {params.fromHome === 'true' && 
-            <View style={{flex: 1}}>
+            <View style={styles.buttonGroup}>
               <Button label="Abrir Grupo" onClick={() => router.push({pathname: "/(tabs)/groupPage", params: {id: params.groupId}})}/>
             </View>
           }
@@ -479,9 +569,11 @@ export default function AnotationPage() {
               <Picker.Item label="Texto" value={'texto'}/>
               <Picker.Item label="Arquivo" value={'arquivo'}/>
               <Picker.Item label="Foto" value={'foto'}/>
-              <Picker.Item label="desenho" value={'desenho'}/>
+              <Picker.Item label="Desenho" value={'desenho'}/>
             </Picker>
           </View>
+
+          {tagsList}
 
           {renderEditNoteType(selectedNoteType)}
 
@@ -500,7 +592,9 @@ export default function AnotationPage() {
 const styles = StyleSheet.create({
   scrollView:{
     width: "90%",
-    flex: 10,
+    height: "70%",
+    padding:10,
+    boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"
   },
   text: {
     width: "100%",
@@ -515,6 +609,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   inputBox:{
+    padding:10,
     flex:20,
     borderWidth: 1,
     borderRadius: 15,
@@ -524,7 +619,7 @@ const styles = StyleSheet.create({
   },
   buttonGroup:{
     marginTop: "10%",
-    flex: 4,
+    height: "10%",
     width: "100%",
   },
   containerTitle:{
@@ -549,5 +644,47 @@ const styles = StyleSheet.create({
     columnGap: '5%', 
     alignSelf: 'flex-end',
     marginBottom: '2%'
-  }
+  },
+  containerTags:{
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    width: '90%',
+    gap: 5,
+    marginBottom: '5%'
+  },
+  tag:{
+    padding: 5,
+    borderWidth: 1,
+    borderRadius: 10
+  },
+  modalBackground:{
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  modal:{
+    flex: 1,
+    minWidth: '80%',
+    maxHeight: '60%',
+    margin: 'auto',
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    padding: 20
+  },
+  card:{
+    marginBottom: "4%",
+    padding: 5,
+    borderWidth: 1,
+  },
+  cardText:{
+    textAlign:"center",
+    fontSize:25,
+    margin: 'auto',
+    width: '65%',
+  },
+  addTag: {
+    flexDirection: 'row', 
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "2%",
+    marginBottom:"5%"}
 });

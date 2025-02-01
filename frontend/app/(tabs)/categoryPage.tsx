@@ -1,15 +1,13 @@
-import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text, Alert } from "react-native";
 import { useEffect, useState } from "react";
-import { useFocusEffect, useRouter } from "expo-router";
 import React from 'react';
-import Header from "@/components/Header"
+import Header from '@/components/Header';
 import InputText from "@/components/InputText";
 import Button from "@/components/Button";
 import { categoryService } from "@/services/categoryService";
 
 export default function CategoryPage() {
 
-  const router = useRouter();
 
   const [categories, setCategories] = useState<any[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
@@ -28,7 +26,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias.`);
     });
   }
 
@@ -37,7 +35,7 @@ export default function CategoryPage() {
       setCategories(resp.categorias);
   
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias.`);
     });
   }
   
@@ -55,15 +53,26 @@ export default function CategoryPage() {
   }
 
   const deleteGroup = () => {
-    categoryService.deleteCategory(currentCategoryId)
-      .then(resp => {
-        alert(`deletado com sucesso`);  
-        setModalVisible(false);
-        fetchCategoryData();     
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar a categoria?', [
+            {
+              text: 'Cancelar',
+              style: 'cancel',
+            },
+            {text: 'Sim', onPress: () => {
+                categoryService.deleteCategory(currentCategoryId)
+                .then(() => {
+                  Alert.alert('Sucesso',`Deletado com sucesso.`);  
+                  setModalVisible(false);
+                  fetchCategoryData();     
+                })
+                .catch((error) => {
+                  Alert.alert('Erro',`Erro na deleção.`);
+                }); 
+              }
+            },
+          ]
+        );
+    
   }
 
   const handleSearchChange = (value: string) => {
@@ -76,16 +85,18 @@ export default function CategoryPage() {
   }
 
   const saveCategory = () => {
+    if(!currentCategoryName){
+      Alert.alert('Erro',`Nome da categoria deve ser preenchido.`);
+      return;
+    }
     (!edit ? categoryService.createCategory({name: currentCategoryName}) : 
              categoryService.updateCategory(currentCategoryId , {name: currentCategoryName}))
       .then(resp => {
-        const category = resp.category;
-        alert(`Cadastro concluído: \n nome: ${category.name} \n`);
         fetchCategoryData();
         setModalVisible(false)
       })
       .catch((error) => {
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro.`);
       }); 
   }
 

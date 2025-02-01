@@ -6,6 +6,7 @@ export interface Note {
   fileUri?: string;
   fileName?: string;
   base64?: string;
+  tag?: string;
 }
 
 export interface NoteResponse {
@@ -15,4 +16,5 @@ export interface NoteResponse {
   groupId: string;
   userId: string;
   date: string; 
+  tag: string; 
 }

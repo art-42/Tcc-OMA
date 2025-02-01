@@ -1,7 +1,7 @@
 import Button from "@/components/Button";
 import InputText from "@/components/InputText";
 import Header from "@/components/Header";
-import { Text, View, StyleSheet, Alert } from "react-native";
+import { View, StyleSheet, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { userService } from "@/services/userService";
 import { useAuth } from "@/context/AuthContext";
@@ -15,7 +15,7 @@ export default function InfoScreen() {
 
   useEffect(() => {
     if (!user) {
-      Alert.alert("Erro", "Usuário não autenticado");
+      Alert.alert("Erro", "Usuário não autenticado.");
       return;
     }
 
@@ -26,7 +26,7 @@ export default function InfoScreen() {
         setEmail(fetchedUser.email);
       })
       .catch(() => {
-        Alert.alert("Erro", "Não foi possível carregar as informações do usuário");
+        Alert.alert("Erro", "Não foi possível carregar as informações do usuário.");
       });
   }, [user]);
 
@@ -39,41 +39,33 @@ export default function InfoScreen() {
   // Salva as alterações no banco de dados
   const save = () => {
     if (name === '' || email === '') {
-      Alert.alert("Erro", "Todos os campos precisam estar preenchidos");
+      Alert.alert("Erro", "Todos os campos precisam estar preenchidos.");
       return;
     }
 
     if (!isEmailValid(email)) {
-      Alert.alert("Erro", "Por favor, insira um email válido");
+      Alert.alert("Erro", "Por favor, insira um email válido.");
       return;
     }
 
     if (user) {
       userService.updateUser({ id: user.id, name, email })
         .then(resp => {
-          const updatedUser = resp.user;
           Alert.alert(
             "Sucesso",
-            `Dados atualizados com sucesso`
+            `Dados atualizados com sucesso.`
           );
         })
         .catch(() => {
-          Alert.alert("Erro", "Não foi possível atualizar as informações do usuário");
+          Alert.alert("Erro", "Não foi possível atualizar as informações do usuário.");
         });
     }
   };
 
-  const leftIcons = [
-    {
-      iconName: "arrow-left",
-      href: "/home"
-    }
-  ];
-
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Header leftIcons={leftIcons} text="Informações de Cadastro" />
+        <Header text="Informações de Cadastro" />
       </View>
       <View style={styles.inputInfoContainer}>
         <InputText label="Nome" textValue={name} onChangeText={setName} />
