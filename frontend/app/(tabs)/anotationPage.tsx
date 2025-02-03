@@ -470,7 +470,7 @@ export default function AnotationPage() {
   }
 
   const tagsList = 
-    <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
+    id && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
       {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
       {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
         <Text>{val}</Text>
