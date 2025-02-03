@@ -4,12 +4,14 @@ import { userService } from "@/services/userService";
 import { useState } from "react";
 import { Text, View, StyleSheet, Alert } from "react-native";
 import { useRouter } from "expo-router";
+import PasswordInput from "@/components/PasswordInput";
 
 export default function SigninScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const router = useRouter();
 
   const validateEmail = (email: string) => {
@@ -44,6 +46,7 @@ export default function SigninScreen() {
     if (handleSubmit()){
       userService.createUser({ email, name, password })
         .then(resp => {
+          Alert.alert('Sucesso',`Cadastro feito com sucesso.`);
           
           router.push('/'); 
 
@@ -56,8 +59,11 @@ export default function SigninScreen() {
     }
 
   };
-  
 
+  const togglePasswordVisibility = () => {
+    setPasswordVisible(!passwordVisible);
+  };
+  
   return (
     <View style={{ flex: 1, alignItems: "center", padding: '3%' }}>
       <View style={styles.topTextContainer}>
@@ -68,8 +74,20 @@ export default function SigninScreen() {
       <View style={styles.inputInfoContainer}>
         <InputText placeholder="nome" textValue={name} onChangeText={setName} />
         <InputText placeholder="email" textValue={email} onChangeText={setEmail} />
-        <InputText placeholder="senha" textValue={password} onChangeText={setPassword} />
-        <InputText placeholder="Confirmar senha" textValue={confirmPassword} onChangeText={setConfirmPassword} />
+        <PasswordInput
+          placeholder="Senha"
+          textValue={password}
+          onChangeText={setPassword}
+          isPasswordVisible={passwordVisible}
+          togglePasswordVisibility={togglePasswordVisibility}
+        />
+        <PasswordInput
+          placeholder="Confirmar Senha"
+          textValue={confirmPassword}
+          onChangeText={setConfirmPassword}
+          isPasswordVisible={passwordVisible}
+          togglePasswordVisibility={togglePasswordVisibility}
+        />
       </View>
 
       <View style={styles.bottonButton}>

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert, TouchableWithoutFeedback } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -482,43 +482,46 @@ export default function AnotationPage() {
         transparent={true}
         onRequestClose={() => {
           setModalTagVisible(!modalTagVisible);
-        }}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modal}>
-            {edit && <View style={styles.addTag}>
-              <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
-              <Button 
-                iconName="plus-circle" 
-                onClick={() => {
-                  if(addTagText !== ''){
-                    setTags([ addTagText ,...tags]);
-                    setAddTagText('')
-                  }
-                }}
-              />
-            </View>}
-            {!edit && 
-              <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
-            }
-            <ScrollView>
-              {tags.map((tag, index) => 
-                <View style={styles.card} key={`card-${index}`}>
-                  <View style={{flexDirection: 'row', alignItems:'center'}}>
-                      <Text style={styles.cardText}>
-                        {tag}
-                      </Text>
-                      {edit && 
-                        <Button iconName='trash-o' onClick={() => {
-                          const updatedTags = tags.filter((_, i) => i !== index);
-                          setTags(updatedTags); 
-                        }}/>
-                      }
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => setModalTagVisible(false)}>
+          <View style={styles.modalBackground}>
+            <Pressable onPress={() => {}} style={styles.modal}>
+              {edit && <View style={styles.addTag}>
+                <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
+                <Button 
+                  iconName="plus-circle" 
+                  onClick={() => {
+                    if(addTagText !== ''){
+                      setTags([ addTagText ,...tags]);
+                      setAddTagText('')
+                    }
+                  }}
+                />
+              </View>}
+              {!edit && 
+                <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
+              }
+              <ScrollView>
+                {tags.map((tag, index) => 
+                  <View style={styles.card} key={`card-${index}`}>
+                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                        <Text style={styles.cardText}>
+                          {tag}
+                        </Text>
+                        {edit && 
+                          <Button iconName='trash-o' onClick={() => {
+                            const updatedTags = tags.filter((_, i) => i !== index);
+                            setTags(updatedTags); 
+                          }}/>
+                        }
+                    </View>
                   </View>
-                </View>
-              )}
-            </ScrollView>
+                )}
+              </ScrollView>
+            </Pressable>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {!edit ? 
