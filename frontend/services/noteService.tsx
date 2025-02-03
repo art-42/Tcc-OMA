@@ -111,6 +111,30 @@ export const noteService = {
     }
   },
 
+  updateTags: async (id : string, tag: string): Promise<any> => {
+    try {
+      const userId = await AsyncStorage.getItem('idUser');
+
+      const resp = {
+        tag: tag
+      }
+
+      const response = await fetch(`${API_URL}/notes/tag/${userId}/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resp),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to create tag');
+      }
+      return await response.json();
+    } catch (error) {
+      throw error;
+    }
+  },
+
   getNoteById: async (noteId: string): Promise<NoteResponse> => {
     try {
       const userId = await AsyncStorage.getItem('idUser');

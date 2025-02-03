@@ -191,6 +191,15 @@ export default function AnotationPage() {
       }); 
   }
 
+  const updateTags = () => {
+    if(tags.length > 0){
+      noteService.updateTags(id, tags.join("|"))
+        .catch((error) => {
+          Alert.alert('Erro',"Erro ao atualizar tags.");
+        }); 
+    }
+  }
+
   const openNoteFile = () => {
     if(anotation.content){
       noteService.viewNoteFile(anotation.content);
@@ -461,7 +470,7 @@ export default function AnotationPage() {
   }
 
   const tagsList = 
-    (edit || tags.length > 0) && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
+    <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
       {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
       {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
         <Text>{val}</Text>
@@ -482,26 +491,27 @@ export default function AnotationPage() {
         transparent={true}
         onRequestClose={() => {
           setModalTagVisible(!modalTagVisible);
+          updateTags();
         }}
       >
-        <TouchableWithoutFeedback onPress={() => setModalTagVisible(false)}>
+        <TouchableWithoutFeedback onPress={() => {
+          setModalTagVisible(false);
+          updateTags();
+        }}>
           <View style={styles.modalBackground}>
             <Pressable onPress={() => {}} style={styles.modal}>
-              {edit && <View style={styles.addTag}>
+              <View style={styles.addTag}>
                 <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
                 <Button 
                   iconName="plus-circle" 
                   onClick={() => {
                     if(addTagText !== ''){
                       setTags([ addTagText ,...tags]);
-                      setAddTagText('')
+                      setAddTagText('');
                     }
                   }}
                 />
-              </View>}
-              {!edit && 
-                <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
-              }
+              </View>
               <ScrollView>
                 {tags.map((tag, index) => 
                   <View style={styles.card} key={`card-${index}`}>
@@ -509,12 +519,10 @@ export default function AnotationPage() {
                         <Text style={styles.cardText}>
                           {tag}
                         </Text>
-                        {edit && 
-                          <Button iconName='trash-o' onClick={() => {
-                            const updatedTags = tags.filter((_, i) => i !== index);
-                            setTags(updatedTags); 
-                          }}/>
-                        }
+                        <Button iconName='trash-o' onClick={() => {
+                          const updatedTags = tags.filter((_, i) => i !== index);
+                          setTags(updatedTags); 
+                        }}/>
                     </View>
                   </View>
                 )}

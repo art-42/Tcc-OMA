@@ -18,3 +18,7 @@ export interface NoteResponse {
   date: string; 
   tag: string; 
 }
+
+export interface Tag {
+  tag: string;
+}
