@@ -302,6 +302,7 @@ export default function HomeScreen() {
                 categoryId={data.categoryId}
                 categoryName={data.categoryName}
                 title={data.name}
+                date={formatToDDMMYYYY(data.time)}
                 time={formatToHHMM(data.time)}
               />
             </View>

@@ -66,17 +66,10 @@ export default function ChangePasswordScreen() {
   }
   };
 
-  const leftIcons = [
-    {
-      iconName: "arrow-left",
-      href: "/infoScreen"
-    }
-  ];
-
   return (
     <View style={{ flex: 1, alignItems: "center", padding: '5%' }}>
       <View style={styles.headerContainer}>
-        <Header leftIcons={leftIcons} text="Alterar senha" />
+        <Header text="Alterar senha" />
       </View>
       <View style={styles.inputInfoContainer}>
         <PasswordInput
