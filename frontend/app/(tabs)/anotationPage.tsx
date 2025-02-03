@@ -408,7 +408,7 @@ export default function AnotationPage() {
               <SignatureScreen
                 style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
                 backgroundColor="white"
-                dataURL={anotation?.content}
+                dataURL={anotation.type === "desenho" ? anotation?.content : undefined}
                 ref={signatureRef}
                 onLoadEnd={handleEnd}
                 onOK={handleOK}
@@ -435,7 +435,7 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         return (
-            <View style={{ gap: '5%', flex: 20, justifyContent: 'center', width: '90%' }}>
+            <View style={{ gap: '5%', flex: 0.8, justifyContent: 'center', width: '90%'}}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
               <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />
