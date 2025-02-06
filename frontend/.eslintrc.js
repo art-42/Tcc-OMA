@@ -4,9 +4,6 @@ module.exports = {
   ignorePatterns: ['/dist/*'],
   settings: {
     'import/resolver': {
-      alias: [
-        ['@', './src'],  // adjust the path if your `src` directory is located elsewhere
-      ],
     },
-  },
+  }
 };

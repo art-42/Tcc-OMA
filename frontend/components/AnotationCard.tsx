@@ -1,3 +1,4 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Pressable, View, Text, StyleSheet } from "react-native";
 
@@ -15,8 +16,20 @@ export default function AnotationCard(prop : CardProps) {
       <Pressable style={styles.container} onPress={() => router.push({pathname: "/(tabs)/anotationPage", params: {noteId: prop.id, groupId: prop.groupId, fromHome: prop.fromHome}})}>
         <View style={styles.titleDateRow}>
           <Text style={styles.text}>
-            Título: {prop.title}
+            {prop.title}
           </Text>
+          <FontAwesome
+            size={ 30 }
+            name={
+              prop.type === 'texto' ? 'align-justify' :
+              prop.type === 'arquivo' ? 'file-o' :
+              prop.type === 'foto' ? 'camera' :
+              'paint-brush'
+            }
+          />
+          {/* <Text style={styles.text}>
+            Tipo: {prop.type}
+          </Text> */}
         </View>
       </Pressable>
     </View>
@@ -29,8 +42,10 @@ const styles = StyleSheet.create({
     marginHorizontal:"5%"
   },
   titleDateRow:{
-    flexDirection: "column",  
-    margin:"5%"  
+    flexDirection: "row",  
+    marginHorizontal:"10%",  
+    marginVertical: "8%",
+    alignItems: 'center'
   },
   categoryRow:{
     marginTop: 2,
@@ -39,6 +54,6 @@ const styles = StyleSheet.create({
   text:{
     fontSize: 20,
     textAlign: "center",
-    marginVertical: "5%"
+    margin: 'auto',
   }
 });
