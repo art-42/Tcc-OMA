@@ -39,7 +39,7 @@ export default function HomeScreen() {
     groupService.getGroups().then(resp => {
       setGroups(resp);
     }).catch(() => {
-      alert(`Erro no cadastro de pessoa`);
+      Alert.alert('Erro',`Erro no cadastro de pessoa.`);
     });
   }
 
@@ -220,15 +220,19 @@ export default function HomeScreen() {
       return () => backHandler.remove();
     }, [logout, router])
   );
-  const rightIcons = [
-    {
-      iconName: "user-circle",
-    },
-  ];
 
   const navigateToInfoScreen = () => {
     router.push("/infoScreen");
   };
+
+  const rightIcons = [
+    {
+      iconName: "user-circle",
+      onClick: () => {
+        navigateToInfoScreen();
+      }
+    },
+  ];
 
   const handleSearchChange = (value: string) => {
     setSearchText(value);
@@ -244,7 +248,7 @@ export default function HomeScreen() {
         setSearchedResults(resp);
     
       }).catch(() => {
-        alert(`Erro ao encontrar resultado de pesquisa`);
+        Alert.alert('Erro',`Erro ao encontrar resultado de pesquisa.`);
       });
   }
 
@@ -339,7 +343,7 @@ export default function HomeScreen() {
             <View style={styles.list}>
               {searchedResults?.notes?.map((note: any) => (
                 <View style={styles.AnotationContainer} key={note._id}>
-                  <AnotationCard id={note._id} groupId={note.groupId} title={note.title} fromHome="true"/>
+                  <AnotationCard id={note._id} groupId={note.groupId} title={note.title} type={note.type} fromHome="true"/>
                 </View>
               ))}
             </View>

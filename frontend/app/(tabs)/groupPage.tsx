@@ -1,4 +1,4 @@
-import { Text, View, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { Text, View, StyleSheet, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useCallback, useEffect, useState } from "react";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -28,6 +28,11 @@ export default function GroupPage() {
   const [categories, setCategories] = useState<any[]>([]);
 
   const saveGroup = () => {
+    if(!name){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
+
     groupService.createGroup({name, categoryId: selectedCategory})
       .then(resp => {
         const group = resp.group;
@@ -35,12 +40,17 @@ export default function GroupPage() {
         setId(group._id);
       })
       .catch((error) => {
-
-        alert(`Erro no cadastro`);
+        console.log(error)
+        Alert.alert('Erro',`Erro no cadastro.`);
       }); 
   }
 
   const updateGroup = () => {
+    if(!name){
+      Alert.alert('Erro',`Título deve ser preenchido.`);
+      return;
+    }
+    
     groupService.updateGroup(id, {name, categoryId: selectedCategory})
       .then(resp => {
         setEdit(false);
@@ -48,20 +58,31 @@ export default function GroupPage() {
       })
       .catch((error) => {
 
-        alert(`Erro no cadastro`);
+        Alert.alert('Erro',`Erro no cadastro.`);
       }); 
   }
 
   const deleteGroup = () => {
-    groupService.deleteGroup(id)
-      .then(resp => {
-        alert(`Deletado com sucesso`);
-        router.push('/(tabs)/home');
-        
-      })
-      .catch((error) => {
-        alert(`Erro na deleção`);
-      }); 
+    Alert.alert('Deletar', 'Deseja deletar o grupo?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {text: 'Sim', onPress: () => {
+            groupService.deleteGroup(id)
+            .then(() => {
+              Alert.alert('Sucesso',`Deletado com sucesso.`);
+              router.push('/(tabs)/home');
+              
+            })
+            .catch((error) => {
+              Alert.alert('Erro',`Erro na deleção.`);
+            }); 
+    
+          }
+        },
+      ]
+    );
   }
 
   const addAnotation = () => {
@@ -72,13 +93,33 @@ export default function GroupPage() {
   const rightIcons = !edit ? 
   [
     {
+      iconName: "file-pdf-o",
+      onClick: () => {
+        Alert.alert('Exportação em Pdf', 'Deseja exportar o grupo de anotações em pdf?', [
+          {
+            text: 'Cancelar',
+            style: 'cancel',
+          },
+          {text: 'Sim', onPress: () => {
+            groupService.exportGroupById(id).then(uri => {
+              uri && Alert.alert('Sucesso', `Arquivo salvo com sucesso na pasta selecionada.`)
+            }).catch(error => {
+              console.log(error)
+              Alert.alert('Erro',`Erro ao exportar grupo.`);
+            });
+          }},
+        ]);
+
+      }
+    },
+    {
       iconName: "edit",
       onClick: () => {
         setEdit(true);
       }
     },
     {
-      iconName: "trash",
+      iconName: "trash-o",
       onClick: deleteGroup
     },
   ] : [
@@ -96,13 +137,13 @@ export default function GroupPage() {
         setName(resp.group.name);
         setSelectedCategory(resp.group.categoryId);
       }).catch(() => {
-        alert(`Erro ao encontrar grupo`);
+        Alert.alert('Erro',`Erro ao encontrar grupo.`);
       });
   
       noteService.getNotesByGroup(id).then(resp => {
         setAnotation(resp);
       }).catch(() => {
-        alert(`Erro ao encontrar anotações do grupo`);
+        Alert.alert('Erro',`Erro ao encontrar anotações do grupo.`);
       });
     }
   }, [id, setName, setSelectedCategory, setAnotation]);
@@ -112,7 +153,7 @@ export default function GroupPage() {
       setCategories(resp.categorias);
 
     }).catch(() => {
-      alert(`Erro ao encontrar categorias`);
+      Alert.alert('Erro',`Erro ao encontrar categorias.`);
     });
   }
 
@@ -165,7 +206,7 @@ export default function GroupPage() {
               <ScrollView>
                 {anotations?.map(anotation => 
                   <View style={styles.card} key={anotation._id}>
-                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title}/>
+                    <AnotationCard id={anotation._id} groupId={id} title={anotation.title} type={anotation.type}/>
                   </View>
                 )}
               </ScrollView>
