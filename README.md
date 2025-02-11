@@ -71,4 +71,4 @@ Este projeto é de uso acadêmico e foi desenvolvido como parte do Trabalho de C
 
 ✉️ **Contato**: 
 - Luíza Esteves: luizaesteves987@gmail.com
-- Artur de Sousa: 
+- Artur de Sousa: artursv2001@gmail.com
