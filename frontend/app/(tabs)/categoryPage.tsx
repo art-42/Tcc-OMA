@@ -1,4 +1,4 @@
-import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text, Alert } from "react-native";
+import { View, StyleSheet, TouchableOpacity, ScrollView, Modal, Pressable, Text, Alert, TouchableWithoutFeedback } from "react-native";
 import { useEffect, useState } from "react";
 import React from 'react';
 import Header from '@/components/Header';
@@ -145,20 +145,22 @@ export default function CategoryPage() {
           onRequestClose={() => {
             setModalVisible(!modalVisible);
           }}>
-          <View style={styles.modalBackground}>
-            <View style={styles.modal}>
-              <View style={styles.inputInfoContainer}>
-                <InputText placeholder="Nome da Categoria" textValue={currentCategoryName} onChangeText={setCurrentCategoryName} />
-                <View style={{flexDirection: 'row', gap: '5%', justifyContent: 'center'}}>
-                  <Button label="Salvar" onClick={saveCategory} />
+          <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
+            <View style={styles.modalBackground}>
+              <Pressable onPress={() => {}} style={styles.modal}>
+                <View style={styles.inputInfoContainer}>
+                  <InputText placeholder="Nome da Categoria" textValue={currentCategoryName} onChangeText={setCurrentCategoryName} />
+                  <View style={{flexDirection: 'row', gap: '5%', justifyContent: 'center'}}>
+                    <Button label="Salvar" onClick={saveCategory} />
 
-                  {edit && 
-                    <Button label="Excluir" onClick={deleteGroup} />
-                  }
+                    {edit && 
+                      <Button label="Excluir" onClick={deleteGroup} />
+                    }
+                  </View>
                 </View>
-              </View>
+              </Pressable>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </View>
   );

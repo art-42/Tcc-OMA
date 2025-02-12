@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TextInput, BackHandler, Pressable, Modal, Alert, TouchableWithoutFeedback } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from 'react';
@@ -182,7 +182,7 @@ export default function AnotationPage() {
   }
 
   const downloadNoteFile = () => {
-    noteService.downloadNoteFile(anotation.content, anotation.fileName)
+    noteService.downloadNoteFile(anotation?.content, anotation?.fileName)
       .then(resp => {
         setFileUri(resp);
       })
@@ -191,23 +191,32 @@ export default function AnotationPage() {
       }); 
   }
 
+  const updateTags = () => {
+    if(tags.length > 0){
+      noteService.updateTags(id, tags.join("|"))
+        .catch((error) => {
+          Alert.alert('Erro',"Erro ao atualizar tags.");
+        }); 
+    }
+  }
+
   const openNoteFile = () => {
-    if(anotation.content){
-      noteService.viewNoteFile(anotation.content);
+    if(anotation?.content){
+      noteService.viewNoteFile(anotation?.content);
     }
   }
 
   const enterEditMode = () => {
     setEdit(true);
-    setAnotationTitle(anotation.title)
-    setAnotationText(anotation.type === "texto" ? anotation.content : "")
+    setAnotationTitle(anotation?.title)
+    setAnotationText(anotation?.type === "texto" ? anotation?.content : "")
     if(selectedNoteType === "desenho"){
       setDrawMode("d");
       setDrawColor("black");
       setDrawWidth(3);
     }
     if(selectedNoteType === "arquivo"){
-      setFile(anotation.content);
+      setFile(anotation?.content);
     }
   }
 
@@ -238,6 +247,7 @@ export default function AnotationPage() {
         return false;
       }
       if(edit){
+        setSelectedNoteType(anotation?.type)
         setEdit(false);
         return true;
       } 
@@ -399,7 +409,7 @@ export default function AnotationPage() {
               <SignatureScreen
                 style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
                 backgroundColor="white"
-                dataURL={anotation?.content}
+                dataURL={anotation?.type === "desenho" ? anotation?.content : undefined}
                 ref={signatureRef}
                 onLoadEnd={handleEnd}
                 onOK={handleOK}
@@ -426,9 +436,9 @@ export default function AnotationPage() {
         );
       case 'arquivo':
         return (
-            <View style={{ gap: '5%', flex: 20, justifyContent: 'center', width: '90%' }}>
+            <View style={{ gap: '5%', flex: 0.8, justifyContent: 'center', width: '90%'}}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
-              <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
+              <Text style={{textAlign: 'center'}}>{anotation?.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />
               <Button label="Baixar" onClick={downloadNoteFile} />
             </View>
@@ -461,7 +471,7 @@ export default function AnotationPage() {
   }
 
   const tagsList = 
-    (edit || tags.length > 0) && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
+    id && <Pressable style={styles.containerTags} onPress={() => setModalTagVisible(true)}>
       {tags.length === 0 && <Text style={{textAlign: 'center', width:'100%'}}>Clique para adicionar tags</Text>}
       {tags.map((val, index) => index < 5 && <View key={`opt-${index}`} style={styles.tag}>
         <Text>{val}</Text>
@@ -482,43 +492,45 @@ export default function AnotationPage() {
         transparent={true}
         onRequestClose={() => {
           setModalTagVisible(!modalTagVisible);
+          updateTags();
+        }}
+      >
+        <TouchableWithoutFeedback onPress={() => {
+          setModalTagVisible(false);
+          updateTags();
         }}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modal}>
-            {edit && <View style={styles.addTag}>
-              <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
-              <Button 
-                iconName="plus-circle" 
-                onClick={() => {
-                  if(addTagText !== ''){
-                    setTags([ addTagText ,...tags]);
-                    setAddTagText('')
-                  }
-                }}
-              />
-            </View>}
-            {!edit && 
-              <Text style={{textAlign: 'center', fontSize: 20, marginBottom: 10}}>Tags</Text>
-            }
-            <ScrollView>
-              {tags.map((tag, index) => 
-                <View style={styles.card} key={`card-${index}`}>
-                  <View style={{flexDirection: 'row', alignItems:'center'}}>
-                      <Text style={styles.cardText}>
-                        {tag}
-                      </Text>
-                      {edit && 
+          <View style={styles.modalBackground}>
+            <Pressable onPress={() => {}} style={styles.modal}>
+              <View style={styles.addTag}>
+                <InputText placeholder="Adicionar Tag" textValue={addTagText} onChangeText={setAddTagText}/>
+                <Button 
+                  iconName="plus-circle" 
+                  onClick={() => {
+                    if(addTagText !== ''){
+                      setTags([ addTagText ,...tags]);
+                      setAddTagText('');
+                    }
+                  }}
+                />
+              </View>
+              <ScrollView>
+                {tags.map((tag, index) => 
+                  <View style={styles.card} key={`card-${index}`}>
+                    <View style={{flexDirection: 'row', alignItems:'center'}}>
+                        <Text style={styles.cardText}>
+                          {tag}
+                        </Text>
                         <Button iconName='trash-o' onClick={() => {
                           const updatedTags = tags.filter((_, i) => i !== index);
                           setTags(updatedTags); 
                         }}/>
-                      }
+                    </View>
                   </View>
-                </View>
-              )}
-            </ScrollView>
+                )}
+              </ScrollView>
+            </Pressable>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
 
       {!edit ? 

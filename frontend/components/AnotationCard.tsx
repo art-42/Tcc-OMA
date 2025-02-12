@@ -27,9 +27,6 @@ export default function AnotationCard(prop : CardProps) {
               'paint-brush'
             }
           />
-          {/* <Text style={styles.text}>
-            Tipo: {prop.type}
-          </Text> */}
         </View>
       </Pressable>
     </View>

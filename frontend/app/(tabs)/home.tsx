@@ -302,6 +302,7 @@ export default function HomeScreen() {
                 categoryId={data.categoryId}
                 categoryName={data.categoryName}
                 title={data.name}
+                date={formatToDDMMYYYY(data.time)}
                 time={formatToHHMM(data.time)}
               />
             </View>
@@ -366,18 +367,20 @@ export default function HomeScreen() {
         <InputText placeholder="Pesquisar" onChangeText={handleSearchChange} textValue={searchText}/>
       </View>
 
-      <View style={styles.picker}>
-        <Picker
-          selectedValue={selectedView}
-          onValueChange={(itemValue) =>{
-            scrollViewRef.current?.scrollTo({ y: 0, animated: true });
-            setSelectedView(itemValue)
-          }
-        }>
-          <Picker.Item label="Data" value={'date'} />
-          <Picker.Item label="Categoria" value={'category'} />
-        </Picker>
-      </View>
+      {!searchedResults && 
+        <View style={styles.picker}>
+          <Picker
+            selectedValue={selectedView}
+            onValueChange={(itemValue) =>{
+              scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+              setSelectedView(itemValue)
+            }
+          }>
+            <Picker.Item label="Data" value={'date'} />
+            <Picker.Item label="Categoria" value={'category'} />
+          </Picker>
+        </View>
+      }
 
       <View style={styles.scrollView}>
         <ScrollView ref={scrollViewRef} >
