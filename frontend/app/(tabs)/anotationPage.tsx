@@ -202,7 +202,7 @@ export default function AnotationPage() {
 
   const openNoteFile = () => {
     if(anotation?.content){
-      noteService.viewNoteFile(anotation.content);
+      noteService.viewNoteFile(anotation?.content);
     }
   }
 
@@ -216,7 +216,7 @@ export default function AnotationPage() {
       setDrawWidth(3);
     }
     if(selectedNoteType === "arquivo"){
-      setFile(anotation.content);
+      setFile(anotation?.content);
     }
   }
 
