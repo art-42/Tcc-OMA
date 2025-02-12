@@ -182,7 +182,7 @@ export default function AnotationPage() {
   }
 
   const downloadNoteFile = () => {
-    noteService.downloadNoteFile(anotation.content, anotation.fileName)
+    noteService.downloadNoteFile(anotation?.content, anotation?.fileName)
       .then(resp => {
         setFileUri(resp);
       })
@@ -201,15 +201,15 @@ export default function AnotationPage() {
   }
 
   const openNoteFile = () => {
-    if(anotation.content){
+    if(anotation?.content){
       noteService.viewNoteFile(anotation.content);
     }
   }
 
   const enterEditMode = () => {
     setEdit(true);
-    setAnotationTitle(anotation.title)
-    setAnotationText(anotation.type === "texto" ? anotation.content : "")
+    setAnotationTitle(anotation?.title)
+    setAnotationText(anotation?.type === "texto" ? anotation?.content : "")
     if(selectedNoteType === "desenho"){
       setDrawMode("d");
       setDrawColor("black");
@@ -247,6 +247,7 @@ export default function AnotationPage() {
         return false;
       }
       if(edit){
+        setSelectedNoteType(anotation?.type)
         setEdit(false);
         return true;
       } 
@@ -408,7 +409,7 @@ export default function AnotationPage() {
               <SignatureScreen
                 style={{boxShadow: "0 3px 10px 2px rgba(0, 0, 0, 0.2)"}}
                 backgroundColor="white"
-                dataURL={anotation.type === "desenho" ? anotation?.content : undefined}
+                dataURL={anotation?.type === "desenho" ? anotation?.content : undefined}
                 ref={signatureRef}
                 onLoadEnd={handleEnd}
                 onOK={handleOK}
@@ -437,7 +438,7 @@ export default function AnotationPage() {
         return (
             <View style={{ gap: '5%', flex: 0.8, justifyContent: 'center', width: '90%'}}>
               <Text style={{textAlign: 'center'}}>Arquivo adicionado: </Text>              
-              <Text style={{textAlign: 'center'}}>{anotation.fileName}</Text>              
+              <Text style={{textAlign: 'center'}}>{anotation?.fileName}</Text>              
               <Button label="Visualizar" onClick={openNoteFile} />
               <Button label="Baixar" onClick={downloadNoteFile} />
             </View>
